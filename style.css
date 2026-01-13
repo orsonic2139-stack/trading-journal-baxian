@@ -1,0 +1,1561 @@
+/* CSS Variables for Theme Support */
+:root {
+  /* 背景颜色 */
+  --bg-primary: #0e1117;
+  --bg-secondary: #0b0f1a;
+  --bg-card: #0f172a;
+  --bg-input: #020617;
+  --bg-sidebar: #0b0f1a;
+  
+  /* 文本颜色 */
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-accent: #818cf8;
+  --text-success: #3eb489;
+  --text-error: #ff4d4d;
+  --text-light: #e6fff6;
+  
+  /* 边框颜色 */
+  --border-color: #1e293b;
+  --border-accent: #3eb489;
+  
+  /* 按钮颜色 */
+  --btn-primary: #3eb489;
+  --btn-primary-hover: #2d9c6f;
+  --btn-text: #020617;
+  --btn-secondary: #818cf8;
+  
+  /* 阴影和渐变 */
+  --shadow-color: rgba(62, 180, 137, 0.15);
+  --shadow-hover: rgba(0, 255, 255, 0.5);
+  --gradient-card: linear-gradient(145deg, #1f2937, #0f172a);
+  --gradient-bg: radial-gradient(circle at top, #1b1f2a, #0e1117);
+  
+  /* 状态颜色 */
+  --color-buy: #3eb489;
+  --color-sell: #ff4d4d;
+  --color-positive: #3eb489;
+  --color-negative: #ff4d4d;
+  
+  /* 图表颜色 */
+  --chart-color: #3eb489;
+  --chart-grid: #6ee7b7;
+  --chart-text: #aaa;
+}
+
+/* Light Theme Variables */
+.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-sidebar: #1e293b;
+  
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-accent: #4f46e5;
+  --text-success: #059669;
+  --text-error: #dc2626;
+  --text-light: #064e3b;
+  
+  --border-color: #cbd5e1;
+  --border-accent: #059669;
+  
+  --btn-primary: #059669;
+  --btn-primary-hover: #047857;
+  --btn-text: #ffffff;
+  --btn-secondary: #4f46e5;
+  
+  --shadow-color: rgba(5, 150, 105, 0.15);
+  --shadow-hover: rgba(79, 70, 229, 0.3);
+  --gradient-card: linear-gradient(145deg, #ffffff, #f1f5f9);
+  --gradient-bg: radial-gradient(circle at top, #e2e8f0, #f1f5f9);
+  
+  --color-buy: #059669;
+  --color-sell: #dc2626;
+  --color-positive: #059669;
+  --color-negative: #dc2626;
+  
+  --chart-color: #059669;
+  --chart-grid: #10b981;
+  --chart-text: #64748b;
+}
+
+/* Base Styles with CSS Variables */
+body {
+  margin: 0;
+  background: #0b0f1a;
+  color: #e5e7eb;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* 粒子容器 */
+#floating-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 粒子基础样式 */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: floatParticle linear infinite;
+  filter: blur(0.8px); /* 稍微柔化 */
+}
+
+/* 小粒子 */
+.particle.small {
+  width: 2.5px;
+  height: 2.5px;
+  background: rgba(147, 197, 253, 0.9); /* 提高不透明度 */
+  box-shadow: 
+    0 0 5px rgba(147, 197, 253, 0.7),
+    0 0 10px rgba(147, 197, 253, 0.4);
+}
+
+/* 中粒子 */
+.particle.medium {
+  width: 4px;
+  height: 4px;
+  background: rgba(96, 165, 250, 0.85);
+  box-shadow: 
+    0 0 6px rgba(96, 165, 250, 0.6),
+    0 0 12px rgba(96, 165, 250, 0.3);
+}
+
+/* 大粒子 */
+.particle.large {
+  width: 5px;
+  height: 5px;
+  background: rgba(59, 130, 246, 0.8);
+  box-shadow: 
+    0 0 8px rgba(59, 130, 246, 0.5),
+    0 0 16px rgba(59, 130, 246, 0.2);
+}
+
+/* 漂浮动画 - 更明显的轨迹 */
+@keyframes floatParticle {
+  0% {
+    transform: translateY(100vh) translateX(var(--start-x)) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--opacity);
+    transform: translateY(90vh) translateX(var(--start-x)) scale(1);
+  }
+  15% {
+    transform: translateY(85vh) translateX(var(--start-x)) scale(1.1); /* 轻微放大 */
+  }
+  90% {
+    opacity: calc(var(--opacity) * 0.8);
+  }
+  100% {
+    transform: translateY(-100px) translateX(calc(var(--start-x) + var(--drift-x))) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100%;
+  background: var(--bg-sidebar);
+  color: var(--text-primary);
+  transition: left 0.3s, background 0.3s;
+  padding-top: 2rem;
+  z-index: 1000;
+}
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar ul li { margin: 1rem 0; }
+.sidebar ul li a { 
+  color: var(--text-success); 
+  text-decoration: none; 
+  font-weight: 600; 
+  padding: 0.5rem 1rem; 
+  display: block;
+  transition: color 0.3s;
+}
+
+/* Hamburger Button */
+#hamburgerBtn {
+  background: var(--btn-primary);
+  color: var(--btn-text);
+  border: none;
+  font-size: 1.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 1100;
+  transition: background 0.3s;
+}
+
+/* Show sidebar */
+.sidebar.show { left: 0; }
+
+/* Page content shift */
+.page-content {
+  transition: margin-left 0.3s;
+}
+.page-content.shift { margin-left: 250px; }
+
+/* Header */
+header {
+  position: relative;
+  text-align: center;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  transition: background 0.3s;
+}
+#topRightActions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-success);
+}
+#topBalance {
+  background: var(--bg-card);
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-accent);
+  transition: all 0.3s;
+}
+
+/* Buttons */
+.balance-btn {
+  background: var(--btn-primary);
+  color: var(--btn-text);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+}
+.balance-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 10px var(--shadow-hover);
+  background: var(--btn-primary-hover);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  transition: background 0.3s;
+}
+
+/* Main Content */
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 1rem;
+}
+
+/* Stats Dashboard */
+.stats-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.8rem;
+  max-width: 900px;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card {
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(30, 64, 175, 0.15);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(30, 64, 175, 0.05);
+  transition: all 0.4s ease;
+  cursor: default;
+  z-index: 1;
+}
+
+/* 蓝色发光背景层 */
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(59, 130, 246, 0.25) 0%,
+    rgba(59, 130, 246, 0.15) 30%,
+    rgba(59, 130, 246, 0.05) 50%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+/* 优雅的蓝色角标装饰 */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.4s ease;
+  bottom: -2px;
+  right: -2px;
+  border-left: 0;
+  border-top: 0;
+  border-radius: 0 0 16px 0;
+  z-index: 1;
+}
+
+/* 悬停时的优雅效果 */
+.stat-card:hover {
+  background: rgba(15, 23, 42, 0.92);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(59, 130, 246, 0.15),
+    0 0 40px rgba(59, 130, 246, 0.2); /* 外部蓝色发光 */
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* 悬停时显示蓝色发光背景 */
+.stat-card:hover::before {
+  opacity: 1;
+  animation: glow-pulse 2s ease-in-out infinite alternate;
+}
+
+/* 发光脉冲动画 */
+@keyframes glow-pulse {
+  0% {
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(59, 130, 246, 0.3) 0%,
+      rgba(59, 130, 246, 0.18) 30%,
+      rgba(59, 130, 246, 0.08) 50%,
+      transparent 70%
+    );
+  }
+  100% {
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(59, 130, 246, 0.35) 0%,
+      rgba(59, 130, 246, 0.22) 30%,
+      rgba(59, 130, 246, 0.1) 50%,
+      transparent 70%
+    );
+  }
+}
+
+/* 鼠标跟随发光效果的JavaScript需要的样式 */
+.stat-card:hover .stat-glow-effect {
+  opacity: 1;
+}
+
+/* 标题 - 优雅蓝色 */
+.stat-card span {
+  color: #93c5fd;
+  font-size: 1rem;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  opacity: 0.85;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+/* 数字 - 精致蓝色渐变 */
+.stat-card strong {
+  font-size: 2.2rem;
+  font-weight: 700;
+  display: block;
+  line-height: 1.3;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* 精致的蓝色渐变 */
+  background: linear-gradient(135deg, 
+    #93c5fd 0%,      /* 优雅浅蓝 */
+    #3b82f6 50%,     /* 主蓝色 */
+    #1d4ed8 100%);   /* 深蓝点缀 */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  position: relative;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+/* 数字下方的微装饰线 */
+.stat-card strong::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(59, 130, 246, 0.5), 
+    transparent);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover strong {
+  font-size: 2.3rem;
+  background: linear-gradient(135deg, 
+    #bfdbfe 0%,      /* 更亮的蓝色 */
+    #60a5fa 50%, 
+    #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-card:hover strong::after {
+  width: 60%;
+  opacity: 0.8;
+  background: linear-gradient(90deg, 
+    transparent, 
+    #3b82f6, 
+    transparent);
+}
+
+/* Form */
+#formSection, 
+#editFormSection .settings-card {
+  background: linear-gradient(145deg, #0a0e17, #070a10);
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  padding: 2.5rem; /* 增加内边距，创造对称边缘 */
+  margin-top: 2.5rem;
+}
+
+/* 表单网格布局 - 在容器内居中 */
+#tradeForm {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.6rem;
+  align-items: start;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* 第二排 - 保持3等分 */
+#tradeForm .row2 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+/* 第三排 - Notes和按钮布局 */
+#tradeForm .row3 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.6rem;
+  align-items: start;
+  margin-top: 0.5rem; /* 与上面保持距离 */
+}
+
+/* 统一输入框样式 - 带内部留白 */
+#tradeForm input,
+#tradeForm select,
+#tradeForm textarea,
+#editTradeForm input,
+#editTradeForm select,
+#editTradeForm textarea {
+  /* 高级深色背景 */
+  background: rgba(10, 14, 23, 0.95);
+  border: 1.5px solid rgba(59, 130, 246, 0.18);
+  color: #e2e8f0;
+  
+  /* 对称的尺寸和内边距 */
+  height: 56px; /* 稍微增高 */
+  padding: 0 1.3rem;
+  border-radius: 14px; /* 圆角更大 */
+  font-size: 1.05rem;
+  
+  /* 视觉增强 */
+  box-shadow: 
+    inset 0 3px 8px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* 确保盒子模型一致 */
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* 下拉选择框的特殊样式 */
+#tradeForm select,
+#editTradeForm select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.3rem center;
+  background-size: 20px 20px;
+  padding-right: 3.5rem; /* 为箭头留更多空间 */
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Textarea特殊样式 - 更大的对称空间 */
+#tradeForm textarea,
+#editTradeForm textarea {
+  height: 150px; /* 增高，与容器比例协调 */
+  min-height: 150px;
+  padding: 1.3rem;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: 'Inter', sans-serif;
+  border-radius: 14px;
+}
+
+/* 按钮样式 - 在大容器内对齐 */
+#tradeForm button[type="submit"],
+#editTradeForm button[type="submit"] {
+  background: linear-gradient(145deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  height: 56px; /* 与其他输入框高度一致 */
+  padding: 0 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 
+    0 6px 20px rgba(59, 130, 246, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  align-self: start; /* 顶部对齐 */
+  margin-top: 0;
+}
+
+/* 输入框聚焦效果 - 加强边缘 */
+#tradeForm input:focus,
+#tradeForm select:focus,
+#tradeForm textarea:focus,
+#editTradeForm input:focus,
+#editTradeForm select:focus,
+#editTradeForm textarea:focus {
+  background: rgba(15, 20, 31, 0.98);
+  border-color: #3b82f6;
+  box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, 0.3),
+    inset 0 3px 8px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+/* 输入框悬停效果 */
+#tradeForm input:hover,
+#tradeForm select:hover,
+#tradeForm textarea:hover,
+#editTradeForm input:hover,
+#editTradeForm select:hover,
+#editTradeForm textarea:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  background: rgba(12, 17, 28, 0.98);
+  transform: translateY(-1px);
+  box-shadow: 
+    inset 0 3px 8px rgba(0, 0, 0, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* ============== 编辑表单对称样式 ============== */
+
+#editFormSection .settings-card {
+  padding: 2.8rem; /* 更多内边距 */
+  border-radius: 18px;
+}
+
+#editTradeForm {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.6rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+#editTradeForm .row2 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+#editTradeForm .row3 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.6rem;
+  align-items: start;
+  margin-top: 0.5rem;
+}
+
+/* 编辑表单按钮组 */
+#editTradeForm .row3 > div {
+  display: flex;
+  gap: 1.4rem;
+  align-items: center;
+  align-self: start;
+}
+
+/* 删除按钮样式 */
+#deleteTradeBtn {
+  background: linear-gradient(145deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  height: 56px;
+  padding: 0 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 
+    0 6px 20px rgba(239, 68, 68, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ============== 对称的边缘装饰 ============== */
+
+/* 表单容器内部装饰线 */
+#formSection::before,
+#editFormSection .settings-card::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.08);
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 表单标题区域（如果有的话） */
+.form-header {
+  margin-bottom: 2.2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  position: relative;
+}
+
+.form-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, transparent);
+  border-radius: 3px;
+}
+
+/* ============== 响应式设计 - 保持对称 ============== */
+
+@media (max-width: 1200px) {
+  #formSection,
+  #editFormSection .settings-card {
+    padding: 2.2rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  #tradeForm,
+  #editTradeForm {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  #tradeForm .row2,
+  #editTradeForm .row2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  #tradeForm .row3,
+  #editTradeForm .row3 {
+    grid-template-columns: 1fr;
+  }
+  
+  /* 移动端按钮居中 */
+  #tradeForm button[type="submit"],
+  #editTradeForm button[type="submit"] {
+    justify-self: center;
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  #formSection,
+  #editFormSection .settings-card {
+    padding: 1.8rem;
+    border-radius: 16px;
+    margin-top: 2rem;
+  }
+  
+  #tradeForm,
+  #editTradeForm {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+  }
+  
+  #tradeForm .row2,
+  #editTradeForm .row2 {
+    grid-template-columns: 1fr;
+    gap: 1.4rem;
+    margin-bottom: 1.4rem;
+  }
+  
+  #tradeForm .row3,
+  #editTradeForm .row3 {
+    gap: 1.4rem;
+  }
+  
+  #tradeForm textarea,
+  #editTradeForm textarea {
+    height: 130px;
+    min-height: 130px;
+  }
+  
+  /* 移动端输入框稍微小一点 */
+  #tradeForm input,
+  #tradeForm select,
+  #tradeForm textarea,
+  #editTradeForm input,
+  #editTradeForm select,
+  #editTradeForm textarea {
+    height: 54px;
+    padding: 0 1.2rem;
+    border-radius: 12px;
+  }
+  
+  #tradeForm button[type="submit"],
+  #editTradeForm button[type="submit"],
+  #deleteTradeBtn {
+    height: 54px;
+    border-radius: 12px;
+  }
+  
+  #tradeForm select,
+  #editTradeForm select {
+    background-position: right 1.2rem center;
+    padding-right: 3.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #formSection,
+  #editFormSection .settings-card {
+    padding: 1.5rem;
+    margin: 1rem 0.5rem;
+    border-radius: 14px;
+  }
+  
+  #tradeForm,
+  #editTradeForm {
+    gap: 1.2rem;
+  }
+  
+  #tradeForm .row2,
+  #editTradeForm .row2 {
+    gap: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  
+  #tradeForm .row3,
+  #editTradeForm .row3 {
+    gap: 1.2rem;
+  }
+  
+  #tradeForm input,
+  #tradeForm select,
+  #tradeForm textarea,
+  #editTradeForm input,
+  #editTradeForm select,
+  #editTradeForm textarea {
+    height: 52px;
+    padding: 0 1rem;
+    font-size: 1rem;
+  }
+  
+  #tradeForm textarea,
+  #editTradeForm textarea {
+    height: 120px;
+    min-height: 120px;
+    padding: 1rem;
+  }
+  
+  #tradeForm button[type="submit"],
+  #editTradeForm button[type="submit"],
+  #deleteTradeBtn {
+    height: 52px;
+    padding: 0 1.8rem;
+    font-size: 1.05rem;
+  }
+  
+  #tradeForm select,
+  #editTradeForm select {
+    background-size: 18px 18px;
+    background-position: right 1rem center;
+    padding-right: 3rem;
+  }
+}
+
+/* ============== 额外的对称微调 ============== */
+
+/* 确保表单元素在容器内完美居中 */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+/* 表单字段标签（如果需要） */
+.form-field {
+  position: relative;
+  margin-bottom: 0.3rem;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: #93c5fd;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding-left: 0.5rem;
+}
+
+/* 表单字段之间的垂直节奏 */
+.form-field + .form-field {
+  margin-top: 0.2rem;
+}
+
+/* 装饰性元素，增强对称感 */
+.form-decoration {
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.form-decoration.corner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(59, 130, 246, 0.1);
+}
+
+.form-decoration.corner-tl {
+  top: 15px;
+  left: 15px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 8px 0 0 0;
+}
+
+.form-decoration.corner-br {
+  bottom: 15px;
+  right: 15px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 8px 0;
+}
+
+/* Trades */
+.trade-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-top: 2rem; 
+}
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  background: var(--bg-input); 
+  border-radius: 14px; 
+  overflow: hidden; 
+  transition: background 0.3s;
+}
+th { 
+  background: var(--bg-input); 
+  color: var(--text-accent); 
+  transition: all 0.3s;
+}
+th, td { 
+  padding: 0.7rem; 
+  text-align: center; 
+  border-bottom: 1px solid var(--border-color); 
+  transition: all 0.3s;
+}
+.buy { 
+  color: var(--color-buy); 
+  border: 1px solid var(--color-buy); 
+  box-shadow: 0 0 10px rgba(62, 180, 137, 0.3); 
+  border-radius: 6px; 
+  padding: 0.2rem 0.6rem; 
+  transition: all 0.3s;
+}
+.sell { 
+  color: var(--color-sell); 
+  border: 1px solid var(--color-sell); 
+  box-shadow: 0 0 10px rgba(255, 77, 77, 0.3); 
+  border-radius: 6px; 
+  padding: 0.2rem 0.6rem; 
+  transition: all 0.3s;
+}
+.pnl-positive { 
+  color: var(--color-positive); 
+  transition: color 0.3s;
+}
+.pnl-negative { 
+  color: var(--color-negative); 
+  transition: color 0.3s;
+}
+
+/* Chart */
+#chartSection { 
+  margin-top: 2rem; 
+  background: var(--bg-card); 
+  padding: 1.5rem; 
+  border-radius: 14px; 
+  transition: background 0.3s;
+}
+#chartTopInfo { 
+  display: flex; 
+  justify-content: space-between; 
+  margin-bottom: 1rem; 
+  font-size: 1rem; 
+}
+#chartTopInfo div span { 
+  display: block; 
+  color: var(--chart-text); 
+  font-size: 0.85rem; 
+  transition: color 0.3s;
+}
+#chartTopInfo div strong { 
+  font-size: 1.5rem; 
+  color: var(--chart-color); 
+  transition: color 0.3s;
+}
+#plChart { 
+  height: 350px !important; 
+}
+
+/* ============== 编辑/删除按钮样式 ============== */
+.edit-btn, .delete-btn {
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 0 0.2rem;
+  transition: all 0.2s;
+  min-width: 60px;
+}
+
+.edit-btn {
+  background: linear-gradient(145deg, #3eb489, #2d9c6f);
+  color: white;
+  border: 1px solid #2d9c6f;
+}
+
+.edit-btn:hover {
+  background: linear-gradient(145deg, #2d9c6f, #1e7a54);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(62, 180, 137, 0.3);
+}
+
+.delete-btn {
+  background: linear-gradient(145deg, #ff4d4d, #cc0000);
+  color: white;
+  border: 1px solid #cc0000;
+}
+
+.delete-btn:hover {
+  background: linear-gradient(145deg, #cc0000, #990000);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
+}
+
+/* 表格中的按钮容器 */
+td:last-child {
+  white-space: nowrap;
+}
+
+/* 移动端按钮调整 */
+@media (max-width: 768px) {
+  .edit-btn, .delete-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    margin: 0.1rem;
+    display: inline-block;
+    min-width: 50px;
+  }
+  
+  td:last-child {
+    white-space: normal;
+  }
+}
+
+/* Additional Utility Classes */
+.text-accent { color: var(--text-accent); }
+.text-success { color: var(--text-success); }
+.text-error { color: var(--text-error); }
+.bg-card { background: var(--bg-card); }
+.bg-input { background: var(--bg-input); }
+
+/* Theme Transition */
+* {
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+}
+
+/* Settings Page Specific (if needed) */
+.settings-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.settings-card {
+  background: var(--bg-card);
+  border-radius: 18px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stats-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  #tradeForm {
+    grid-template-columns: 1fr;
+  }
+  
+  .row2 {
+    grid-template-columns: 1fr;
+  }
+  
+  #chartTopInfo {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  #topRightActions {
+    position: static;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+/* ============== 交易记录动态动画 ============== */
+
+/* 表格容器动画 */
+#tradeSection table {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+/* 行动画效果 */
+#tradeList tr {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+}
+
+/* 新行添加时的动画 */
+#tradeList tr.new-row {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideInDown 0.5s ease forwards;
+}
+
+/* 行删除时的动画 */
+#tradeList tr.removing {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s ease;
+}
+
+/* 表格行悬停效果增强 */
+#tradeList tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transition: all 0.2s ease;
+}
+
+/* 动画关键帧 */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 折叠/展开按钮动画 */
+#toggleTrades {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+#toggleTrades::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+#toggleTrades:active::after {
+  width: 100px;
+  height: 100px;
+}
+
+/* 表格行交错动画延迟 */
+#tradeList tr:nth-child(1) { animation-delay: 0.05s; }
+#tradeList tr:nth-child(2) { animation-delay: 0.1s; }
+#tradeList tr:nth-child(3) { animation-delay: 0.15s; }
+#tradeList tr:nth-child(4) { animation-delay: 0.2s; }
+#tradeList tr:nth-child(5) { animation-delay: 0.25s; }
+#tradeList tr:nth-child(6) { animation-delay: 0.3s; }
+#tradeList tr:nth-child(7) { animation-delay: 0.35s; }
+#tradeList tr:nth-child(8) { animation-delay: 0.4s; }
+
+/* 编辑/删除按钮动画 */
+.edit-btn, .delete-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.edit-btn::before, .delete-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.edit-btn:hover::before, .delete-btn:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* 表格加载时的骨架屏效果 */
+#tradeList.skeleton tr {
+  position: relative;
+  overflow: hidden;
+}
+
+#tradeList.skeleton tr::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), 
+    transparent);
+  animation: skeletonLoading 1.5s infinite;
+}
+
+@keyframes skeletonLoading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  #tradeList tr {
+    transition: all 0.2s ease;
+  }
+  
+  #tradeList tr:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* ============== 存款/取款模态框样式 ============== */
+
+/* 模态框遮罩层 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 模态框容器 */
+.modal-container {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  animation: slideUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 模态框头部 */
+.modal-header {
+  padding: 1.8rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #3eb489);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 2rem;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  transform: rotate(90deg);
+}
+
+/* 模态框主体 */
+.modal-body {
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.8rem;
+}
+
+.form-group label {
+  display: block;
+  color: #e2e8f0;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+  padding-left: 4px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(30, 41, 59, 1);
+  box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.modal-input::placeholder {
+  color: #64748b;
+}
+
+.modal-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 1rem 1.2rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s;
+  resize: vertical;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+}
+
+.modal-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: rgba(30, 41, 59, 1);
+  box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 模态框底部 */
+.modal-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.modal-btn {
+  padding: 0.9rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 120px;
+}
+
+.modal-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.modal-btn.primary {
+  background: linear-gradient(135deg, #3b82f6, #3eb489);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.modal-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.modal-btn.primary:active {
+  transform: translateY(0);
+}
+
+/* 模态框类型样式 */
+.deposit-modal .modal-header h2 {
+  background: linear-gradient(135deg, #10b981, #3eb489);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.deposit-modal .modal-btn.primary {
+  background: linear-gradient(135deg, #10b981, #3eb489);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.withdrawal-modal .modal-header h2 {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.withdrawal-modal .modal-btn.primary {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .modal-container {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .modal-btn {
+    width: 100%;
+  }
+}
+
+/* 交易历史中的存款/取款样式 */
+.deposit-trade {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.withdrawal-trade {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* 增强存款/取款在表格中的显示 */
+.balance-transaction {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-block;
+}
+
+.balance-transaction.deposit {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.balance-transaction.withdrawal {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}

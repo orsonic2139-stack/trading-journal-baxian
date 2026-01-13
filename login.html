@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Journal | Login</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 背景效果 */
+    .bg-effects {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .bg-glow {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      border-radius: 50%;
+      filter: blur(150px);
+      opacity: 0.15;
+      animation: floatGlow 20s ease-in-out infinite alternate;
+    }
+
+    .glow-1 {
+      background: radial-gradient(circle, #3b82f6, transparent 70%);
+      top: -300px;
+      right: -200px;
+      animation-delay: 0s;
+    }
+
+    .glow-2 {
+      background: radial-gradient(circle, #3eb489, transparent 70%);
+      bottom: -300px;
+      left: -200px;
+      animation-delay: 5s;
+    }
+
+    @keyframes floatGlow {
+      0% {
+        transform: translate(0, 0) scale(1);
+      }
+      100% {
+        transform: translate(50px, 50px) scale(1.1);
+      }
+    }
+
+    /* 登录容器 */
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      perspective: 1000px;
+    }
+
+    .login-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(59, 130, 246, 0.5), 
+        rgba(62, 180, 137, 0.5), 
+        transparent);
+    }
+
+    .login-card:hover {
+      transform: translateY(-5px) rotateX(2deg);
+      box-shadow: 
+        0 30px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    /* 品牌区域 */
+    .brand-section {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+
+    .logo-container {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+
+    .logo-icon {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #3b82f6 0%, #3eb489 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: white;
+      box-shadow: 
+        0 10px 30px rgba(59, 130, 246, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+      transform: rotate(-5deg);
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% {
+        transform: translateY(0) rotate(-5deg);
+      }
+      50% {
+        transform: translateY(-10px) rotate(-5deg);
+      }
+    }
+
+    .brand-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .brand-subtitle {
+      color: #94a3b8;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+    }
+
+    /* 标签页切换 */
+    .login-tabs {
+      display: flex;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(62, 180, 137, 0.15) 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-btn.active::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #3b82f6, #3eb489);
+    }
+
+    .tab-btn:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+    }
+
+    /* 表单样式 */
+    .login-form {
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .login-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      color: #e2e8f0;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+      padding-left: 4px;
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 1.1rem;
+      z-index: 1;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3.2rem;
+      background: rgba(30, 41, 59, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #e2e8f0;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(30, 41, 59, 1);
+      box-shadow: 
+        0 0 0 3px rgba(59, 130, 246, 0.2),
+        inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: #64748b;
+    }
+
+    /* 密码眼睛图标 */
+    .password-toggle {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 4px;
+      transition: color 0.2s;
+      z-index: 2;
+    }
+
+    .password-toggle:hover {
+      color: #94a3b8;
+    }
+
+    /* 记住我 & 忘记密码 */
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #94a3b8;
+      gap: 8px;
+    }
+
+    .custom-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .custom-checkbox.checked {
+      background: #3b82f6;
+      border-color: #3b82f6;
+    }
+
+    .custom-checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .forgot-password {
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .forgot-password:hover {
+      color: #60a5fa;
+      text-decoration: underline;
+    }
+
+    /* 提交按钮 */
+    .submit-btn {
+      width: 100%;
+      padding: 1.1rem;
+      background: linear-gradient(135deg, #3b82f6 0%, #3eb489 100%);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+      transition: left 0.5s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 10px 25px rgba(59, 130, 246, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .submit-btn:hover::before {
+      left: 100%;
+    }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 错误和成功消息 */
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      animation: slideDown 0.3s ease;
+    }
+
+    .success-message {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: #34d399;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 分隔线 */
+    .divider {
+      text-align: center;
+      margin: 2rem 0;
+      position: relative;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 45%;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider::before {
+      left: 0;
+    }
+
+    .divider::after {
+      right: 0;
+    }
+
+    /* 底部链接 */
+    .login-footer {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .footer-link {
+      color: #3b82f6;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: #60a5fa;
+      text-decoration: underline;
+    }
+
+    /* 加载状态 */
+    .loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 24px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .login-card {
+        padding: 2.5rem 2rem;
+      }
+      
+      .brand-title {
+        font-size: 1.8rem;
+      }
+      
+      .logo-container {
+        width: 70px;
+        height: 70px;
+      }
+      
+      .logo-icon {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+      }
+      
+      .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .forgot-password {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景效果 -->
+  <div class="bg-effects">
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+  </div>
+
+  <!-- 登录容器 -->
+  <div class="login-container">
+    <div class="login-card">
+      <!-- 品牌区域 -->
+      <div class="brand-section">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+        </div>
+        <h1 class="brand-title">Trading Journal</h1>
+        <p class="brand-subtitle">Professional Trading Analytics</p>
+      </div>
+
+      <!-- 标签页切换 -->
+      <div class="login-tabs">
+        <button class="tab-btn active" data-tab="login">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+        <button class="tab-btn" data-tab="signup">
+          <i class="fas fa-user-plus"></i> Sign Up
+        </button>
+      </div>
+
+      <!-- 登录表单 -->
+      <form id="loginForm" class="login-form active">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-with-icon">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="loginEmail" class="form-input" placeholder="your.email@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
+            <button type="button" class="password-toggle" id="loginTogglePassword">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-options">
+          <label class="checkbox-container" id="rememberMe">
+            <div class="custom-checkbox"></div>
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="forgot-password">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="submit-btn" id="loginSubmit">
+          <span id="loginBtnText">Sign In</span>
+          <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+        </button>
+
+        <div id="loginError" class="error-message" style="display: none;">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="loginErrorMessage"></span>
+        </div>
+      </form>
+
+      <!-- 注册表单 -->
+      <form id="signupForm" class="login-form">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <div class="input-with-icon">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="signupEmail" class="form-input" placeholder="your.email@example.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="signupPassword" class="form-input" placeholder="At least 6 characters" required>
+            <button type="button" class="password-toggle" id="signupTogglePassword">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div class="input-with-icon">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="signupConfirmPassword" class="form-input" placeholder="Confirm your password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="signupSubmit">
+          <span id="signupBtnText">Create Account</span>
+          <i class="fas fa-user-plus" style="margin-left: 8px;"></i>
+        </button>
+
+        <div id="signupError" class="error-message" style="display: none;">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="signupErrorMessage"></span>
+        </div>
+
+        <div id="signupSuccess" class="success-message" style="display: none;">
+          <i class="fas fa-check-circle"></i>
+          <span id="signupSuccessMessage"></span>
+        </div>
+      </form>
+
+      <!-- 分隔线 -->
+      <div class="divider">OR</div>
+
+      <!-- 快速演示按钮 -->
+      <button id="demoLogin" class="submit-btn" style="background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);">
+        <i class="fas fa-rocket" style="margin-right: 8px;"></i>
+        Try Demo Account
+      </button>
+
+      <!-- 底部链接 -->
+      <div class="login-footer">
+        <p>By signing in, you agree to our <a href="#" class="footer-link">Terms of Service</a> and <a href="#" class="footer-link">Privacy Policy</a></p>
+        <p style="margin-top: 0.5rem;">
+          Need help? <a href="#" class="footer-link">Contact Support</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 加载遮罩 -->
+  <div id="loadingOverlay" class="loading" style="display: none;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- 引入脚本 -->
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

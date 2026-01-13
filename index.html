@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Trading Journal</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <nav id="sidebar" class="sidebar">
+    <ul>
+      <li><a href="index.html" data-i18n="dashboard">Dashboard</a></li>
+      <li><a href="reports.html" data-i18n="reports">Reports</a></li>
+      <li><a href="settings.html" data-i18n="settings">Settings</a></li>
+    </ul>
+  </nav>
+
+  <!-- Page Content -->
+  <div id="pageContent" class="page-content">
+
+    <!-- Header -->
+    <header>
+      <button id="hamburgerBtn">☰</button>
+      <h1 data-i18n="trading_journal">Trading Journal</h1>
+      <div id="topRightActions">
+        <span id="topBalance">$0.00</span>
+        <span id="userEmail" style="color: #818cf8; margin-right: 10px; font-size: 0.9rem;"></span>
+        <button class="balance-btn" data-type="Deposit" data-i18n="deposit">Deposit</button>
+        <button class="balance-btn" data-type="Withdrawal" data-i18n="withdrawal">Withdrawal</button>
+        <button id="logoutBtn" class="balance-btn" style="background: linear-gradient(145deg, #ff4d4d, #cc0000); color: white;" data-i18n="logout">Logout</button>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- Stats Dashboard -->
+      <section id="statsSection" class="stats-dashboard">
+        <div class="stat-card">
+          <span data-i18n="total_trades">Total Trades</span>
+          <strong id="totalTrades">0</strong>
+        </div>
+        <div class="stat-card">
+          <span data-i18n="winning_trades">Winning Trades</span>
+          <strong id="winningTrades">0</strong>
+        </div>
+        <div class="stat-card">
+          <span data-i18n="win_rate">Win Rate</span>
+          <strong id="winRate">0%</strong>
+        </div>
+        <div class="stat-card">
+          <span data-i18n="avg_pl">Average P/L</span>
+          <strong id="avgPnl">0.00</strong>
+        </div>
+        <div class="stat-card">
+          <span data-i18n="best_profit">Best Profit</span>
+          <strong id="maxPnl">0.00</strong>
+        </div>
+        <div class="stat-card">
+          <span data-i18n="biggest_loss">Biggest Loss</span>
+          <strong id="minPnl">0.00</strong>
+        </div>
+      </section>
+
+      <!-- Trade Form -->
+      <section id="formSection">
+        <form id="tradeForm">
+          <input type="date" id="date" required>
+          <input type="text" id="symbol" placeholder="Symbol" data-i18n-placeholder="symbol">
+          <select id="direction">
+            <option value="Buy" data-i18n="buy">Buy</option>
+            <option value="Sell" data-i18n="sell">Sell</option>
+          </select>
+          <input type="number" id="lotSize" step="0.01" placeholder="Lot Size" data-i18n-placeholder="lot_size">
+          <div class="row2">
+            <input type="number" id="entry" step="0.0001" placeholder="Entry" data-i18n-placeholder="entry">
+            <input type="number" id="exit" step="0.0001" placeholder="Exit" data-i18n-placeholder="exit">
+            <input type="number" id="pnlAmount" step="0.01" placeholder="P/L" required data-i18n-placeholder="profit_loss">
+          </div>
+          <div class="row3">
+            <textarea id="notes" placeholder="Notes" data-i18n-placeholder="notes"></textarea>
+            <button type="submit" data-i18n="add_trade">Add Trade</button>
+          </div>
+        </form>
+      </section>
+
+<!-- Chart Section -->
+      <section id="chartSection">
+        <div id="chartTopInfo">
+          <div>
+            <span data-i18n="initial_balance">Initial Balance</span>
+            <strong id="initialBalance">$0.00</strong>
+          </div>
+          <div>
+            <span data-i18n="current_pl">Current P&L</span>
+            <strong id="currentPnl" class="pnl-positive">$0.00</strong>
+          </div>
+          <div>
+            <span data-i18n="account_email">Account Email</span>
+            <strong id="accountEmail" style="color: #818cf8; font-size: 0.9rem;">Not logged in</strong>
+          </div>
+        </div>
+        <canvas id="plChart"></canvas>
+      </section>
+
+      <!-- Trade History -->
+      <section id="tradeSection">
+        <div class="trade-header">
+          <h2 data-i18n="operation_history">Operation History</h2>
+          <button id="toggleTrades" data-i18n="hide">Hide</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="date">Date</th>
+              <th data-i18n="symbol">Symbol</th>
+              <th data-i18n="direction">Direction</th>
+              <th data-i18n="lot">Lot</th>
+              <th data-i18n="entry">Entry</th>
+              <th data-i18n="exit">Exit</th>
+              <th data-i18n="profit_loss">P/L</th>
+              <th data-i18n="notes">Notes</th>
+              <th data-i18n="actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tradeList"></tbody>
+        </table>
+      </section>
+
+      <!-- Edit Form Section (新增) -->
+      <section id="editFormSection" style="display: none; margin-top: 2rem;">
+        <div class="trade-header">
+          <h2 data-i18n="edit_trade">Edit Trade</h2>
+          <button id="cancelEditBtn" class="balance-btn" style="background: #818cf8;" data-i18n="cancel">Cancel</button>
+        </div>
+        
+        <div class="settings-card">
+          <form id="editTradeForm">
+            <input type="hidden" id="editId">
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1rem;">
+              <input type="date" id="editDate" required>
+              <input type="text" id="editSymbol" placeholder="Symbol" data-i18n-placeholder="symbol">
+              <select id="editDirection">
+                <option value="Buy" data-i18n="buy">Buy</option>
+                <option value="Sell" data-i18n="sell">Sell</option>
+              </select>
+              <input type="number" id="editLotSize" step="0.01" placeholder="Lot Size" data-i18n-placeholder="lot_size">
+            </div>
+            
+            <div class="row2" style="margin-bottom: 1rem;">
+              <input type="number" id="editEntry" step="0.0001" placeholder="Entry" data-i18n-placeholder="entry">
+              <input type="number" id="editExit" step="0.0001" placeholder="Exit" data-i18n-placeholder="exit">
+              <input type="number" id="editPnlAmount" step="0.01" placeholder="P/L" required data-i18n-placeholder="profit_loss">
+            </div>
+            
+            <div class="row3">
+              <textarea id="editNotes" placeholder="Notes" data-i18n-placeholder="notes" style="height: 100px;"></textarea>
+              <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button type="submit" class="balance-btn" data-i18n="save_changes">Save Changes</button>
+                <button type="button" id="deleteTradeBtn" class="balance-btn" style="background: #ff4d4d;" data-i18n="delete">Delete Trade</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      <p>© Trading Journal developed by orsonbb</p>
+    </footer>
+
+  </div>
+
+  <!-- 脚本 -->
+  <script src="language.js"></script>
+  <script src="script.js"></script>
+  
+  <!-- ============== 内联语言系统 ============== -->
+  <script>
+  const translations = {
+    en: {
+      "dashboard": "Dashboard",
+      "reports": "Reports",
+      "settings": "Settings",
+      "trading_journal": "Trading Journal",
+      "deposit": "Deposit",
+      "withdrawal": "Withdrawal",
+      "logout": "Logout",
+      "total_trades": "Total Trades",
+      "winning_trades": "Winning Trades",
+      "win_rate": "Win Rate",
+      "avg_pl": "Average P/L",
+      "best_profit": "Best Profit",
+      "biggest_loss": "Biggest Loss",
+      "symbol": "Symbol",
+      "buy": "Buy",
+      "sell": "Sell",
+      "lot_size": "Lot Size",
+      "entry": "Entry",
+      "exit": "Exit",
+      "profit_loss": "P/L",
+      "notes": "Notes",
+      "add_trade": "Add Trade",
+      "operation_history": "Operation History",
+      "date": "Date",
+      "direction": "Direction",
+      "lot": "Lot",
+      "initial_balance": "Initial Balance",
+      "current_pl": "Current P&L",
+      "account_email": "Account Email",
+      "hide": "Hide",
+      "show_all": "Show All",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "edit_trade": "Edit Trade",
+      "save_changes": "Save Changes",
+      "cancel": "Cancel",
+      "confirm_delete": "Are you sure you want to delete this trade?",
+      "trade_deleted": "Trade deleted successfully",
+      "trade_updated": "Trade updated successfully"
+    },
+    
+    zh: {
+      "dashboard": "仪表盘",
+      "reports": "报告",
+      "settings": "设置",
+      "trading_journal": "交易日志",
+      "deposit": "入金",
+      "withdrawal": "出金",
+      "logout": "退出登录",
+      "total_trades": "总交易数",
+      "winning_trades": "盈利交易",
+      "win_rate": "胜率",
+      "avg_pl": "平均盈亏",
+      "best_profit": "最大盈利",
+      "biggest_loss": "最大亏损",
+      "symbol": "交易品种",
+      "buy": "买入",
+      "sell": "卖出",
+      "lot_size": "手数",
+      "entry": "进场价",
+      "exit": "出场价",
+      "profit_loss": "盈亏",
+      "notes": "备注",
+      "add_trade": "添加交易",
+      "operation_history": "交易历史",
+      "date": "日期",
+      "direction": "方向",
+      "lot": "手数",
+      "initial_balance": "初始余额",
+      "current_pl": "当前盈亏",
+      "account_email": "账户邮箱",
+      "hide": "隐藏",
+      "show_all": "显示全部",
+      "actions": "操作",
+      "edit": "编辑",
+      "delete": "删除",
+      "edit_trade": "编辑交易",
+      "save_changes": "保存更改",
+      "cancel": "取消",
+      "confirm_delete": "确定要删除这笔交易吗？",
+      "trade_deleted": "交易删除成功",
+      "trade_updated": "交易更新成功"
+    }
+  };
+
+  function changeLanguage(lang) {
+    console.log('切换到语言:', lang);
+    
+    if (!translations[lang]) {
+      console.log('不支持的语言:', lang);
+      return;
+    }
+    
+    // 更新文本元素
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (translations[lang][key]) {
+        element.textContent = translations[lang][key];
+      }
+    });
+    
+    // 更新placeholder
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+      const key = element.getAttribute('data-i18n-placeholder');
+      if (translations[lang][key] && element.placeholder !== undefined) {
+        element.placeholder = translations[lang][key];
+      }
+    });
+    
+    // 更新下拉选项
+    document.querySelectorAll('option[data-i18n]').forEach(option => {
+      const key = option.getAttribute('data-i18n');
+      if (translations[lang][key]) {
+        option.textContent = translations[lang][key];
+      }
+    });
+    
+    // 保存语言设置
+    localStorage.setItem('language', lang);
+    console.log('语言已保存:', lang);
+  }
+
+  // 初始化语言
+  function initLanguage() {
+    const savedLang = localStorage.getItem('language') || 'en';
+    console.log('初始化语言:', savedLang);
+    changeLanguage(savedLang);
+  }
+
+  // 全局暴露函数
+  window.changeLanguage = changeLanguage;
+  window.initLanguage = initLanguage;
+  window.translations = translations;
+  
+  console.log('内联语言系统已加载');
+  
+  // 页面加载时自动初始化
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM已加载，初始化语言...');
+    initLanguage();
+  });
+  </script>
+  
+  <!-- 编辑/删除功能脚本 (新增) -->
+  <script>
+  // 编辑/删除功能
+  let editingTradeId = null;
+  
+  // 显示编辑表单
+  function showEditForm(trade) {
+    console.log('编辑交易:', trade);
+    
+    // 填充表单数据
+    document.getElementById('editId').value = trade.id;
+    document.getElementById('editDate').value = trade.date;
+    document.getElementById('editSymbol').value = trade.symbol || '';
+    document.getElementById('editDirection').value = trade.direction;
+    document.getElementById('editLotSize').value = trade.lot_size || '';
+    document.getElementById('editEntry').value = trade.entry || '';
+    document.getElementById('editExit').value = trade.exit || '';
+    document.getElementById('editPnlAmount').value = trade.pnl_amount || '';
+    document.getElementById('editNotes').value = trade.notes || '';
+    
+    // 显示编辑表单，隐藏其他部分
+    document.getElementById('editFormSection').style.display = 'block';
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('tradeSection').style.display = 'none';
+    document.getElementById('chartSection').style.display = 'none';
+    
+    editingTradeId = trade.id;
+  }
+  
+  // 隐藏编辑表单
+  function hideEditForm() {
+    document.getElementById('editFormSection').style.display = 'none';
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('tradeSection').style.display = 'block';
+    document.getElementById('chartSection').style.display = 'block';
+    editingTradeId = null;
+  }
+  
+  // 处理编辑表单提交
+  document.getElementById('editTradeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const session = await window.client?.auth.getSession();
+    if (!session?.data?.session) {
+      alert('请先登录');
+      return;
+    }
+    
+    const payload = {
+      date: document.getElementById('editDate').value,
+      symbol: document.getElementById('editSymbol').value,
+      direction: document.getElementById('editDirection').value,
+      lot_size: parseFloat(document.getElementById('editLotSize').value) || 0,
+      entry: parseFloat(document.getElementById('editEntry').value) || 0,
+      exit: parseFloat(document.getElementById('editExit').value) || 0,
+      pnl_amount: parseFloat(document.getElementById('editPnlAmount').value) || 0,
+      notes: document.getElementById('editNotes').value,
+      user_id: session.data.session.user.id
+    };
+    
+    const tradeId = document.getElementById('editId').value;
+    
+    try {
+      const { error } = await window.client
+        .from('trades')
+        .update(payload)
+        .eq('id', tradeId)
+        .eq('user_id', session.data.session.user.id);
+      
+      if (error) throw error;
+      
+      alert('交易更新成功');
+      hideEditForm();
+      
+      // 刷新交易列表
+      if (window.fetchTrades) {
+        window.fetchTrades();
+      }
+    } catch (error) {
+      console.error('更新失败:', error);
+      alert('更新失败: ' + error.message);
+    }
+  });
+  
+  // 删除交易
+  document.getElementById('deleteTradeBtn').addEventListener('click', async function() {
+    const tradeId = document.getElementById('editId').value;
+    const lang = localStorage.getItem('language') || 'en';
+    const confirmMsg = lang === 'zh' ? '确定要删除这笔交易吗？' : 'Are you sure you want to delete this trade?';
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const session = await window.client?.auth.getSession();
+    if (!session?.data?.session) {
+      alert('请先登录');
+      return;
+    }
+    
+    try {
+      const { error } = await window.client
+        .from('trades')
+        .delete()
+        .eq('id', tradeId)
+        .eq('user_id', session.data.session.user.id);
+      
+      if (error) throw error;
+      
+      const successMsg = lang === 'zh' ? '交易删除成功' : 'Trade deleted successfully';
+      alert(successMsg);
+      hideEditForm();
+      
+      // 刷新交易列表
+      if (window.fetchTrades) {
+        window.fetchTrades();
+      }
+    } catch (error) {
+      console.error('删除失败:', error);
+      alert('删除失败: ' + error.message);
+    }
+  });
+  
+  // 取消编辑
+  document.getElementById('cancelEditBtn').addEventListener('click', hideEditForm);
+  
+  // 暴露函数给全局
+  window.showEditForm = showEditForm;
+  window.hideEditForm = hideEditForm;
+  </script>
+
+<!-- ============== 漂浮粒子背景 ============== -->
+  <div id="floating-particles"></div>
+
+  <style>
+  /* 确保可见的粒子 */
+  #floating-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #3b82f6;
+    border-radius: 50%;
+    box-shadow: 
+      0 0 10px #3b82f6,
+      0 0 20px #3b82f6;
+    animation: floatUp 15s linear infinite;
+    opacity: 0.8;
+  }
+
+  @keyframes floatUp {
+    0% {
+      transform: translateY(100vh) translateX(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.8;
+    }
+    90% {
+      opacity: 0.8;
+    }
+    100% {
+      transform: translateY(-100px) translateX(100px);
+      opacity: 0;
+    }
+  }
+    </style>
+
+  <script>
+  // 简单的初始化检查
+  console.log('页面脚本加载完成');
+  </script>
+
+    <!-- 背景效果 -->
+  <div id="background-effects">
+    <div id="blue-glow"></div>
+    <div id="floating-particles"></div>
+  </div>
+
+  <style>
+  /* 背景效果样式 */
+  #background-effects {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* 简单可见的粒子 */
+  .particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #3b82f6;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #3b82f6;
+    animation: floatUp 15s linear infinite;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(100vh); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px); opacity: 0; }
+  }
+  </style>
+
+  <script>
+  console.log('创建背景效果...');
+  
+  // 简单创建粒子
+  const container = document.getElementById('floating-particles');
+  if (container) {
+    for (let i = 0; i < 30; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'particle';
+      dot.style.left = `${Math.random() * 100}%`;
+      dot.style.animationDelay = `${Math.random() * 10}s`;
+      dot.style.animationDuration = `${10 + Math.random() * 15}s`;
+      container.appendChild(dot);
+    }
+    console.log('已创建30个粒子');
+  }
+  </script>
+
+<!-- 缓慢蓝色光影 -->
+  <div id="blue-glow-effects"></div>
+
+  <style>
+  /* 蓝色光影 */
+  #blue-glow-effects {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -2;
+  }
+
+  /* 光影点 */
+  .blue-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    animation: glowMove 40s ease-in-out infinite;
+    opacity: 0.25;
+  }
+
+  /* 光影1 - 左上角 */
+  .glow-1 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, 
+      rgba(59, 130, 246, 0.3) 0%,
+      rgba(59, 130, 246, 0.15) 30%,
+      transparent 70%
+    );
+    top: -100px;
+    left: -100px;
+    animation-delay: 0s;
+  }
+
+  /* 光影2 - 右下角 */
+  .glow-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle,
+      rgba(96, 165, 250, 0.25) 0%,
+      rgba(96, 165, 250, 0.12) 30%,
+      transparent 70%
+    );
+    bottom: -80px;
+    right: -80px;
+    animation-delay: 20s;
+  }
+
+  /* 光影3 - 中间 */
+  .glow-3 {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle,
+      rgba(147, 197, 253, 0.2) 0%,
+      rgba(147, 197, 253, 0.1) 30%,
+      transparent 70%
+    );
+    top: 40%;
+    left: 60%;
+    animation-delay: 10s;
+  }
+
+  /* 光影动画 - 非常缓慢 */
+  @keyframes glowMove {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.2;
+    }
+    25% {
+      transform: translate(40px, 20px) scale(1.05);
+      opacity: 0.3;
+    }
+    50% {
+      transform: translate(-30px, 30px) scale(0.95);
+      opacity: 0.25;
+    }
+    75% {
+      transform: translate(20px, -20px) scale(1.03);
+      opacity: 0.28;
+    }
+  }
+
+  /* 调整粒子颜色为蓝色 */
+  .simple-particle {
+    background: #3b82f6 !important;
+    box-shadow: 
+      0 0 20px #3b82f6,
+      0 0 40px rgba(59, 130, 246, 0.5) !important;
+  }
+  </style>
+
+  <script>
+  // 创建蓝色光影
+  function createBlueGlow() {
+    const container = document.getElementById('blue-glow-effects');
+    if (!container) return;
+    
+    container.innerHTML = `
+      <div class="blue-glow glow-1"></div>
+      <div class="blue-glow glow-2"></div>
+      <div class="blue-glow glow-3"></div>
+    `;
+    
+    console.log('蓝色光影已创建');
+    
+    // 把红色粒子改成蓝色
+    const particles = document.querySelectorAll('.simple-particle');
+    particles.forEach(p => {
+      p.style.background = '#3b82f6';
+      p.style.boxShadow = '0 0 25px #3b82f6, 0 0 50px rgba(59, 130, 246, 0.6)';
+    });
+  }
+
+  // 页面加载后创建
+  setTimeout(createBlueGlow, 500);
+  </script>
+
+<!-- 强制可见的光影测试 -->
+<div style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+">
+  <!-- 明显蓝色光晕1 -->
+  <div style="
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, 
+      rgba(0, 100, 255, 0.5) 0%,
+      rgba(0, 100, 255, 0.3) 30%,
+      transparent 70%
+    );
+    filter: blur(60px);
+    top: 20%;
+    left: 15%;
+    animation: glowMove1 30s ease-in-out infinite;
+  "></div>
+  
+  <!-- 明显蓝色光晕2 -->
+  <div style="
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+      rgba(100, 150, 255, 0.4) 0%,
+      rgba(100, 150, 255, 0.2) 30%,
+      transparent 70%
+    );
+    filter: blur(50px);
+    bottom: 15%;
+    right: 10%;
+    animation: glowMove2 40s ease-in-out infinite;
+    animation-delay: 15s;
+  "></div>
+</div>
+
+<style>
+@keyframes glowMove1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  33% {
+    transform: translate(50px, 30px) scale(1.1);
+    opacity: 0.8;
+  }
+  66% {
+    transform: translate(-30px, 40px) scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+@keyframes glowMove2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  25% {
+    transform: translate(-40px, 20px) scale(1.05);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(30px, -30px) scale(0.95);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translate(20px, 40px) scale(1.08);
+    opacity: 0.65;
+  }
+}
+
+/* 确保在最底层 */
+div[style*="position: fixed"][style*="top: 0"] {
+  z-index: -2 !important;
+}
+</style>
+
+<script>
+console.log('=== 光影测试 ===');
+console.log('应该看到两个明显的蓝色光晕');
+
+// 检查是否创建
+const glows = document.querySelectorAll('div[style*="radial-gradient"]');
+console.log('找到的光影数量:', glows.length);
+
+if (glows.length === 0) {
+  console.log('警告：没找到光影元素');
+  
+  // 强制创建一个明显的测试
+  const testGlow = document.createElement('div');
+  testGlow.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 300px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, red, yellow, transparent);
+    filter: blur(50px);
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.7;
+  `;
+  document.body.appendChild(testGlow);
+  console.log('已创建红色测试光晕');
+}
+</script>
+
+<!-- 蓝色仙气效果 -->
+<div id="fairy-mist"></div>
+
+<style>
+/* 仙气容器 */
+#fairy-mist {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -9999;
+  pointer-events: none;
+  overflow: hidden;
+  filter: contrast(120%) brightness(110%);
+}
+
+/* 仙气光晕 */
+.mist-glow {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, 
+    rgba(173, 216, 230, 0.4) 0%,       /* 淡蓝色光心 */
+    rgba(135, 206, 235, 0.25) 25%,     /* 浅蓝 */
+    rgba(70, 130, 180, 0.15) 50%,      /* 钢蓝 */
+    rgba(30, 144, 255, 0.05) 70%,      /* 道奇蓝 */
+    transparent 90%
+  );
+  filter: blur(35px);
+  opacity: 0;
+  mix-blend-mode: screen; /* 叠加混合模式，更梦幻 */
+  animation: fairy-float ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* 仙气光晕2 - 更浅的层次 */
+.mist-glow-soft {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 70% 70%, 
+    rgba(224, 255, 255, 0.3) 0%,       /* 淡青色 */
+    rgba(175, 238, 238, 0.2) 30%,
+    rgba(135, 206, 250, 0.1) 60%,
+    transparent 85%
+  );
+  filter: blur(40px);
+  opacity: 0;
+  mix-blend-mode: overlay;
+  animation: fairy-float-soft ease-in-out infinite;
+}
+
+/* 仙气飘浮动画 - 轻柔飘逸 */
+@keyframes fairy-float {
+  0% {
+    transform: 
+      translateY(110vh) 
+      translateX(var(--start-x))
+      rotate(0deg)
+      scale(0.3);
+    opacity: 0;
+  }
+  15% {
+    opacity: var(--opacity);
+    transform: 
+      translateY(85vh) 
+      translateX(calc(var(--start-x) + var(--drift-x1)))
+      rotate(5deg)
+      scale(0.6);
+  }
+  40% {
+    opacity: calc(var(--opacity) * 0.8);
+    transform: 
+      translateY(50vh) 
+      translateX(calc(var(--start-x) + var(--drift-x2)))
+      rotate(10deg)
+      scale(0.9);
+  }
+  65% {
+    opacity: calc(var(--opacity) * 0.6);
+    transform: 
+      translateY(25vh) 
+      translateX(calc(var(--start-x) + var(--drift-x3)))
+      rotate(15deg)
+      scale(1.1);
+  }
+  85% {
+    opacity: calc(var(--opacity) * 0.3);
+    transform: 
+      translateY(5vh) 
+      translateX(calc(var(--start-x) + var(--drift-x4)))
+      rotate(20deg)
+      scale(1.4);
+  }
+  100% {
+    transform: 
+      translateY(-10vh) 
+      translateX(calc(var(--start-x) + var(--drift-x5)))
+      rotate(25deg)
+      scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* 更柔和的副动画 */
+@keyframes fairy-float-soft {
+  0% {
+    transform: 
+      translateY(105vh) 
+      translateX(var(--soft-start-x))
+      scale(0.4);
+    opacity: 0;
+  }
+  20% {
+    opacity: var(--soft-opacity);
+    transform: 
+      translateY(70vh) 
+      translateX(calc(var(--soft-start-x) + var(--soft-drift-x1)))
+      scale(0.7);
+  }
+  50% {
+    opacity: calc(var(--soft-opacity) * 0.7);
+    transform: 
+      translateY(35vh) 
+      translateX(calc(var(--soft-start-x) + var(--soft-drift-x2)))
+      scale(1.0);
+  }
+  80% {
+    opacity: calc(var(--soft-opacity) * 0.4);
+    transform: 
+      translateY(10vh) 
+      translateX(calc(var(--soft-start-x) + var(--soft-drift-x3)))
+      scale(1.3);
+  }
+  100% {
+    transform: 
+      translateY(-5vh) 
+      translateX(calc(var(--soft-start-x) + var(--soft-drift-x4)))
+      scale(1.5);
+    opacity: 0;
+  }
+}
+</style>
+
+<script>
+// 创建蓝色仙气效果
+function createFairyMist() {
+  const container = document.getElementById('fairy-mist');
+  if (!container) {
+    const newContainer = document.createElement('div');
+    newContainer.id = 'fairy-mist';
+    newContainer.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -9999;
+      pointer-events: none;
+      overflow: hidden;
+      filter: contrast(120%) brightness(110%);
+    `;
+    document.body.appendChild(newContainer);
+  }
+  
+  // 清空容器
+  container.innerHTML = '';
+  
+  // 创建主仙气光晕 (8-12个)
+  const mainGlowCount = 8 + Math.floor(Math.random() * 5);
+  
+  for (let i = 0; i < mainGlowCount; i++) {
+    // 主光晕
+    const mainGlow = document.createElement('div');
+    mainGlow.className = 'mist-glow';
+    
+    // 大小 - 仙气般的大小
+    const size = 150 + Math.random() * 100; // 150-250px
+    mainGlow.style.width = `${size}px`;
+    mainGlow.style.height = `${size}px`;
+    
+    // 起始位置 - 在屏幕底部边缘
+    const startX = 10 + Math.random() * 80; // 10-90%
+    
+    // 飘移路径 - 轻柔的S形曲线
+    const drift1 = (Math.random() - 0.5) * 60;
+    const drift2 = drift1 + (Math.random() - 0.5) * 40;
+    const drift3 = drift2 + (Math.random() - 0.5) * 30;
+    const drift4 = drift3 + (Math.random() - 0.5) * 20;
+    const drift5 = drift4 + (Math.random() - 0.5) * 10;
+    
+    // 设置CSS变量
+    mainGlow.style.setProperty('--start-x', `${startX}vw`);
+    mainGlow.style.setProperty('--opacity', 0.25 + Math.random() * 0.15);
+    mainGlow.style.setProperty('--drift-x1', `${drift1}px`);
+    mainGlow.style.setProperty('--drift-x2', `${drift2}px`);
+    mainGlow.style.setProperty('--drift-x3', `${drift3}px`);
+    mainGlow.style.setProperty('--drift-x4', `${drift4}px`);
+    mainGlow.style.setProperty('--drift-x5', `${drift5}px`);
+    
+    // 动画时间 - 非常缓慢，仙气飘飘
+    const duration = 45 + Math.random() * 30; // 45-75秒
+    const delay = Math.random() * 20; // 0-20秒延迟
+    
+    mainGlow.style.animationDuration = `${duration}s`;
+    mainGlow.style.animationDelay = `${delay}s`;
+    
+    // 随机蓝色调 - 仙气的蓝色
+    const blueTypes = [
+      { hue: 195, sat: 40, light: 85 }, // 天蓝
+      { hue: 210, sat: 50, light: 80 }, // 浅蓝
+      { hue: 190, sat: 35, light: 90 }, // 冰蓝
+      { hue: 205, sat: 45, light: 75 }, // 湖蓝
+    ];
+    
+    const blueType = blueTypes[Math.floor(Math.random() * blueTypes.length)];
+    
+    mainGlow.style.background = `
+      radial-gradient(circle at ${30 + Math.random() * 40}% ${30 + Math.random() * 40}%, 
+        hsla(${blueType.hue}, ${blueType.sat}%, ${blueType.light}%, 0.35) 0%,
+        hsla(${blueType.hue}, ${blueType.sat + 10}%, ${blueType.light + 5}%, 0.25) 25%,
+        hsla(${blueType.hue + 15}, ${blueType.sat - 5}%, ${blueType.light - 5}%, 0.15) 50%,
+        hsla(${blueType.hue + 25}, ${blueType.sat - 10}%, ${blueType.light - 10}%, 0.08) 70%,
+        transparent 90%
+      )`;
+    
+    container.appendChild(mainGlow);
+    
+    // 为每个主光晕创建1-2个副光晕
+    const softGlowCount = 1 + Math.floor(Math.random() * 2);
+    
+    for (let j = 0; j < softGlowCount; j++) {
+      const softGlow = document.createElement('div');
+      softGlow.className = 'mist-glow-soft';
+      
+      // 副光晕稍大但更透明
+      const softSize = size * (1.2 + Math.random() * 0.3);
+      softGlow.style.width = `${softSize}px`;
+      softGlow.style.height = `${softSize}px`;
+      
+      // 稍微偏移的位置
+      const softStartX = startX + (Math.random() - 0.5) * 5;
+      
+      // 轻柔的飘移
+      const softDrift1 = drift1 * 0.7 + (Math.random() - 0.5) * 20;
+      const softDrift2 = drift2 * 0.7 + (Math.random() - 0.5) * 15;
+      const softDrift3 = drift3 * 0.7 + (Math.random() - 0.5) * 10;
+      const softDrift4 = drift4 * 0.7 + (Math.random() - 0.5) * 5;
+      
+      softGlow.style.setProperty('--soft-start-x', `${softStartX}vw`);
+      softGlow.style.setProperty('--soft-opacity', 0.15 + Math.random() * 0.1);
+      softGlow.style.setProperty('--soft-drift-x1', `${softDrift1}px`);
+      softGlow.style.setProperty('--soft-drift-x2', `${softDrift2}px`);
+      softGlow.style.setProperty('--soft-drift-x3', `${softDrift3}px`);
+      softGlow.style.setProperty('--soft-drift-x4', `${softDrift4}px`);
+      
+      // 稍慢的动画
+      const softDuration = duration * (1.2 + Math.random() * 0.2);
+      const softDelay = delay + (Math.random() * 5);
+      
+      softGlow.style.animationDuration = `${softDuration}s`;
+      softGlow.style.animationDelay = `${softDelay}s`;
+      
+      container.appendChild(softGlow);
+    }
+  }
+  
+  // 添加静态背景仙气层（轻微波动）
+  const staticMist = document.createElement('div');
+  staticMist.style.cssText = `
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 80%, 
+      rgba(173, 216, 230, 0.08) 0%,
+      rgba(135, 206, 235, 0.04) 30%,
+      transparent 70%
+    );
+    filter: blur(60px);
+    animation: static-pulse 20s ease-in-out infinite alternate;
+  `;
+  
+  container.appendChild(staticMist);
+  
+  // 添加静态脉冲动画
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes static-pulse {
+      0% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.05); }
+      100% { opacity: 0.4; transform: scale(0.98); }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  console.log(`蓝色仙气已创建 - ${mainGlowCount}个主光晕 + 副光晕`);
+}
+
+// 页面加载后创建仙气
+document.addEventListener('DOMContentLoaded', function() {
+  // 延迟创建，确保页面完全加载
+  setTimeout(() => {
+    createFairyMist();
+    
+    // 每70秒刷新一次仙气（保持新鲜感）
+    setInterval(createFairyMist, 70000);
+  }, 800);
+});
+
+// 窗口大小变化时重新创建
+window.addEventListener('resize', function() {
+  setTimeout(createFairyMist, 300);
+});
+</script>
+
+<!-- 存款/取款模态框 -->
+<div id="balanceModal" class="modal-overlay" style="display: none;">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h2 id="modalTitle">Deposit</h2>
+      <button id="closeModal" class="modal-close">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="modalDate">Date</label>
+        <input type="date" id="modalDate" class="modal-input">
+      </div>
+      
+      <div class="form-group">
+        <label for="modalAmount">Amount</label>
+        <input type="number" id="modalAmount" class="modal-input" placeholder="0.00" step="0.01">
+      </div>
+      
+      <div class="form-group">
+        <label for="modalNotes">Notes (Optional)</label>
+        <textarea id="modalNotes" class="modal-textarea" placeholder="Add notes..."></textarea>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button id="cancelModal" class="modal-btn secondary">Cancel</button>
+      <button id="confirmModal" class="modal-btn primary">Confirm</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
