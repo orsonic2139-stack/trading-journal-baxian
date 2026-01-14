@@ -38,6 +38,7 @@ const date = document.getElementById("date");
 const symbol = document.getElementById("symbol");
 const direction = document.getElementById("direction");
 const lotSize = document.getElementById("lotSize");
+const sl = document.getElementById("sl"); // 新增 SL 输入框
 const entry = document.getElementById("entry");
 const exit = document.getElementById("exit");
 const pnlAmount = document.getElementById("pnlAmount");
@@ -63,6 +64,153 @@ function debounce(func, wait) {
     timeout = setTimeout(later, wait);
   };
 }
+
+// ============== 风险回报比计算函数 ==============
+
+function calculateRiskReward(trade) {
+  const entry = parseFloat(trade.entry || 0);
+  const exit = parseFloat(trade.exit || 0);
+  const sl = parseFloat(trade.sl || 0);
+  const pnl = parseFloat(trade.pnl_amount || 0);
+  const direction = trade.direction;
+  
+  // 检查是否有必要的数据
+  if (!entry || entry === 0) {
+    return "N/A";
+  }
+  
+  // 判断交易是盈利还是亏损
+  const isProfit = pnl > 0;
+  
+  // 如果没有Exit，尝试使用PNL计算
+  if (!exit || exit === 0) {
+    if (pnl !== 0) {
+      // 使用PNL反向计算Exit价格
+      let calculatedExit = entry;
+      if (direction === "Buy") {
+        calculatedExit = isProfit ? entry + pnl : entry - Math.abs(pnl);
+      } else if (direction === "Sell") {
+        calculatedExit = isProfit ? entry - pnl : entry + Math.abs(pnl);
+      }
+      return calculateRRFromPrices(entry, calculatedExit, sl, direction, isProfit);
+    }
+    return "N/A";
+  }
+  
+  return calculateRRFromPrices(entry, exit, sl, direction, isProfit);
+}
+
+// 辅助函数：根据价格计算R:R
+function calculateRRFromPrices(entry, exit, sl, direction, isProfit) {
+  // 计算风险（止损距离）
+  let risk = 0;
+  
+  // 如果有止损价，使用止损价计算风险
+  if (sl && sl !== 0) {
+    if (direction === "Buy") {
+      risk = Math.abs(entry - sl); // 买入的风险是入场价与止损价的差
+    } else if (direction === "Sell") {
+      risk = Math.abs(sl - entry); // 卖出的风险是止损价与入场价的差
+    }
+  } else {
+    // 如果没有止损价
+    if (!isProfit) {
+      // 亏损交易：风险是实际亏损金额
+      if (direction === "Buy") {
+        risk = Math.abs(exit - entry);
+      } else if (direction === "Sell") {
+        risk = Math.abs(entry - exit);
+      }
+    } else {
+      // 盈利交易但没有SL：使用合理默认值
+      if (direction === "Buy") {
+        risk = Math.abs(exit - entry) * 0.5;
+      } else if (direction === "Sell") {
+        risk = Math.abs(entry - exit) * 0.5;
+      }
+    }
+  }
+  
+  // 计算回报（盈利或亏损的绝对值）
+  let reward = 0;
+  if (direction === "Buy") {
+    reward = Math.abs(exit - entry);
+  } else if (direction === "Sell") {
+    reward = Math.abs(entry - exit);
+  }
+  
+  // 计算R:R比率
+  if (risk > 0) {
+    const rrRatio = reward / risk;
+    
+    // 如果是亏损交易，显示负的R:R
+    if (!isProfit) {
+      // 亏损等于风险：显示 -1R
+      if (Math.abs(rrRatio - 1) < 0.05) { // 允许5%的误差
+        return "-1R";
+      }
+      // 亏损小于风险：显示 -0.XR
+      else if (rrRatio < 1) {
+        return `-${rrRatio.toFixed(1)}R`;
+      }
+      // 亏损大于风险：显示 -X.XR
+      else {
+        return `-${rrRatio.toFixed(1)}R`;
+      }
+    }
+    
+    // 盈利交易正常显示
+    if (rrRatio >= 100) {
+      return rrRatio.toFixed(0);
+    } else if (rrRatio >= 10) {
+      return rrRatio.toFixed(1);
+    } else {
+      return rrRatio.toFixed(2);
+    }
+  } 
+  // 如果风险为0
+  else if (risk === 0) {
+    return isProfit ? "∞" : "N/A";
+  }
+  // 如果回报为0
+  else if (reward === 0) {
+    return "0";
+  }
+  
+  return "N/A";
+}
+
+// 辅助函数：根据R:R值计算渐变颜色（红渐变青）
+function getRRGradientColor(rrValue) {
+  // 如果是亏损交易
+  if (rrValue.includes('-') || rrValue.includes('R')) {
+    return 'linear-gradient(135deg, #ef4444, #dc2626)'; // 红色渐变
+  }
+  
+  const rrNum = parseFloat(rrValue);
+  
+  // 红渐变青的颜色映射
+  if (rrNum <= 0) {
+    return 'linear-gradient(135deg, #ef4444, #dc2626)'; // 红色
+  } else if (rrNum < 0.5) {
+    return 'linear-gradient(135deg, #ef4444, #f97316)'; // 红到橙
+  } else if (rrNum < 1) {
+    return 'linear-gradient(135deg, #f97316, #eab308)'; // 橙到黄
+  } else if (rrNum < 1.5) {
+    return 'linear-gradient(135deg, #eab308, #22c55e)'; // 黄到绿
+  } else if (rrNum < 2) {
+    return 'linear-gradient(135deg, #22c55e, #0ea5e9)'; // 绿到蓝
+  } else if (rrNum < 3) {
+    return 'linear-gradient(135deg, #0ea5e9, #06b6d4)'; // 蓝到青
+  } else if (rrNum < 5) {
+    return 'linear-gradient(135deg, #06b6d4, #8b5cf6)'; // 青到紫
+  } else {
+    return 'linear-gradient(135deg, #8b5cf6, #ec4899)'; // 紫到粉（极高R:R）
+  }
+}
+
+// 暴露给全局使用
+window.calculateRiskReward = calculateRiskReward;
 
 // ============== 日期分组功能 ==============
 
@@ -124,12 +272,7 @@ function groupTradesByDate(trades) {
       groups[dateKey].hasBuySell = true;
       
       // 计算风险回报比
-      if (trade.entry && trade.exit) {
-        const entry = parseFloat(trade.entry);
-        const exit = parseFloat(trade.exit);
-        const risk = trade.direction === "Buy" ? entry - exit : exit - entry;
-        trade.riskReward = risk !== 0 ? Math.abs(pnl / risk).toFixed(2) : "N/A";
-      }
+      trade.riskReward = calculateRiskReward(trade);
     } else if (trade.direction === "Deposit") {
       groups[dateKey].depositAmount += parseFloat(trade.balance_change || 0);
       groups[dateKey].hasBalanceTx = true;
@@ -232,7 +375,7 @@ function createSolidProgressBar(percentage, color) {
     gradientColor = 'linear-gradient(90deg, #eab308, #ca8a04)';
   } else {
     // 81-100%: 青色到亮青渐变
-    gradientColor = 'linear-gradient(90deg, #06b6d4, #0ee7ff)';
+    gradientColor = 'linear-gradient(90deg, #06b6d4, #0891b2)';
   }
   
   return `
@@ -300,7 +443,7 @@ function renderTable(groups) {
   console.log('渲染分组表格，组数:', groups?.length);
   
   if (!groups || groups.length === 0) {
-    tradeList.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 2rem; color: #94a3b8;">No trades found</td></tr>';
+    tradeList.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 2rem; color: #94a3b8;">No trades found</td></tr>';
     updateTableHeaders(false);
     return;
   }
@@ -475,7 +618,7 @@ function renderTable(groups) {
       const rotation = isExpanded ? 'rotate(90deg)' : 'rotate(0deg)';
       
       headerRow.innerHTML = `
-        <td colspan="10" style="padding: 1rem 0.7rem !important; background: rgba(15, 23, 42, 0.95);">
+        <td colspan="11" style="padding: 1rem 0.7rem !important; background: rgba(15, 23, 42, 0.95);">
           <div class="date-header" style="display: flex; align-items: center; gap: 10px;">
             ${hasMultiple ? `
               <button class="expand-btn" onclick="window.toggleDateGroup('${dateStr.replace(/'/g, "\\'")}')" 
@@ -535,18 +678,33 @@ function renderTable(groups) {
           amountSign = displayAmount >= 0 ? "+" : "";
         }
         
-        // 计算风险回报比
-        let riskRewardDisplay = "";
-        if (isBuySell && t.entry && t.exit) {
-          const entry = parseFloat(t.entry);
-          const exit = parseFloat(t.exit);
-          const pnl = parseFloat(t.pnl_amount || 0);
-          const risk = t.direction === "Buy" ? entry - exit : exit - entry;
-          if (risk !== 0) {
-            riskRewardDisplay = Math.abs(pnl / risk).toFixed(2);
+        // 计算风险回报比并生成带样式的 HTML - 使用红渐变青
+        let riskRewardHtml = "";
+        if (isBuySell) {
+          const rrValue = calculateRiskReward(t);
+          const isProfit = parseFloat(t.pnl_amount || 0) > 0;
+          
+          if (rrValue === "N/A") {
+            riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">N/A</span>';
+          } else if (rrValue === "0") {
+            riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">0</span>';
+          } else if (rrValue === "∞") {
+            riskRewardHtml = '<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: linear-gradient(135deg, #ec4899, #db2777) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">∞</span>';
           } else {
-            riskRewardDisplay = "N/A";
+            const gradientColor = getRRGradientColor(rrValue);
+            
+            // 检查是否是亏损交易的R:R（包含"R"或"-"）
+            if (rrValue.includes('-') || rrValue.includes('R')) {
+              // 亏损交易：使用红色渐变
+              riskRewardHtml = `<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: ${gradientColor} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">${rrValue}</span>`;
+            } else {
+              const displayValue = `1:${rrValue}`;
+              riskRewardHtml = `<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: ${gradientColor} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">${displayValue}</span>`;
+            }
           }
+        } else {
+          // 非买卖交易（资金操作）显示横线
+          riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">-</span>';
         }
         
         let notesDisplay = t.notes || "";
@@ -560,6 +718,7 @@ function renderTable(groups) {
         const detailRow = document.createElement('tr');
         detailRow.className = `trade-detail-row visible`;
         detailRow.dataset.date = dateStr;
+        
         detailRow.innerHTML = `
           <td style="color: #94a3b8; font-size: 0.9rem;">
             ${displayTime || ''}
@@ -567,9 +726,10 @@ function renderTable(groups) {
           <td>${t.symbol || (isBalanceTransaction ? '' : "-")}</td>
           <td><span class="${directionClass}">${directionDisplay}</span></td>
           <td>${isBuySell ? Number(t.lot_size||0).toFixed(2) : ''}</td>
-          <td>${isBuySell ? Number(t.entry||0).toFixed(4) : ''}</td>
-          <td>${isBuySell ? Number(t.exit||0).toFixed(4) : ''}</td>
-          <td>${riskRewardDisplay}</td>
+          <td>${isBuySell ? (t.sl ? Number(t.sl||0).toFixed(4) : '-') : ''}</td>
+          <td>${isBuySell ? (t.entry ? Number(t.entry||0).toFixed(4) : '-') : ''}</td>
+          <td>${isBuySell ? (t.exit ? Number(t.exit||0).toFixed(4) : '-') : ''}</td>
+          <td style="text-align: center; min-width: 90px;">${riskRewardHtml}</td>
           <td class="${amountClass}" style="color: ${displayAmount >= 0 ? '#0ee7ff' : '#ef4444'} !important;">${amountSign}$${Math.abs(displayAmount).toFixed(2)}</td>
           <td>${notesDisplay}</td>
           <td>
@@ -967,6 +1127,7 @@ form.addEventListener("submit", async e => {
     symbol: symbol.value,
     direction: direction.value,
     lot_size: parseFloat(lotSize.value) || 0,
+    sl: parseFloat(sl.value) || 0, // 新增 SL 字段
     entry: parseFloat(entry.value) || 0,
     exit: parseFloat(exit.value) || 0,
     pnl_amount: parseFloat(pnlAmount.value) || 0,
@@ -1147,6 +1308,7 @@ function showEditForm(trade) {
   const editSymbol = document.getElementById('editSymbol');
   const editDirection = document.getElementById('editDirection');
   const editLotSize = document.getElementById('editLotSize');
+  const editSl = document.getElementById('editSl');
   const editEntry = document.getElementById('editEntry');
   const editExit = document.getElementById('editExit');
   const editPnlAmount = document.getElementById('editPnlAmount');
@@ -1159,6 +1321,7 @@ function showEditForm(trade) {
   if (editSymbol) editSymbol.value = trade.symbol || '';
   if (editDirection) editDirection.value = trade.direction || 'Buy';
   if (editLotSize) editLotSize.value = trade.lot_size || '';
+  if (editSl) editSl.value = trade.sl || ''; // 新增 SL 字段
   if (editEntry) editEntry.value = trade.entry || '';
   if (editExit) editExit.value = trade.exit || '';
   if (editPnlAmount) editPnlAmount.value = trade.pnl_amount || '';
@@ -1200,6 +1363,7 @@ if (editTradeForm) {
     const editSymbol = document.getElementById('editSymbol');
     const editDirection = document.getElementById('editDirection');
     const editLotSize = document.getElementById('editLotSize');
+    const editSl = document.getElementById('editSl');
     const editEntry = document.getElementById('editEntry');
     const editExit = document.getElementById('editExit');
     const editPnlAmount = document.getElementById('editPnlAmount');
@@ -1212,6 +1376,7 @@ if (editTradeForm) {
       symbol: editSymbol ? editSymbol.value : '',
       direction: editDirection ? editDirection.value : 'Buy',
       lot_size: editLotSize ? parseFloat(editLotSize.value) || 0 : 0,
+      sl: editSl ? parseFloat(editSl.value) || 0 : 0, // 新增 SL 字段
       entry: editEntry ? parseFloat(editEntry.value) || 0 : 0,
       exit: editExit ? parseFloat(editExit.value) || 0 : 0,
       pnl_amount: editPnlAmount ? parseFloat(editPnlAmount.value) || 0 : 0,

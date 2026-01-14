@@ -464,13 +464,48 @@ main {
   margin: 0 auto;
 }
 
-/* 第二排 - 保持3等分 */
+/* 第二排 - 保持4等分 */
 #tradeForm .row2 {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr); /* 改为4列 */
   gap: 1.6rem;
   margin-bottom: 1.6rem;
+}
+
+/* 更新编辑表单的 row2 */
+#editTradeForm .row2 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 改为4列 */
+  gap: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+
+/* SL 输入框特殊样式 */
+#sl {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+#sl:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* 响应式调整 */
+@media (max-width: 1024px) {
+  #tradeForm .row2,
+  #editTradeForm .row2 {
+    grid-template-columns: repeat(2, 1fr); /* 中等屏幕显示2列 */
+  }
+}
+
+@media (max-width: 768px) {
+  #tradeForm .row2,
+  #editTradeForm .row2 {
+    grid-template-columns: 1fr; /* 小屏幕显示1列 */
+  }
 }
 
 /* 第三排 - Notes和按钮布局 */
@@ -606,7 +641,7 @@ main {
 #editTradeForm .row2 {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 1.6rem;
   margin-bottom: 1.6rem;
 }
@@ -1097,7 +1132,7 @@ td:last-child {
 
 /* 表格行交错动画延迟 */
 #tradeList tr:nth-child(1) { animation-delay: 0.05s; }
-#tradeList tr:nth-child(2) { animation-delay: 0.1s;
+#tradeList tr:nth-child(2) { animation-delay: 0.1s; }
 #tradeList tr:nth-child(3) { animation-delay: 0.15s; }
 #tradeList tr:nth-child(4) { animation-delay: 0.2s; }
 #tradeList tr:nth-child(5) { animation-delay: 0.25s; }
@@ -1578,72 +1613,6 @@ td:last-child {
   }
 }
 
-/* ============== 一体式进度条样式 ============== */
-
-.solid-progress-container {
-  width: 100%;
-  height: 20px !important;
-  background: #374151 !important;
-  border-radius: 10px !important; /* 确保圆角 */
-  overflow: hidden;
-  position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.solid-progress-bar {
-  height: 100% !important;
-  border-radius: 10px !important; /* 确保圆角 */
-  position: relative;
-  transition: width 0.5s ease;
-  min-width: 20px;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-end !important;
-  padding-right: 8px !important;
-}
-
-/* 强制所有进度条使用圆润样式 */
-.solid-progress-bar {
-  border-radius: 10px !important;
-}
-
-.progress-text {
-  position: relative !important;
-  right: auto !important;
-  top: auto !important;
-  transform: none !important;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* 覆盖所有可能的进度条颜色 */
-.solid-progress-bar[style*="background: #ef4444"],
-.solid-progress-bar[style*="background: #f97316"],
-.solid-progress-bar[style*="background: #eab308"],
-.solid-progress-bar[style*="background: #06b6d4"] {
-  background: linear-gradient(90deg, #06b6d4, #0ee7ff) !important;
-  border-radius: 10px !important; /* 添加这行 */
-}
-
-/* 不同性能级别的颜色 */
-.solid-progress-bar[style*="background: #ef4444"] {
-  background: linear-gradient(90deg, #ef4444, #dc2626) !important;
-}
-
-.solid-progress-bar[style*="background: #f97316"] {
-  background: linear-gradient(90deg, #f97316, #ea580c) !important;
-}
-
-.solid-progress-bar[style*="background: #eab308"] {
-  background: linear-gradient(90deg, #eab308, #ca8a04) !important;
-}
-
-.solid-progress-bar[style*="background: #06b6d4"] {
-  background: linear-gradient(90deg, #06b6d4, #0891b2) !important;
-}
-
 /* 表格标题样式 */
 #tradeSection thead tr {
   background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
@@ -1919,4 +1888,192 @@ td[style*="color: #06b6d4"] {
 #minPnl.pnl-negative {
   -webkit-text-fill-color: initial !important;
   background: none !important;
+}
+
+/* ============== R:R 风险回报比样式 (红渐变青) ============== */
+
+/* R:R 基础样式 */
+#tradeList td .rr-value,
+#tradeSection table td .rr-value,
+.trade-detail-row td .rr-value,
+table tbody tr td .rr-value {
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 
+    0 0 8px rgba(59, 130, 246, 0.2),
+    0 0 16px rgba(59, 130, 246, 0.1) !important;
+  display: inline-block !important;
+  min-width: 70px !important;
+  text-align: center !important;
+  transition: all 0.3s ease !important;
+  margin: 2px 0 !important;
+  background: linear-gradient(135deg, #ef4444, #06b6d4) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 根据R:R值动态设置背景颜色（红渐变青） */
+/* 亏损交易：固定红色 */
+.rr-loss {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  box-shadow: 
+    0 0 10px rgba(239, 68, 68, 0.4),
+    0 0 20px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* 根据R:R数值设置渐变颜色 */
+.rr-value[data-rr="0"] {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important; /* 红色 */
+}
+
+.rr-value[data-rr="0.5"] {
+  background: linear-gradient(135deg, #f97316, #ea580c) !important; /* 橙色 */
+}
+
+.rr-value[data-rr="1"] {
+  background: linear-gradient(135deg, #eab308, #ca8a04) !important; /* 黄色 */
+}
+
+.rr-value[data-rr="1.5"] {
+  background: linear-gradient(135deg, #22c55e, #16a34a) !important; /* 绿色 */
+}
+
+.rr-value[data-rr="2"] {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important; /* 蓝色 */
+}
+
+.rr-value[data-rr="3"] {
+  background: linear-gradient(135deg, #06b6d4, #0891b2) !important; /* 青色 */
+}
+
+.rr-value[data-rr="5"] {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important; /* 紫色 */
+}
+
+.rr-value[data-rr="10"] {
+  background: linear-gradient(135deg, #ec4899, #db2777) !important; /* 粉色 */
+}
+
+/* N/A 状态 */
+#tradeList td .rr-na,
+#tradeSection table td .rr-na,
+.trade-detail-row td .rr-na,
+table tbody tr td .rr-na {
+  color: #94a3b8 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+  box-shadow: 
+    0 0 4px rgba(148, 163, 184, 0.2),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05) !important;
+  background: rgba(148, 163, 184, 0.05) !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+}
+
+/* 悬停效果 */
+#tradeList td .rr-value:hover,
+#tradeSection table td .rr-value:hover,
+.trade-detail-row td .rr-value:hover,
+table tbody tr td .rr-value:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 0 12px currentColor,
+    0 0 24px rgba(59, 130, 246, 0.2) !important;
+}
+
+/* R:R 列的额外样式 */
+td:nth-child(8) { /* R:R 是第8列（现在有SL列后） */
+  text-align: center;
+  font-weight: 600;
+  min-width: 90px;
+}
+
+/* 悬停效果 */
+#tradeList td .rr-value:hover,
+#tradeSection table td .rr-value:hover,
+.trade-detail-row td .rr-value:hover,
+table tbody tr td .rr-value:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 
+    0 0 16px rgba(251, 191, 36, 0.6),
+    0 0 32px rgba(251, 191, 36, 0.3) !important;
+}
+
+#tradeList td .rr-excellent:hover,
+#tradeSection table td .rr-excellent:hover,
+.trade-detail-row td .rr-excellent:hover,
+table tbody tr td .rr-excellent:hover {
+  box-shadow: 
+    0 0 20px rgba(251, 191, 36, 0.8),
+    0 0 40px rgba(251, 191, 36, 0.4) !important;
+}
+
+#tradeList td .rr-good:hover,
+#tradeSection table td .rr-good:hover,
+.trade-detail-row td .rr-good:hover,
+table tbody tr td .rr-good:hover {
+  box-shadow: 
+    0 0 16px rgba(245, 158, 11, 0.7),
+    0 0 32px rgba(245, 158, 11, 0.35) !important;
+}
+
+#tradeList td .rr-poor:hover,
+#tradeSection table td .rr-poor:hover,
+.trade-detail-row td .rr-poor:hover,
+table tbody tr td .rr-poor:hover {
+  box-shadow: 
+    0 0 12px rgba(217, 119, 6, 0.6),
+    0 0 24px rgba(217, 119, 6, 0.3) !important;
+}
+
+/* ============== 响应式调整 ============== */
+
+@media (max-width: 768px) {
+  td:nth-child(8) {
+    min-width: 70px;
+    font-size: 0.9rem;
+  }
+  
+  #tradeList td .rr-value,
+  #tradeSection table td .rr-value,
+  .trade-detail-row td .rr-value,
+  table tbody tr td .rr-value {
+    padding: 3px 8px !important;
+    font-size: 0.85rem;
+    min-width: 60px;
+    border-radius: 6px !important;
+  }
+}
+
+/* 强制修复：确保所有R:R元素都有样式 */
+.rr-value {
+  display: inline-block !important;
+  min-width: 70px !important;
+  text-align: center !important;
+}
+
+/* 亏损交易的R:R样式 */
+.rr-loss {
+  color: #ef4444 !important;          /* 红色 */
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  box-shadow: 
+    0 0 8px rgba(239, 68, 68, 0.4),
+    0 0 16px rgba(239, 68, 68, 0.2) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+/* 在R:R基础样式中添加亏损交易的支持 */
+#tradeList td .rr-loss,
+#tradeSection table td .rr-loss,
+.trade-detail-row td .rr-loss,
+table tbody tr td .rr-loss {
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  box-shadow: 
+    0 0 8px rgba(239, 68, 68, 0.4),
+    0 0 16px rgba(239, 68, 68, 0.2) !important;
+  background: rgba(239, 68, 68, 0.1) !important;
 }
