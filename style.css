@@ -89,77 +89,70 @@ body {
   font-family: 'Inter', sans-serif;
   position: relative;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* 粒子容器 */
+/* 修复粒子容器问题 */
 #floating-particles {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
   z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 /* 粒子基础样式 */
 .particle {
   position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
   border-radius: 50%;
-  animation: floatParticle linear infinite;
-  filter: blur(0.8px); /* 稍微柔化 */
-}
-
-/* 小粒子 */
-.particle.small {
-  width: 2.5px;
-  height: 2.5px;
-  background: rgba(147, 197, 253, 0.9); /* 提高不透明度 */
   box-shadow: 
-    0 0 5px rgba(147, 197, 253, 0.7),
-    0 0 10px rgba(147, 197, 253, 0.4);
+    0 0 10px #3b82f6,
+    0 0 20px #3b82f6;
+  animation: floatUp 15s linear infinite;
+  opacity: 0.8;
 }
 
-/* 中粒子 */
-.particle.medium {
-  width: 4px;
-  height: 4px;
-  background: rgba(96, 165, 250, 0.85);
-  box-shadow: 
-    0 0 6px rgba(96, 165, 250, 0.6),
-    0 0 12px rgba(96, 165, 250, 0.3);
-}
-
-/* 大粒子 */
-.particle.large {
-  width: 5px;
-  height: 5px;
-  background: rgba(59, 130, 246, 0.8);
-  box-shadow: 
-    0 0 8px rgba(59, 130, 246, 0.5),
-    0 0 16px rgba(59, 130, 246, 0.2);
-}
-
-/* 漂浮动画 - 更明显的轨迹 */
-@keyframes floatParticle {
+@keyframes floatUp {
   0% {
-    transform: translateY(100vh) translateX(var(--start-x)) scale(0.8);
+    transform: translateY(100vh) translateX(0);
     opacity: 0;
   }
   10% {
-    opacity: var(--opacity);
-    transform: translateY(90vh) translateX(var(--start-x)) scale(1);
-  }
-  15% {
-    transform: translateY(85vh) translateX(var(--start-x)) scale(1.1); /* 轻微放大 */
+    opacity: 0.8;
   }
   90% {
-    opacity: calc(var(--opacity) * 0.8);
+    opacity: 0.8;
   }
   100% {
-    transform: translateY(-100px) translateX(calc(var(--start-x) + var(--drift-x))) scale(0.9);
+    transform: translateY(-100px) translateX(100px);
     opacity: 0;
   }
+}
+
+/* 删除重复的背景效果样式 */
+#background-effects,
+#blue-glow-effects,
+#fairy-mist {
+  display: none !important;
+}
+
+/* 强制隐藏所有多余的背景效果容器 */
+div[id*="background"],
+div[id*="glow"],
+div[id*="fairy"],
+div[id*="mist"] {
+  display: none !important;
+}
+
+/* 确保只有我们需要的粒子容器显示 */
+#floating-particles {
+  display: block !important;
 }
 
 /* Sidebar */
@@ -208,6 +201,8 @@ body {
 /* Page content shift */
 .page-content {
   transition: margin-left 0.3s;
+  min-height: 100vh;
+  position: relative;
 }
 .page-content.shift { margin-left: 250px; }
 
@@ -267,6 +262,7 @@ main {
   max-width: 1200px;
   margin: auto;
   padding: 1rem;
+  min-height: calc(100vh - 200px);
 }
 
 /* Stats Dashboard */
@@ -370,11 +366,6 @@ main {
   }
 }
 
-/* 鼠标跟随发光效果的JavaScript需要的样式 */
-.stat-card:hover .stat-glow-effect {
-  opacity: 1;
-}
-
 /* 标题 - 优雅蓝色 */
 .stat-card span {
   color: #93c5fd;
@@ -459,11 +450,11 @@ main {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border-radius: 18px;
-  padding: 2.5rem; /* 增加内边距，创造对称边缘 */
+  padding: 2.5rem;
   margin-top: 2.5rem;
 }
 
-/* 表单网格布局 - 在容器内居中 */
+/* 表单网格布局 */
 #tradeForm {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -489,35 +480,28 @@ main {
   grid-template-columns: 1fr auto;
   gap: 1.6rem;
   align-items: start;
-  margin-top: 0.5rem; /* 与上面保持距离 */
+  margin-top: 0.5rem;
 }
 
-/* 统一输入框样式 - 带内部留白 */
+/* 统一输入框样式 */
 #tradeForm input,
 #tradeForm select,
 #tradeForm textarea,
 #editTradeForm input,
 #editTradeForm select,
 #editTradeForm textarea {
-  /* 高级深色背景 */
   background: rgba(10, 14, 23, 0.95);
   border: 1.5px solid rgba(59, 130, 246, 0.18);
   color: #e2e8f0;
-  
-  /* 对称的尺寸和内边距 */
-  height: 56px; /* 稍微增高 */
+  height: 56px;
   padding: 0 1.3rem;
-  border-radius: 14px; /* 圆角更大 */
+  border-radius: 14px;
   font-size: 1.05rem;
-  
-  /* 视觉增强 */
   box-shadow: 
     inset 0 3px 8px rgba(0, 0, 0, 0.4),
     0 2px 4px rgba(0, 0, 0, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.03);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* 确保盒子模型一致 */
   box-sizing: border-box;
   width: 100%;
 }
@@ -532,15 +516,15 @@ main {
   background-repeat: no-repeat;
   background-position: right 1.3rem center;
   background-size: 20px 20px;
-  padding-right: 3.5rem; /* 为箭头留更多空间 */
+  padding-right: 3.5rem;
   cursor: pointer;
   font-weight: 500;
 }
 
-/* Textarea特殊样式 - 更大的对称空间 */
+/* Textarea特殊样式 */
 #tradeForm textarea,
 #editTradeForm textarea {
-  height: 150px; /* 增高，与容器比例协调 */
+  height: 150px;
   min-height: 150px;
   padding: 1.3rem;
   resize: vertical;
@@ -549,14 +533,14 @@ main {
   border-radius: 14px;
 }
 
-/* 按钮样式 - 在大容器内对齐 */
+/* 按钮样式 */
 #tradeForm button[type="submit"],
 #editTradeForm button[type="submit"] {
   background: linear-gradient(145deg, #3b82f6, #2563eb);
   color: white;
   border: none;
   border-radius: 14px;
-  height: 56px; /* 与其他输入框高度一致 */
+  height: 56px;
   padding: 0 2.5rem;
   font-size: 1.1rem;
   font-weight: 600;
@@ -567,11 +551,11 @@ main {
     0 6px 20px rgba(59, 130, 246, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.05);
-  align-self: start; /* 顶部对齐 */
+  align-self: start;
   margin-top: 0;
 }
 
-/* 输入框聚焦效果 - 加强边缘 */
+/* 输入框聚焦效果 */
 #tradeForm input:focus,
 #tradeForm select:focus,
 #tradeForm textarea:focus,
@@ -607,7 +591,7 @@ main {
 /* ============== 编辑表单对称样式 ============== */
 
 #editFormSection .settings-card {
-  padding: 2.8rem; /* 更多内边距 */
+  padding: 2.8rem;
   border-radius: 18px;
 }
 
@@ -662,8 +646,6 @@ main {
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* ============== 对称的边缘装饰 ============== */
-
 /* 表单容器内部装饰线 */
 #formSection::before,
 #editFormSection .settings-card::before {
@@ -679,26 +661,7 @@ main {
   z-index: 0;
 }
 
-/* 表单标题区域（如果有的话） */
-.form-header {
-  margin-bottom: 2.2rem;
-  padding-bottom: 1.2rem;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  position: relative;
-}
-
-.form-header::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #3b82f6, transparent);
-  border-radius: 3px;
-}
-
-/* ============== 响应式设计 - 保持对称 ============== */
+/* ============== 响应式设计 ============== */
 
 @media (max-width: 1200px) {
   #formSection,
@@ -723,7 +686,6 @@ main {
     grid-template-columns: 1fr;
   }
   
-  /* 移动端按钮居中 */
   #tradeForm button[type="submit"],
   #editTradeForm button[type="submit"] {
     justify-self: center;
@@ -764,7 +726,6 @@ main {
     min-height: 130px;
   }
   
-  /* 移动端输入框稍微小一点 */
   #tradeForm input,
   #tradeForm select,
   #tradeForm textarea,
@@ -848,65 +809,6 @@ main {
   }
 }
 
-/* ============== 额外的对称微调 ============== */
-
-/* 确保表单元素在容器内完美居中 */
-.form-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: 100%;
-}
-
-/* 表单字段标签（如果需要） */
-.form-field {
-  position: relative;
-  margin-bottom: 0.3rem;
-}
-
-.form-field label {
-  display: block;
-  margin-bottom: 0.6rem;
-  color: #93c5fd;
-  font-size: 0.95rem;
-  font-weight: 500;
-  padding-left: 0.5rem;
-}
-
-/* 表单字段之间的垂直节奏 */
-.form-field + .form-field {
-  margin-top: 0.2rem;
-}
-
-/* 装饰性元素，增强对称感 */
-.form-decoration {
-  position: absolute;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.form-decoration.corner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(59, 130, 246, 0.1);
-}
-
-.form-decoration.corner-tl {
-  top: 15px;
-  left: 15px;
-  border-right: none;
-  border-bottom: none;
-  border-radius: 8px 0 0 0;
-}
-
-.form-decoration.corner-br {
-  bottom: 15px;
-  right: 15px;
-  border-left: none;
-  border-top: none;
-  border-radius: 0 0 8px 0;
-}
-
 /* Trades */
 .trade-header { 
   display: flex; 
@@ -948,14 +850,6 @@ th, td {
   border-radius: 6px; 
   padding: 0.2rem 0.6rem; 
   transition: all 0.3s;
-}
-.pnl-positive { 
-  color: var(--color-positive); 
-  transition: color 0.3s;
-}
-.pnl-negative { 
-  color: var(--color-negative); 
-  transition: color 0.3s;
 }
 
 /* Chart */
@@ -1106,6 +1000,7 @@ td:last-child {
     justify-content: center;
     margin-top: 1rem;
   }
+}
 
 /* ============== 交易记录动态动画 ============== */
 
@@ -1202,7 +1097,7 @@ td:last-child {
 
 /* 表格行交错动画延迟 */
 #tradeList tr:nth-child(1) { animation-delay: 0.05s; }
-#tradeList tr:nth-child(2) { animation-delay: 0.1s; }
+#tradeList tr:nth-child(2) { animation-delay: 0.1s;
 #tradeList tr:nth-child(3) { animation-delay: 0.15s; }
 #tradeList tr:nth-child(4) { animation-delay: 0.2s; }
 #tradeList tr:nth-child(5) { animation-delay: 0.25s; }
@@ -1558,4 +1453,470 @@ td:last-child {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
   border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ============== 日期分组表格样式 ============== */
+
+/* 日期行样式 */
+.date-group-header {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8)) !important;
+  border-top: 2px solid rgba(59, 130, 246, 0.3);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.date-group-header:hover {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.date-group-header.expanded {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)) !important;
+}
+
+.date-cell {
+  font-size: 1.1rem !important;
+  color: #3b82f6 !important;
+}
+
+.date-header strong {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* 展开/收缩按钮 */
+.expand-btn {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  color: #3b82f6 !important;
+  cursor: pointer !important;
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  font-family: monospace !important;
+  font-weight: bold !important;
+}
+
+.expand-btn:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  transform: scale(1.1) !important;
+}
+
+/* 交易数量徽章 */
+.trade-count-badge {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+  color: white !important;
+  padding: 3px 8px !important;
+  border-radius: 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  min-width: 24px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 分组摘要信息 */
+.group-summary {
+  color: #94a3b8 !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+}
+
+/* 详细交易行样式 */
+.trade-detail-row {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-left: 3px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.2s ease;
+}
+
+.trade-detail-row:hover {
+  background: rgba(30, 41, 59, 0.6) !important;
+  border-left-color: #3b82f6;
+}
+
+.trade-detail-row:nth-child(even) {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+
+.trade-detail-row td:first-child {
+  padding-left: 50px !important;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* 单笔交易特殊样式 */
+.trade-detail-row:only-child {
+  border-left: 3px solid rgba(62, 180, 137, 0.3);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .date-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 5px !important;
+  }
+  
+  .expand-btn {
+    margin-right: 0 !important;
+  }
+  
+  .trade-detail-row td:first-child {
+    padding-left: 30px !important;
+  }
+  
+  .group-summary {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* ============== 一体式进度条样式 ============== */
+
+.solid-progress-container {
+  width: 100%;
+  height: 20px !important;
+  background: #374151 !important;
+  border-radius: 10px !important; /* 确保圆角 */
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.solid-progress-bar {
+  height: 100% !important;
+  border-radius: 10px !important; /* 确保圆角 */
+  position: relative;
+  transition: width 0.5s ease;
+  min-width: 20px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  padding-right: 8px !important;
+}
+
+/* 强制所有进度条使用圆润样式 */
+.solid-progress-bar {
+  border-radius: 10px !important;
+}
+
+.progress-text {
+  position: relative !important;
+  right: auto !important;
+  top: auto !important;
+  transform: none !important;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 覆盖所有可能的进度条颜色 */
+.solid-progress-bar[style*="background: #ef4444"],
+.solid-progress-bar[style*="background: #f97316"],
+.solid-progress-bar[style*="background: #eab308"],
+.solid-progress-bar[style*="background: #06b6d4"] {
+  background: linear-gradient(90deg, #06b6d4, #0ee7ff) !important;
+  border-radius: 10px !important; /* 添加这行 */
+}
+
+/* 不同性能级别的颜色 */
+.solid-progress-bar[style*="background: #ef4444"] {
+  background: linear-gradient(90deg, #ef4444, #dc2626) !important;
+}
+
+.solid-progress-bar[style*="background: #f97316"] {
+  background: linear-gradient(90deg, #f97316, #ea580c) !important;
+}
+
+.solid-progress-bar[style*="background: #eab308"] {
+  background: linear-gradient(90deg, #eab308, #ca8a04) !important;
+}
+
+.solid-progress-bar[style*="background: #06b6d4"] {
+  background: linear-gradient(90deg, #06b6d4, #0891b2) !important;
+}
+
+/* 表格标题样式 */
+#tradeSection thead tr {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+}
+
+#tradeSection thead th {
+  padding: 1rem 0.7rem;
+  font-weight: 700;
+  color: #3b82f6;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+/* 日期分组行的不同状态 */
+.date-group-header.collapsed td {
+  padding: 0.8rem 0.7rem !important;
+  vertical-align: middle;
+}
+
+.date-group-header.expanded td {
+  padding: 1rem 0.7rem !important;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* 展开状态的列对齐 */
+.trade-detail-row td {
+  padding: 0.7rem 0.5rem !important;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trade-detail-row:hover td {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* D/W 统一灰色样式 */
+.dw-positive, .dw-negative {
+  color: #94a3b8 !important; /* 统一的灰色 */
+  font-weight: 600;
+}
+
+/* 确保存款和取款都使用相同颜色 */
+.deposit-amount, .withdrawal-amount {
+  color: #94a3b8 !important;
+}
+
+/* D/W列样式 */
+td:nth-child(7) { /* D/W是第7列 */
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .solid-progress-container {
+    height: 16px;
+  }
+  
+  .progress-text {
+    font-size: 0.6rem;
+  }
+  
+  .date-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 5px !important;
+  }
+  
+  .expand-btn {
+    margin-right: 0 !important;
+  }
+  
+  .trade-detail-row td:first-child {
+    padding-left: 30px !important;
+  }
+  
+  .group-summary {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* 表格标题样式 */
+#tradeSection thead tr {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+}
+
+#tradeSection thead th {
+  padding: 1rem 0.7rem;
+  font-weight: 700;
+  color: #3b82f6;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+/* 日期分组行的不同状态 */
+.date-group-header.collapsed td {
+  padding: 0.8rem 0.7rem !important;
+  vertical-align: middle;
+}
+
+.date-group-header.expanded td {
+  padding: 1rem 0.7rem !important;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* 展开状态的列对齐 */
+.trade-detail-row td {
+  padding: 0.7rem 0.5rem !important;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trade-detail-row:hover td {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+/* ============== 通知样式 ============== */
+.notification-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  max-width: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateX(100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.notification-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #e2e8f0;
+}
+
+.notification-content i {
+  font-size: 1.2rem;
+}
+
+.notification-success .notification-content i {
+  color: #10b981;
+}
+
+.notification-info .notification-content i {
+  color: #3b82f6;
+}
+
+.notification-warning .notification-content i {
+  color: #f59e0b;
+}
+
+.notification-error .notification-content i {
+  color: #ef4444;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1rem;
+  transition: color 0.2s;
+}
+
+.notification-close:hover {
+  color: #e2e8f0;
+}
+
+/* ============== 强制所有进度条圆润 ============== */
+
+/* 强制所有进度条容器圆角 */
+.solid-progress-container,
+#tradeList .solid-progress-container,
+.group-summary .solid-progress-container,
+.date-group-header .solid-progress-container,
+#tradeList td .solid-progress-container,
+table td .solid-progress-container {
+  border-radius: 10px !important;
+  height: 20px !important;
+}
+
+/* 强制所有进度条本身圆角 */
+.solid-progress-bar,
+#tradeList .solid-progress-bar,
+.group-summary .solid-progress-bar,
+.date-group-header .solid-progress-bar,
+#tradeList td .solid-progress-bar,
+table td .solid-progress-bar {
+  border-radius: 10px !important;
+  height: 100% !important;
+}
+
+/* 覆盖所有内联样式中的border-radius */
+[style*="border-radius"],
+[style*="borderRadius"] {
+  border-radius: 10px !important;
+}
+
+/* 特别针对performance列（第5列） */
+#tradeList td:nth-child(5) .solid-progress-container,
+.group-summary td:nth-child(5) .solid-progress-container,
+.date-group-header td:nth-child(5) .solid-progress-container {
+  border-radius: 10px !important;
+}
+
+#tradeList td:nth-child(5) .solid-progress-bar,
+.group-summary td:nth-child(5) .solid-progress-bar,
+.date-group-header td:nth-child(5) .solid-progress-bar {
+  border-radius: 10px !important;
+}
+
+/* === 紧急修复：强制P/L颜色 === */
+/* 放在文件最末尾以确保优先级 */
+
+/* 所有表格中的P/L单元格 */
+#tradeList td[class*="pnl-"],
+table td[class*="pnl-"] {
+  color: inherit !important;
+}
+
+/* 内联样式的P/L颜色 */
+td[style*="color: #06b6d4"] {
+  color: #0ee7ff !important; /* 改为亮青色 */
+}
+
+/* 1. 所有.pnl-positive元素 - 改为亮青色 */
+.pnl-positive,
+#avgPnl,
+#maxPnl,
+.stats-dashboard .stat-card strong,
+.stat-card strong {
+  color: #0ee7ff !important; /* 改为亮青色 */
+}
+
+/* 2. 所有.pnl-negative元素 - 保持红色 */
+.pnl-negative,
+#minPnl {
+  color: #ef4444 !important;
+}
+
+/* 3. 但保留统计卡片的渐变背景 */
+.stats-dashboard .stat-card strong {
+  background: linear-gradient(135deg, 
+    #93c5fd 0%,
+    #3b82f6 50%,
+    #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 4. 覆盖统计卡片中需要特殊颜色的数字 */
+#avgPnl.pnl-positive,
+#maxPnl.pnl-positive,
+#minPnl.pnl-negative {
+  -webkit-text-fill-color: initial !important;
+  background: none !important;
 }

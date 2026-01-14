@@ -59,7 +59,30 @@ const translations = {
     // 图表相关
     "initial_balance": "Initial Balance",
     "current_pl": "Current P&L",
-    "account_email": "Account Email"
+    "account_email": "Account Email",
+    
+    // 新增交易相关
+    "performance": "Performance",
+    "summary": "Summary",
+    "rr": "R:R",
+    "trades": "Trades",
+    "deposit_withdrawal": "D/W",
+    "balance_transactions": "Balance Transactions",
+    "single_trade": "Single Trade",
+    "risk_reward": "Risk/Reward",
+    "total_lots": "Total Lots",
+    "trade_count": "Trade Count",
+    
+    // 编辑/删除相关
+    "edit": "Edit",
+    "delete": "Delete",
+    "edit_trade": "Edit Trade",
+    "save_changes": "Save Changes",
+    "cancel": "Cancel",
+    "confirm_delete": "Are you sure you want to delete this trade?",
+    "trade_deleted": "Trade deleted successfully",
+    "trade_updated": "Trade updated successfully",
+    "actions": "Actions"
   },
   
   zh: {
@@ -121,7 +144,30 @@ const translations = {
     // 图表相关
     "initial_balance": "初始余额",
     "current_pl": "当前盈亏",
-    "account_email": "账户邮箱"
+    "account_email": "账户邮箱",
+    
+    // 新增交易相关
+    "performance": "表现",
+    "summary": "概要",
+    "rr": "风险回报比",
+    "trades": "交易数",
+    "deposit_withdrawal": "入/出金",
+    "balance_transactions": "资金操作",
+    "single_trade": "单笔交易",
+    "risk_reward": "风险/回报",
+    "total_lots": "总手数",
+    "trade_count": "交易数量",
+    
+    // 编辑/删除相关
+    "edit": "编辑",
+    "delete": "删除",
+    "edit_trade": "编辑交易",
+    "save_changes": "保存更改",
+    "cancel": "取消",
+    "confirm_delete": "确定要删除这笔交易吗？",
+    "trade_deleted": "交易删除成功",
+    "trade_updated": "交易更新成功",
+    "actions": "操作"
   }
 };
 

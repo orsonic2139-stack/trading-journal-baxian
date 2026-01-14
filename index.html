@@ -107,29 +107,40 @@
 
       <!-- Trade History -->
       <section id="tradeSection">
-        <div class="trade-header">
-          <h2 data-i18n="operation_history">Operation History</h2>
-          <button id="toggleTrades" data-i18n="hide">Hide</button>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th data-i18n="date">Date</th>
-              <th data-i18n="symbol">Symbol</th>
-              <th data-i18n="direction">Direction</th>
-              <th data-i18n="lot">Lot</th>
-              <th data-i18n="entry">Entry</th>
-              <th data-i18n="exit">Exit</th>
-              <th data-i18n="profit_loss">P/L</th>
-              <th data-i18n="notes">Notes</th>
-              <th data-i18n="actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tradeList"></tbody>
-        </table>
-      </section>
+  <div class="trade-header">
+    <h2 data-i18n="operation_history">Operation History</h2>
+    <button id="toggleTrades" data-i18n="show_all">Show All</button>
+  </div>
+  <table>
+    <thead>
+      <tr id="collapsedHeader">
+        <th data-i18n="date">Date</th>
+        <th data-i18n="symbol">Symbol</th>
+        <th data-i18n="trades">Trades</th>
+        <th data-i18n="lot">Lot</th>
+        <th data-i18n="performance">Performance</th>
+        <th data-i18n="profit_loss">P/L</th>
+        <th data-i18n="deposit_withdrawal">D/W</th>
+        <th data-i18n="summary">Summary</th>
+      </tr>
+      <tr id="expandedHeader" style="display: none;">
+        <th data-i18n="date">Date</th>
+        <th data-i18n="symbol">Symbol</th>
+        <th data-i18n="direction">Direction</th>
+        <th data-i18n="lot">Lot</th>
+        <th data-i18n="entry">Entry</th>
+        <th data-i18n="exit">Exit</th>
+        <th data-i18n="rr">R:R</th>
+        <th data-i18n="profit_loss">P/L</th>
+        <th data-i18n="notes">Notes</th>
+        <th data-i18n="actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tradeList"></tbody>
+  </table>
+</section>
 
-      <!-- Edit Form Section (新增) -->
+      <!-- Edit Form Section -->
       <section id="editFormSection" style="display: none; margin-top: 2rem;">
         <div class="trade-header">
           <h2 data-i18n="edit_trade">Edit Trade</h2>
@@ -222,7 +233,17 @@
       "cancel": "Cancel",
       "confirm_delete": "Are you sure you want to delete this trade?",
       "trade_deleted": "Trade deleted successfully",
-      "trade_updated": "Trade updated successfully"
+      "trade_updated": "Trade updated successfully",
+      "performance": "Performance",
+      "summary": "Summary",
+      "rr": "R:R",
+      "trades": "Trades",
+      "deposit_withdrawal": "D/W",
+      "balance_transactions": "Balance Transactions",
+      "single_trade": "Single Trade",
+      "risk_reward": "Risk/Reward",
+      "total_lots": "Total Lots",
+      "trade_count": "Trade Count"
     },
     
     zh: {
@@ -265,7 +286,17 @@
       "cancel": "取消",
       "confirm_delete": "确定要删除这笔交易吗？",
       "trade_deleted": "交易删除成功",
-      "trade_updated": "交易更新成功"
+      "trade_updated": "交易更新成功",
+      "performance": "表现",
+      "summary": "概要",
+      "rr": "风险回报比",
+      "trades": "交易数",
+      "deposit_withdrawal": "入/出金",
+      "balance_transactions": "资金操作",
+      "single_trade": "单笔交易",
+      "risk_reward": "风险/回报",
+      "total_lots": "总手数",
+      "trade_count": "交易数量"
     }
   };
 
@@ -327,7 +358,7 @@
   });
   </script>
   
-  <!-- 编辑/删除功能脚本 (新增) -->
+  <!-- 编辑/删除功能脚本 -->
   <script>
   // 编辑/删除功能
   let editingTradeId = null;
