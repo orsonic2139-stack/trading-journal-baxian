@@ -1044,11 +1044,11 @@ function updateStats(data) {
 const updateChart = debounce(function(data) {
   if(!chart) initChart();
   
-  // 图表需要按日期升序排列
+  // 按创建时间排序（created_at），这是最准确的顺序
   const chartData = [...data].sort((a, b) => {
-    const dateA = new Date(a.date || 0);
-    const dateB = new Date(b.date || 0);
-    return dateA - dateB;
+    const timeA = new Date(a.created_at || a.date || 0).getTime();
+    const timeB = new Date(b.created_at || b.date || 0).getTime();
+    return timeA - timeB; // 按创建时间升序
   });
   
   let balance = 0;
@@ -1057,12 +1057,22 @@ const updateChart = debounce(function(data) {
   let colors = [];
   chartTradeDetails = [];
   
-  chartData.forEach(t => {
+  console.log('=== 图表数据（按时间顺序）===');
+  chartData.forEach((t, index) => {
     const change = t.balance_change !== undefined && t.balance_change !== 0 ? 
                    Number(t.balance_change) : Number(t.pnl_amount || 0);
     balance += change;
 
-    labels.push(t.date ? t.date.replace(/-/g,'/') : '');
+    // 创建显示标签：日期 + 时间
+    let displayLabel = '';
+    if (t.created_at) {
+      const date = new Date(t.created_at);
+      displayLabel = `${date.toLocaleDateString('en-US', {month: '2-digit', day: '2-digit'})} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    } else if (t.date) {
+      displayLabel = t.date.replace(/-/g,'/');
+    }
+    
+    labels.push(displayLabel);
     values.push(balance);
     
     chartTradeDetails.push({
@@ -1070,7 +1080,9 @@ const updateChart = debounce(function(data) {
       symbol: t.symbol,
       pnl_amount: t.pnl_amount,
       balance_change: t.balance_change,
-      notes: t.notes
+      notes: t.notes,
+      created_at: t.created_at,
+      date: t.date
     });
 
     if(t.direction === "Withdrawal") {
@@ -1080,6 +1092,8 @@ const updateChart = debounce(function(data) {
     } else {
       colors.push(change >= 0 ? "#3eb489" : "#ff4d4d");
     }
+    
+    console.log(`[${index}] ${displayLabel}: ${t.direction} ${t.symbol || ''} P/L: ${change}, 累计余额: ${balance}`);
   });
 
   chart.data.labels = labels;
