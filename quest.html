@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Quest - Trading Journal</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    /* Daily Quest 页面专用样式 */
+    .quest-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    
+    .quest-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    
+    .quest-header h1 {
+      color: #3eb489;
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #3eb489, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .quest-header p {
+      color: #9ca3af;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* 主容器 - 两栏布局 */
+    .quest-main-container {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    /* 左侧日期记录区域 */
+    .date-history-container {
+      background: linear-gradient(145deg, #1a2030, #0f1420);
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid rgba(59, 130, 246, 0.1);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .date-history-header {
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .date-history-header h3 {
+      color: #3b82f6;
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .date-history-header h3::before {
+      content: '📅';
+      font-size: 1.1rem;
+    }
+    
+    /* 日期列表容器 - 可滚动 */
+    .date-list-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+    
+    /* 滚动条样式 */
+    .date-list-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .date-list-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+    
+    .date-list-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3eb489, #3b82f6);
+      border-radius: 3px;
+    }
+    
+    .date-list-container::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #2d9c6f, #2563eb);
+    }
+    
+    /* 单个日期记录项 */
+    .date-history-item {
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+      background: rgba(30, 41, 59, 0.4);
+      border-radius: 12px;
+      border-left: 4px solid #3b82f6;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .date-history-item:hover {
+      background: rgba(30, 41, 59, 0.7);
+      transform: translateX(5px);
+    }
+    
+    .date-history-item.active {
+      background: rgba(59, 130, 246, 0.2);
+      border-left-color: #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+    
+    .date-history-item.passed {
+      border-left-color: #10b981;
+    }
+    
+    .date-history-item.failed {
+      border-left-color: #ef4444;
+    }
+    
+    .date-history-item.patience {
+      border-left-color: #f59e0b;
+    }
+    
+    .date-history-date {
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+    
+    .date-history-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .status-passed {
+      color: #10b981;
+      font-weight: 600;
+    }
+    
+    .status-failed {
+      color: #ef4444;
+      font-weight: 600;
+    }
+    
+    .status-patience {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+    
+    /* 右侧卡片 */
+    .combined-card {
+      background: linear-gradient(145deg, #1f2937, #0f172a);
+      border-radius: 20px;
+      padding: 2.5rem;
+      position: relative;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .combined-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3eb489, #3b82f6);
+    }
+    
+    .combined-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    /* 卡片标题 */
+    .combined-card h3 {
+      color: #3b82f6;
+      font-size: 1.4rem;
+      margin-bottom: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    
+    /* 显示日期区域 */
+    .selected-date-display {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding: 0.8rem;
+      background: rgba(30, 41, 59, 0.4);
+      border-radius: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .selected-date-display h4 {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    #selectedDateValue {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #3eb489;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    #selectedDateValue::before {
+      content: '📅';
+      font-size: 1.1rem;
+    }
+    
+    /* 目标容器 - 两栏布局 */
+    .targets-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      margin-top: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    /* 单个目标样式 */
+    .target-item {
+      text-align: center;
+      padding: 1.5rem;
+      border-radius: 16px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .target-item:hover {
+      background: rgba(30, 41, 59, 0.6);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .target-item h4 {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .target-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .target-desc {
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    
+    /* 进度条样式 */
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    
+    /* 盈利目标颜色 */
+    .profit-target .target-value {
+      color: #3eb489;
+    }
+    
+    .profit-target .progress-bar {
+      background: linear-gradient(90deg, #3eb489, #10b981);
+    }
+    
+    /* 亏损限制颜色 */
+    .loss-limit .target-value {
+      color: #3b82f6;
+    }
+    
+    .loss-limit .progress-bar {
+      background: linear-gradient(90deg, #3b82f6, #0ea5e9);
+    }
+    
+    /* 交易状态显示 */
+    .trading-status {
+      margin-top: auto;
+      padding: 1.5rem;
+      background: rgba(30, 41, 59, 0.4);
+      border-radius: 16px;
+      text-align: center;
+    }
+    
+    .trading-status h4 {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+    
+    #tradingStatus {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 0.5rem;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    /* 状态颜色 */
+    .status-passed-full {
+      color: #10b981 !important;
+      border-left: 4px solid #10b981;
+    }
+    
+    .status-failed-full {
+      color: #ef4444 !important;
+      border-left: 4px solid #ef4444;
+    }
+    
+    .status-patience-full {
+      color: #f59e0b !important;
+      border-left: 4px solid #f59e0b;
+    }
+    
+    /* 空状态提示 */
+    .empty-history {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #64748b;
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .empty-history::before {
+      content: '📊';
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 1024px) {
+      .quest-main-container {
+        grid-template-columns: 300px 1fr;
+        gap: 1.5rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .quest-main-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .date-history-container {
+        height: 300px;
+      }
+      
+      .combined-card {
+        padding: 2rem 1.5rem;
+        min-height: 500px;
+      }
+      
+      .selected-date-display {
+        padding: 0.6rem;
+      }
+      
+      .combined-card h3 {
+        margin-top: 0.5rem;
+      }
+      
+      .targets-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .target-item {
+        padding: 1.2rem;
+      }
+      
+      .target-value {
+        font-size: 2rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .combined-card {
+        padding: 1.5rem 1rem;
+      }
+      
+      .target-value {
+        font-size: 1.8rem;
+      }
+      
+      #tradingStatus {
+        font-size: 1.5rem;
+      }
+    }
+    
+    /* 完成动画 */
+    @keyframes completeAnimation {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .quest-complete {
+      animation: completeAnimation 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- 侧边栏 -->
+  <nav id="sidebar" class="sidebar">
+    <ul>
+      <li><a href="index.html" data-i18n="dashboard">Dashboard</a></li>
+      <li><a href="quest.html" data-i18n="daily_quest">Daily Quest</a></li>
+      <li><a href="reports.html" data-i18n="reports">Reports</a></li>
+      <li><a href="settings.html" data-i18n="settings">Settings</a></li>
+    </ul>
+  </nav>
+
+  <!-- 主内容 -->
+  <div id="pageContent" class="page-content">
+    <header>
+      <button id="hamburgerBtn">☰</button>
+      <h1 data-i18n="daily_quest">Daily Quest</h1>
+    </header>
+
+    <main>
+      <div class="quest-container">
+        <div class="quest-header">
+          <h1 data-i18n="daily_quest_title">Daily Trading Challenges</h1>
+          <p data-i18n="quest_desc">Complete daily tasks to earn rewards and improve your trading skills!</p>
+        </div>
+
+        <!-- 主容器 - 左侧日期记录 + 右侧当日卡片 -->
+        <div class="quest-main-container">
+          <!-- 左侧日期记录 -->
+          <div class="date-history-container">
+            <div class="date-history-header">
+              <h3 data-i18n="history_records">Daily Records</h3>
+            </div>
+            <div class="date-list-container" id="dateHistoryList">
+              <!-- 日期记录将动态生成在这里 -->
+              <div class="empty-history" id="emptyHistory">
+                <p data-i18n="no_history_yet">No records yet</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 右侧卡片 -->
+          <div class="combined-card">
+            <!-- 选择日期显示区域 -->
+            <div class="selected-date-display">
+              <h4 data-i18n="selected_date">Selected Date</h4>
+              <div id="selectedDateValue">Today</div>
+            </div>
+            
+            <h3 data-i18n="trading_status">Trading Status</h3>
+            
+            <!-- 目标容器 -->
+            <div class="targets-container">
+              <!-- 盈利目标 -->
+              <div class="target-item profit-target">
+                <h4 data-i18n="daily_profit_target">Daily Profit Target</h4>
+                <div class="target-value" id="profitTarget">0 / 100</div>
+                <div class="target-desc" id="profitTargetDesc">10% of daily balance</div>
+                <div class="progress-container">
+                  <div class="progress-bar" id="profitProgress" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <!-- 亏损限制 -->
+              <div class="target-item loss-limit">
+                <h4 data-i18n="daily_loss_limit">Daily Loss Limit</h4>
+                <div class="target-value" id="lossLimit">0 / 250</div>
+                <div class="target-desc" id="lossLimitDesc">25% of daily balance</div>
+                <div class="progress-container">
+                  <div class="progress-bar" id="lossProgress" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 交易状态 -->
+            <div class="trading-status" id="tradingStatusContainer">
+              <h4 data-i18n="status_desc">Trading Result</h4>
+              <div id="tradingStatus">⏳ Patience</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  <!-- 引入脚本 -->
+  <script src="language.js"></script>
+  
+  <!-- 页面脚本 -->
+  <script>
+  // 首先确保翻译对象存在
+  if (!window.translations) {
+    window.translations = {};
+  }
+  
+  // 确保英文翻译存在
+  if (!window.translations.en) {
+    window.translations.en = {};
+  }
+  
+  // 确保中文翻译存在
+  if (!window.translations.zh) {
+    window.translations.zh = {};
+  }
+  
+  // 添加所有翻译键
+  window.translations.en.selected_date = "Selected Date";
+  window.translations.en.history_records = "Daily Records";
+  window.translations.en.no_history_yet = "No records yet";
+  window.translations.en.trading_status = "Trading Status";
+  window.translations.en.status_desc = "Trading Result";
+  window.translations.en.passed = "Passed";
+  window.translations.en.failed = "Failed";
+  window.translations.en.patience = "Patience";
+  window.translations.en.no_trades = "No Trades";
+  
+  window.translations.zh.selected_date = "选择的日期";
+  window.translations.zh.history_records = "每日记录";
+  window.translations.zh.no_history_yet = "暂无记录";
+  window.translations.zh.trading_status = "交易状态";
+  window.translations.zh.status_desc = "交易结果";
+  window.translations.zh.passed = "已通过";
+  window.translations.zh.failed = "已失败";
+  window.translations.zh.patience = "需耐心";
+  window.translations.zh.no_trades = "无交易";
+  
+  // 其他已有的翻译键
+  window.translations.en.daily_profit_target = "Daily Profit Target";
+  window.translations.en.daily_loss_limit = "Daily Loss Limit";
+  
+  window.translations.zh.daily_profit_target = "每日盈利目标";
+  window.translations.zh.daily_loss_limit = "每日亏损限制";
+
+    // Supabase 配置
+    const SUPABASE_URL = "https://qwcfxuwerdpadntjxwvo.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF3Y2Z4dXdlcmRwYWRudGp4d3ZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxNDQyNjcsImV4cCI6MjA4MzcyMDI2N30.5kMmJwYQQ0vugPplzXhHjeG2C3QB5CQZ39p57WQv1ag";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // 全局变量
+    let currentUserId = null;
+    let dateHistoryData = {}; // 存储所有日期的数据
+    let selectedDate = null; // 当前选择的日期
+    
+    // 汉堡菜单
+    const sidebar = document.getElementById("sidebar");
+    const pageContent = document.getElementById("pageContent");
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    
+    if (hamburgerBtn) {
+      hamburgerBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("show");
+        pageContent.classList.toggle("shift");
+      });
+    }
+    
+    // 检查登录状态
+    async function checkAuth() {
+      const { data: { session }, error } = await client.auth.getSession();
+      
+      if (!session) {
+        window.location.href = 'login.html';
+        return null;
+      }
+      
+      currentUserId = session.user.id;
+      return session;
+    }
+
+    // 生成连续的日期列表（过去7天）
+    function generateDateRange(days = 7) {
+      const dates = [];
+      const today = new Date();
+      
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        dates.push(dateStr);
+      }
+      
+      return dates;
+    }
+
+    // 格式化日期显示
+    function formatDateForDisplay(dateStr, lang = 'en') {
+      const date = new Date(dateStr);
+      
+      if (lang === 'zh') {
+        return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+      } else {
+        const day = date.getDate();
+        const month = date.toLocaleDateString('en-US', { month: 'long' });
+        const year = date.getFullYear();
+        return `${day} ${month} ${year}`;
+      }
+    }
+
+    // 计算日期状态
+    function calculateDateStatus(totalPnl, profitTarget, lossLimit) {
+      if (Math.abs(totalPnl) >= lossLimit && totalPnl < 0) {
+        return { status: 'failed', statusClass: 'failed' };
+      } else if (totalPnl >= profitTarget) {
+        return { status: 'passed', statusClass: 'passed' };
+      } else {
+        return { status: 'patience', statusClass: 'patience' };
+      }
+    }
+
+    // 获取指定日期的起始余额
+    async function getDateStartingBalance(userId, targetDate) {
+      try {
+        const { currentBalance, dailyBalances } = await getBalanceByDate(userId);
+        
+        // 找到目标日期前一天的日期
+        const targetDateObj = new Date(targetDate);
+        const previousDay = new Date(targetDateObj);
+        previousDay.setDate(previousDay.getDate() - 1);
+        const previousDayStr = previousDay.toISOString().split('T')[0];
+        
+        // 查找前一天的最终余额
+        let startingBalance = 1000; // 默认值
+        
+        if (dailyBalances[previousDayStr]) {
+          startingBalance = dailyBalances[previousDayStr];
+        } else if (Object.keys(dailyBalances).length > 0) {
+          // 如果没有前一天的记录，查找最近一天的余额
+          const dates = Object.keys(dailyBalances).sort();
+          let foundBalance = null;
+          
+          for (let i = dates.length - 1; i >= 0; i--) {
+            if (dates[i] < targetDate) {
+              foundBalance = dailyBalances[dates[i]];
+              break;
+            }
+          }
+          
+          if (foundBalance) {
+            startingBalance = foundBalance;
+          }
+        }
+        
+        // 如果余额为0或负数，使用合理的默认值
+        if (startingBalance <= 0) {
+          startingBalance = 1000;
+        }
+        
+        return startingBalance;
+        
+      } catch (error) {
+        console.error('Error getting date starting balance:', error);
+        return 1000;
+      }
+    }
+
+    // 按日期计算每日结束时的余额
+    async function getBalanceByDate(userId) {
+      try {
+        const { data: trades, error } = await client
+          .from('trades')
+          .select('date, pnl_amount, balance_change, direction')
+          .eq('user_id', userId)
+          .order('date', { ascending: true })
+          .order('created_at', { ascending: true });
+        
+        if (error) throw error;
+        
+        if (!trades || trades.length === 0) {
+          return { currentBalance: 1000, dailyBalances: {} };
+        }
+        
+        const dailyBalances = {};
+        let currentBalance = 0;
+        
+        trades.forEach(trade => {
+          const date = trade.date;
+          
+          let change = 0;
+          if (trade.direction === "Deposit" || trade.direction === "Withdrawal") {
+            change = parseFloat(trade.balance_change || 0);
+          } else {
+            change = parseFloat(trade.pnl_amount || 0);
+          }
+          
+          currentBalance += change;
+          dailyBalances[date] = currentBalance;
+        });
+        
+        return { currentBalance, dailyBalances };
+        
+      } catch (error) {
+        console.error('Error getting balance by date:', error);
+        return { currentBalance: 1000, dailyBalances: {} };
+      }
+    }
+
+    // 加载所有日期记录（包括没有交易的日期）
+    async function loadAllDateRecords(userId) {
+      try {
+        const emptyHistoryEl = document.getElementById('emptyHistory');
+        const dateHistoryList = document.getElementById('dateHistoryList');
+        
+        if (!emptyHistoryEl || !dateHistoryList) return;
+        
+        // 获取最近7天的日期（包括今天）
+        const dateRange = generateDateRange(7);
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 获取这些日期的交易记录
+        const { data: allTrades, error } = await client
+          .from('trades')
+          .select('date, pnl_amount, balance_change, direction')
+          .eq('user_id', userId)
+          .in('date', dateRange)
+          .order('date', { ascending: false });
+        
+        if (error) throw error;
+        
+        // 按日期分组计算盈亏
+        const dateGroups = {};
+        if (allTrades && allTrades.length > 0) {
+          allTrades.forEach(trade => {
+            const date = trade.date;
+            if (!dateGroups[date]) {
+              dateGroups[date] = { 
+                totalPnl: 0, 
+                tradeCount: 0,
+                deposits: 0,
+                withdrawals: 0,
+                hasTrades: false
+              };
+            }
+            
+            if (trade.direction === 'Deposit') {
+              dateGroups[date].deposits += parseFloat(trade.balance_change || 0);
+              dateGroups[date].hasTrades = true;
+            } else if (trade.direction === 'Withdrawal') {
+              dateGroups[date].withdrawals += parseFloat(trade.balance_change || 0);
+              dateGroups[date].hasTrades = true;
+            } else if (trade.direction === 'Buy' || trade.direction === 'Sell') {
+              dateGroups[date].totalPnl += parseFloat(trade.pnl_amount || 0);
+              dateGroups[date].tradeCount++;
+              dateGroups[date].hasTrades = true;
+            }
+          });
+        }
+        
+        // 确保所有日期都有数据对象
+        dateRange.forEach(date => {
+          if (!dateGroups[date]) {
+            dateGroups[date] = { 
+              totalPnl: 0, 
+              tradeCount: 0,
+              deposits: 0,
+              withdrawals: 0,
+              hasTrades: false
+            };
+          }
+        });
+        
+        // 获取所有日期的余额数据
+        const { currentBalance, dailyBalances } = await getBalanceByDate(userId);
+        
+        // 清空现有内容
+        dateHistoryList.innerHTML = '';
+        dateHistoryData = {}; // 清空缓存
+        
+        const currentLang = localStorage.getItem('language') || 'en';
+        
+        // 按日期倒序处理（最新的在前面）
+        const sortedDates = Object.keys(dateGroups).sort((a, b) => b.localeCompare(a));
+        
+        // 为每个日期获取详细数据
+        for (const date of sortedDates) {
+          const data = dateGroups[date];
+          const totalPnl = data.totalPnl;
+          
+          // 获取该日期的起始余额
+          const startingBalance = await getDateStartingBalance(userId, date);
+          
+          const profitTarget = startingBalance * 0.1;
+          const lossLimit = startingBalance * 0.25;
+          
+          // 计算状态
+          let statusInfo;
+          if (!data.hasTrades) {
+            // 没有交易的日子总是 Patience
+            statusInfo = { status: 'patience', statusClass: 'patience' };
+          } else {
+            statusInfo = calculateDateStatus(totalPnl, profitTarget, lossLimit);
+          }
+          
+          // 存储日期数据
+          dateHistoryData[date] = {
+            date,
+            totalPnl,
+            startingBalance,
+            profitTarget,
+            lossLimit,
+            status: statusInfo.status,
+            statusClass: statusInfo.statusClass,
+            hasTrades: data.hasTrades
+          };
+          
+          // 获取状态文本
+          let statusText = '';
+          if (!data.hasTrades) {
+            statusText = currentLang === 'zh' ? '无交易' : 'No Trades';
+          } else if (window.translations && window.translations[currentLang] && window.translations[currentLang][statusInfo.status]) {
+            statusText = window.translations[currentLang][statusInfo.status];
+          } else {
+            statusText = statusInfo.status;
+          }
+          
+          // 状态图标
+          const statusIcons = {
+            'passed': '✅',
+            'failed': '❌',
+            'patience': '⏳'
+          };
+          
+          const statusIcon = !data.hasTrades ? '📊' : (statusIcons[statusInfo.status] || '⏳');
+          
+          // 创建日期记录项
+          const historyItem = document.createElement('div');
+          historyItem.className = `date-history-item ${statusInfo.statusClass} ${date === today ? 'active' : ''}`;
+          historyItem.dataset.date = date;
+          historyItem.dataset.status = statusInfo.status;
+          historyItem.dataset.hasTrades = data.hasTrades;
+          
+          const formattedDate = formatDateForDisplay(date, currentLang);
+          
+          historyItem.innerHTML = `
+            <div class="date-history-date">${formattedDate}</div>
+            <div class="date-history-status">
+              <span class="status-${statusInfo.statusClass}">(${statusText})</span>
+              <span>${statusIcon}</span>
+            </div>
+          `;
+          
+          // 添加点击事件
+          historyItem.addEventListener('click', () => {
+            selectDate(date);
+          });
+          
+          dateHistoryList.appendChild(historyItem);
+        }
+        
+        // 如果没有数据，显示空状态
+        if (sortedDates.length === 0) {
+          emptyHistoryEl.style.display = 'flex';
+        } else {
+          emptyHistoryEl.style.display = 'none';
+          
+          // 默认选中今天或最近的日期
+          const defaultDate = sortedDates.includes(today) ? today : sortedDates[0];
+          selectDate(defaultDate);
+        }
+        
+      } catch (error) {
+        console.error('Error loading date records:', error);
+      }
+    }
+
+    // 选择日期并更新显示
+    async function selectDate(date) {
+      try {
+        selectedDate = date;
+        
+        // 更新左侧列表的选中状态
+        document.querySelectorAll('.date-history-item').forEach(item => {
+          item.classList.remove('active');
+          if (item.dataset.date === date) {
+            item.classList.add('active');
+          }
+        });
+        
+        // 获取日期数据
+        const dateData = dateHistoryData[date];
+        if (!dateData) {
+          console.error('No data for date:', date);
+          return;
+        }
+        
+        const currentLang = localStorage.getItem('language') || 'en';
+        const today = new Date().toISOString().split('T')[0];
+        
+        // 更新选择的日期显示
+        const selectedDateEl = document.getElementById('selectedDateValue');
+        if (selectedDateEl) {
+          const formattedDate = formatDateForDisplay(date, currentLang);
+          selectedDateEl.textContent = date === today ? 
+            (currentLang === 'zh' ? '今天' : 'Today') : 
+            formattedDate;
+        }
+        
+        // 更新卡片标题
+        const cardTitle = document.querySelector('.combined-card h3');
+        if (cardTitle) {
+          cardTitle.textContent = currentLang === 'zh' ? '交易状态' : 'Trading Status';
+        }
+        
+        // 更新盈利目标卡片
+        const profitTargetEl = document.getElementById('profitTarget');
+        const profitProgressEl = document.getElementById('profitProgress');
+        const profitTargetDescEl = document.getElementById('profitTargetDesc');
+        
+        if (profitTargetEl) {
+          const profitAchieved = Math.max(0, dateData.totalPnl);
+          const profitPercentage = dateData.profitTarget > 0 ? 
+            Math.min(100, (profitAchieved / dateData.profitTarget) * 100) : 0;
+          
+          profitTargetEl.textContent = `${profitAchieved.toFixed(2)} / ${dateData.profitTarget.toFixed(2)}`;
+          
+          if (profitProgressEl) {
+            profitProgressEl.style.width = `${profitPercentage}%`;
+          }
+          
+          if (profitTargetDescEl) {
+            profitTargetDescEl.textContent = currentLang === 'zh' ? 
+              `10% 的当日余额 (${dateData.startingBalance.toFixed(2)})` :
+              `10% of daily balance (${dateData.startingBalance.toFixed(2)})`;
+          }
+          
+          // 根据完成度设置颜色
+          if (dateData.totalPnl >= dateData.profitTarget) {
+            profitTargetEl.style.color = '#10b981';
+          } else if (dateData.totalPnl >= dateData.profitTarget * 0.5) {
+            profitTargetEl.style.color = '#f59e0b';
+          } else {
+            profitTargetEl.style.color = '#3b82f6';
+          }
+        }
+        
+        // 更新亏损限制卡片
+        const lossLimitEl = document.getElementById('lossLimit');
+        const lossProgressEl = document.getElementById('lossProgress');
+        const lossLimitDescEl = document.getElementById('lossLimitDesc');
+        
+        if (lossLimitEl) {
+          const todayLoss = Math.max(0, -dateData.totalPnl);
+          const lossPercentage = dateData.lossLimit > 0 ? 
+            Math.min(100, (todayLoss / dateData.lossLimit) * 100) : 0;
+          
+          lossLimitEl.textContent = `${todayLoss.toFixed(2)} / ${dateData.lossLimit.toFixed(2)}`;
+          
+          if (lossProgressEl) {
+            lossProgressEl.style.width = `${lossPercentage}%`;
+          }
+          
+          if (lossLimitDescEl) {
+            lossLimitDescEl.textContent = currentLang === 'zh' ? 
+              `25% 的当日余额 (${dateData.startingBalance.toFixed(2)})` :
+              `25% of daily balance (${dateData.startingBalance.toFixed(2)})`;
+          }
+          
+          // 根据风险程度设置颜色
+          if (todayLoss >= dateData.lossLimit) {
+            lossLimitEl.style.color = '#ef4444';
+          } else if (todayLoss >= dateData.lossLimit * 0.8) {
+            lossLimitEl.style.color = '#f59e0b';
+          } else {
+            lossLimitEl.style.color = '#3b82f6';
+          }
+        }
+        
+        // 更新交易状态
+        const tradingStatusEl = document.getElementById('tradingStatus');
+        const tradingStatusContainer = document.getElementById('tradingStatusContainer');
+        
+        if (tradingStatusEl && tradingStatusContainer) {
+          let statusEmoji = '';
+          let statusColorClass = '';
+          let statusText = '';
+          
+          // 如果没有交易，显示无交易状态
+          if (!dateData.hasTrades) {
+            statusEmoji = '📊';
+            statusColorClass = 'status-patience-full';
+            statusText = currentLang === 'zh' ? '无交易' : 'No Trades';
+          } else {
+            // 根据状态设置图标和颜色
+            if (dateData.status === 'failed') {
+              statusEmoji = '❌';
+              statusColorClass = 'status-failed-full';
+            } else if (dateData.status === 'passed') {
+              statusEmoji = '✅';
+              statusColorClass = 'status-passed-full';
+            } else {
+              statusEmoji = '⏳';
+              statusColorClass = 'status-patience-full';
+            }
+            
+            // 获取状态文本
+            if (window.translations && window.translations[currentLang] && window.translations[currentLang][dateData.status]) {
+              const translation = window.translations[currentLang][dateData.status];
+              statusText = translation;
+            } else {
+              const defaultTexts = {
+                'passed': 'Passed',
+                'failed': 'Failed',
+                'patience': 'Patience'
+              };
+              statusText = defaultTexts[dateData.status] || 'Patience';
+            }
+          }
+          
+          // 更新显示
+          tradingStatusEl.textContent = `${statusEmoji} ${statusText}`;
+          tradingStatusEl.className = '';
+          tradingStatusEl.classList.add(statusColorClass);
+          tradingStatusContainer.className = 'trading-status';
+          tradingStatusContainer.classList.add(statusColorClass);
+        }
+        
+        console.log('已选择日期:', date, '数据:', dateData);
+        
+      } catch (error) {
+        console.error('Error selecting date:', error);
+      }
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 检查登录状态
+      checkAuth().then(session => {
+        if (session && currentUserId) {
+          // 加载所有日期记录
+          loadAllDateRecords(currentUserId);
+          
+          // 每分钟刷新一次数据
+          setInterval(() => {
+            loadAllDateRecords(currentUserId);
+          }, 60000);
+        }
+      });
+      
+      // 初始化语言
+      if (window.initLanguage) {
+        window.initLanguage();
+      }
+    });
+  </script>
+</body>
+</html>

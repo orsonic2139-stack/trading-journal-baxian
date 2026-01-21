@@ -33,6 +33,35 @@ const translations = {
     
     // 设置页面
     "settings_desc": "Customize your trading journal experience",
+
+    // 状态卡片翻译
+    "daily_profit_target": "Daily Profit Target",
+    "daily_loss_limit": "Daily Loss Limit",
+    "trading_status": "Trading Status",
+    "no_trading_today": "📊 No trading today",
+    "target_desc": "Daily Profit Target",
+    "limit_desc": "Daily Loss Limit",
+    "status_desc": "Based on today's performance",
+    "daily_quest": "Daily Quest",
+    "daily_quest_title": "Daily Trading Challenges",
+    "quest_desc": "Complete daily tasks to earn rewards and improve your trading skills!",
+    "completed_tasks": "Completed Tasks",
+    "current_streak": "Current Streak",
+    "total_rewards": "Total Rewards",
+    "total_tasks": "out of 5 total",
+    "days": "days",
+    "earned": "earned",
+    "todays_quests": "Today's Quests",
+    "reward_history": "Reward History",
+
+    // 状态评语
+    "profit_target_achieved": "Target achieved! Profit {0} ({1}%)",
+    "good_performance": "Good performance! Profit {0} ({1}%)",
+    "small_profit": "Small profit {0} ({1}%)",
+    "loss_exceeded": "Loss exceeded limit! Loss {0} ({1}%)",
+    "near_loss_limit": "Near loss limit! Loss {0} ({1}%)",
+    "small_loss": "Small loss {0} ({1}%)",
+    "no_trading_today": "No trading today",
     
     // 统计卡片
     "total_trades": "Total Trades",
@@ -118,6 +147,35 @@ const translations = {
     
     // 设置页面
     "settings_desc": "定制您的交易日志体验",
+
+    // 状态卡片翻译
+    "daily_profit_target": "每日盈利目标",
+    "daily_loss_limit": "每日亏损限制",
+    "trading_status": "当日交易状态",
+    "no_trading_today": "📊 今日尚未开始交易",
+    "target_desc": "每日盈利目标",
+    "limit_desc": "每日亏损限制",
+    "status_desc": "基于今日表现",
+    "daily_quest": "每日任务",
+    "daily_quest_title": "每日交易挑战",
+    "quest_desc": "完成每日任务，赚取奖励并提升交易技能！",
+    "completed_tasks": "已完成任务",
+    "current_streak": "连续天数",
+    "total_rewards": "总奖励",
+    "total_tasks": "共5个任务",
+    "days": "天",
+    "earned": "已获得",
+    "todays_quests": "今日任务",
+    "reward_history": "奖励历史",
+
+    // 状态评语
+    "profit_target_achieved": "目标达成！盈利 {0} ({1}%)",
+    "good_performance": "表现良好！盈利 {0} ({1}%)",
+    "small_profit": "小幅盈利 {0} ({1}%)",
+    "loss_exceeded": "亏损超限！亏损 {0} ({1}%)",
+    "near_loss_limit": "接近亏损限制！亏损 {0} ({1}%)",
+    "small_loss": "小幅亏损 {0} ({1}%)",
+    "no_trading_today": "今日尚未开始交易",
     
     // 统计卡片
     "total_trades": "总交易数",
