@@ -5,66 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Quest - Trading Journal</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="quest.css">
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
   <style>
-    /* Daily Quest 页面专用样式 */
+    /* Daily Quest 页面专用样式 - 优化版 */
+    
+    /* 页面容器 */
     .quest-container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      max-width: 1400px;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
     }
     
+    /* 页面标题区域 */
     .quest-header {
       text-align: center;
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.5));
+      border-radius: 20px;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .quest-header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3eb489, #3b82f6, #0ee7ff);
     }
     
     .quest-header h1 {
-      color: #3eb489;
-      font-size: 2.2rem;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #3eb489, #3b82f6);
+      font-size: 1.8rem;
+      margin-bottom: 0.6rem;
+      background: linear-gradient(135deg, #3eb489, #0ee7ff, #3b82f6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      font-weight: 700;
+      letter-spacing: -0.3px;
     }
     
     .quest-header p {
-      color: #9ca3af;
-      font-size: 1.1rem;
-      max-width: 600px;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      max-width: 700px;
       margin: 0 auto;
+      line-height: 1.5;
+      opacity: 0.9;
     }
     
-    /* 主容器 - 两栏布局 */
+    /* 主容器布局 */
     .quest-main-container {
       display: grid;
-      grid-template-columns: 350px 1fr;
-      gap: 2rem;
-      margin-bottom: 3rem;
+      grid-template-columns: 380px 1fr;
+      gap: 2.5rem;
+      margin-bottom: 2rem;
+      margin-top: 0.5rem;
     }
     
     /* 左侧日期记录区域 */
     .date-history-container {
       background: linear-gradient(145deg, #1a2030, #0f1420);
       border-radius: 20px;
-      padding: 1.5rem;
-      border: 1px solid rgba(59, 130, 246, 0.1);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-      height: 600px;
+      padding: 1.2rem;
+      border: 1px solid rgba(59, 130, 246, 0.12);
+      box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      height: 580px;
       display: flex;
       flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .date-history-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
     }
     
     .date-history-header {
-      padding-bottom: 1rem;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.8rem;
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     
     .date-history-header h3 {
-      color: #3b82f6;
-      font-size: 1.2rem;
+      color: #0ee7ff;
+      font-size: 1.1rem;
       font-weight: 600;
       margin: 0;
       display: flex;
@@ -73,15 +111,15 @@
     }
     
     .date-history-header h3::before {
-      content: '📅';
-      font-size: 1.1rem;
+      content: '📊';
+      font-size: 1rem;
     }
     
-    /* 日期列表容器 - 可滚动 */
+    /* 日期列表容器 */
     .date-list-container {
       flex: 1;
       overflow-y: auto;
-      padding-right: 5px;
+      padding-right: 6px;
     }
     
     /* 滚动条样式 */
@@ -90,7 +128,7 @@
     }
     
     .date-list-container::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.03);
       border-radius: 3px;
     }
     
@@ -99,30 +137,53 @@
       border-radius: 3px;
     }
     
-    .date-list-container::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #2d9c6f, #2563eb);
-    }
-    
     /* 单个日期记录项 */
     .date-history-item {
-      padding: 1rem;
-      margin-bottom: 0.8rem;
-      background: rgba(30, 41, 59, 0.4);
-      border-radius: 12px;
-      border-left: 4px solid #3b82f6;
-      transition: all 0.3s ease;
+      padding: 0.8rem;
+      margin-bottom: 0.6rem;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+      border-radius: 10px;
+      border-left: 3px solid #3b82f6;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .date-history-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+      );
+      transition: left 0.5s ease;
     }
     
     .date-history-item:hover {
-      background: rgba(30, 41, 59, 0.7);
-      transform: translateX(5px);
+      transform: translateX(4px) translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    
+    .date-history-item:hover::before {
+      left: 100%;
     }
     
     .date-history-item.active {
-      background: rgba(59, 130, 246, 0.2);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(30, 41, 59, 0.8));
       border-left-color: #3b82f6;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 
+        0 0 12px rgba(59, 130, 246, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
     
     .date-history-item.passed {
@@ -140,228 +201,629 @@
     .date-history-date {
       font-weight: 600;
       color: #e2e8f0;
-      margin-bottom: 4px;
-      font-size: 1rem;
+      margin-bottom: 3px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .date-history-date::before {
+      content: '📅';
+      font-size: 0.8rem;
+      opacity: 0.7;
     }
     
     .date-history-status {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
+      justify-content: space-between;
+      font-size: 0.8rem;
     }
     
     .status-passed {
       color: #10b981;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
     .status-failed {
       color: #ef4444;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
     .status-patience {
       color: #f59e0b;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     
-    /* 右侧卡片 */
-    .combined-card {
-      background: linear-gradient(145deg, #1f2937, #0f172a);
-      border-radius: 20px;
-      padding: 2.5rem;
+    .status-icon {
+      font-size: 0.85rem;
+    }
+    
+    /* 专业卡片容器 */
+    .professional-card {
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      border-radius: 18px;
+      padding: 1.5rem;
       position: relative;
-      border: 1px solid rgba(59, 130, 246, 0.15);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s ease;
+      border: 1px solid rgba(59, 130, 246, 0.12);
+      box-shadow: 
+        0 15px 30px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
       overflow: hidden;
-      min-height: 600px;
+      min-height: 580px;
       display: flex;
       flex-direction: column;
+      animation: cardEntry 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     
-    .combined-card::before {
+    @keyframes cardEntry {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    /* 卡片顶部装饰线 */
+    .card-header-decoration {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 0.8rem;
+    }
+    
+    .decoration-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
+    }
+    
+    .decoration-dot {
+      width: 6px;
+      height: 6px;
+      background: linear-gradient(135deg, #3eb489, #3b82f6);
+      border-radius: 50%;
+      margin: 0 0.8rem;
+      box-shadow: 0 0 8px #3b82f6;
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+    
+    /* 日期显示区域 */
+    .premium-date-display {
+      text-align: center;
+      margin-bottom: 1.2rem;
+      padding: 1.2rem;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.9));
+      border-radius: 16px;
+      border: 1px solid rgba(59, 130, 246, 0.18);
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .premium-date-display::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #3eb489, #3b82f6);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #3eb489, #0ee7ff, #3b82f6, transparent);
     }
     
-    .combined-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px rgba(59, 130, 246, 0.2);
-      border-color: rgba(59, 130, 246, 0.3);
+    .date-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.6rem 1.4rem;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+      border-radius: 40px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      margin-bottom: 0.4rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     
-    /* 卡片标题 */
-    .combined-card h3 {
-      color: #3b82f6;
-      font-size: 1.4rem;
-      margin-bottom: 2rem;
-      font-weight: 700;
-      text-align: center;
-      margin-top: 1rem;
-    }
-    
-    /* 显示日期区域 */
-    .selected-date-display {
-      text-align: center;
-      margin-bottom: 1.5rem;
-      padding: 0.8rem;
-      background: rgba(30, 41, 59, 0.4);
-      border-radius: 12px;
-      border: 1px solid rgba(59, 130, 246, 0.2);
-    }
-    
-    .selected-date-display h4 {
-      color: #94a3b8;
+    .date-badge .badge-icon {
       font-size: 1rem;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
     }
     
     #selectedDateValue {
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3eb489, #0ee7ff, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* 状态指示器包装器 */
+    .status-indicator-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.6rem 1.2rem;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+      border-radius: 40px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+    }
+    
+    .status-pill.passed {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
+    }
+    
+    .status-pill.failed {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+      border-color: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15);
+    }
+    
+    .status-pill.no-trades {
+      background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(148, 163, 184, 0.1));
+      border-color: rgba(148, 163, 184, 0.3);
+    }
+    
+    .status-icon {
+      font-size: 1rem;
+    }
+    
+    .status-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #f59e0b;
+    }
+    
+    .status-pill.passed .status-text {
+      color: #10b981;
+    }
+    
+    .status-pill.failed .status-text {
+      color: #ef4444;
+    }
+    
+    .status-pill.no-trades .status-text {
+      color: #94a3b8;
+    }
+    
+    /* 数据卡片容器 */
+    .card-footer-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.8));
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 1.2rem;
+      margin-top: 0.5rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .summary-item {
+      text-align: center;
+      position: relative;
+      padding: 0 0.8rem;
+    }
+    
+    .summary-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: -0.6rem;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .summary-label {
+      color: #64748b;
+      font-size: 0.75rem;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
+    
+    .summary-value {
       font-size: 1.2rem;
       font-weight: 700;
-      color: #3eb489;
+      color: #e2e8f0;
+      line-height: 1;
+    }
+    
+    .summary-value.positive {
+      color: #0ee7ff;
+    }
+    
+    .summary-value.negative {
+      color: #ef4444;
+    }
+    
+    /* 卡片主标题 */
+    .card-main-title {
+      text-align: center;
+      margin-bottom: 1.2rem;
+      margin-top: 0.3rem;
+      font-size: 1.2rem;
+      color: #e2e8f0;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      letter-spacing: -0.3px;
     }
     
-    #selectedDateValue::before {
-      content: '📅';
+    .title-icon {
       font-size: 1.1rem;
+      background: linear-gradient(135deg, #3eb489, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
-    /* 目标容器 - 两栏布局 */
-    .targets-container {
+    /* 高级目标卡片容器 */
+    .premium-targets {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      margin-top: 1rem;
-      margin-bottom: 2rem;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
     }
     
-    /* 单个目标样式 */
-    .target-item {
-      text-align: center;
-      padding: 1.5rem;
+    /* 单个高级卡片 */
+    .premium-card {
+      background: linear-gradient(145deg, #1e293b, #0f172a);
       border-radius: 16px;
-      background: rgba(30, 41, 59, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 1.3rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .premium-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.08), transparent 50%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .premium-card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.35),
+        0 0 30px rgba(59, 130, 246, 0.12);
+      border-color: rgba(59, 130, 246, 0.25);
+    }
+    
+    .premium-card:hover::before {
+      opacity: 1;
+    }
+    
+    /* 卡片角落装饰 */
+    .card-corner-decoration {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      border: 2px solid transparent;
+    }
+    
+    .card-corner-decoration.top-left {
+      top: 0;
+      left: 0;
+      border-top-color: rgba(59, 130, 246, 0.3);
+      border-left-color: rgba(59, 130, 246, 0.3);
+      border-radius: 16px 0 0 0;
+    }
+    
+    .card-corner-decoration.bottom-right {
+      bottom: 0;
+      right: 0;
+      border-bottom-color: rgba(59, 130, 246, 0.3);
+      border-right-color: rgba(59, 130, 246, 0.3);
+      border-radius: 0 0 16px 0;
+    }
+    
+    /* 卡片头部 */
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+    
+    .card-title-icon {
+      font-size: 1.3rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.12);
+      border-radius: 10px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+    
+    .profit-icon {
+      background: rgba(14, 231, 255, 0.12);
+      border-color: rgba(14, 231, 255, 0.25);
+      color: #0ee7ff;
+    }
+    
+    .loss-icon {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #ef4444;
+    }
+    
+    .card-header h4 {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    
+    /* 目标状态指示器 */
+    .target-status-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+    
+    .target-status-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.5rem 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 500;
       transition: all 0.3s ease;
     }
     
-    .target-item:hover {
-      background: rgba(30, 41, 59, 0.6);
-      transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    .target-status-item.profit {
+      color: #0ee7ff;
+      background: rgba(14, 231, 255, 0.1);
+      border: 1px solid rgba(14, 231, 255, 0.2);
     }
     
-    .target-item h4 {
-      color: #94a3b8;
-      font-size: 1rem;
-      margin-bottom: 0.8rem;
-      font-weight: 600;
+    .target-status-item.loss {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
     
-    .target-value {
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 0.8rem;
-      min-height: 60px;
-      display: flex;
+    .target-status-item.achieved {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .target-status-indicator {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      margin-left: 4px;
     }
     
-    .target-desc {
+    .status-check {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+      animation: pulseSuccess 2s infinite;
+    }
+    
+    .status-cross {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+      animation: pulseError 2s infinite;
+    }
+    
+    @keyframes pulseSuccess {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    @keyframes pulseError {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    /* 目标值显示 */
+    .premium-value {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 5px;
+      line-height: 1;
+    }
+    
+    .premium-value .current {
+      color: #0ee7ff;
+      text-shadow: 0 2px 6px rgba(14, 231, 255, 0.2);
+    }
+    
+    .premium-value.loss .current {
+      color: #ef4444;
+      text-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+    }
+    
+    .premium-value .separator {
       color: #64748b;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
+      margin: 0 4px;
+      font-weight: 500;
     }
     
-    /* 进度条样式 */
-    .progress-container {
-      width: 100%;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 1rem;
+    .premium-value .target {
+      color: #cbd5e1;
+      font-weight: 500;
+      opacity: 0.9;
     }
     
-    .progress-bar {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-    
-    /* 盈利目标颜色 */
-    .profit-target .target-value {
-      color: #3eb489;
-    }
-    
-    .profit-target .progress-bar {
-      background: linear-gradient(90deg, #3eb489, #10b981);
-    }
-    
-    /* 亏损限制颜色 */
-    .loss-limit .target-value {
-      color: #3b82f6;
-    }
-    
-    .loss-limit .progress-bar {
-      background: linear-gradient(90deg, #3b82f6, #0ea5e9);
-    }
-    
-    /* 交易状态显示 */
-    .trading-status {
-      margin-top: auto;
-      padding: 1.5rem;
-      background: rgba(30, 41, 59, 0.4);
-      border-radius: 16px;
-      text-align: center;
-    }
-    
-    .trading-status h4 {
+    .premium-value .currency {
+      font-size: 0.85rem;
       color: #94a3b8;
-      font-size: 1rem;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
+      margin-left: 6px;
+      font-weight: 500;
     }
     
-    #tradingStatus {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-top: 0.5rem;
-      min-height: 40px;
+    /* 进度条部分 */
+    .progress-section {
+      margin-bottom: 0.8rem;
+    }
+    
+    .progress-label {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
+      margin-bottom: 6px;
     }
     
-    /* 状态颜色 */
-    .status-passed-full {
-      color: #10b981 !important;
-      border-left: 4px solid #10b981;
+    .progress-label .percentage {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #e2e8f0;
     }
     
-    .status-failed-full {
-      color: #ef4444 !important;
-      border-left: 4px solid #ef4444;
+    .progress-label .progress-desc {
+      font-size: 0.75rem;
+      color: #64748b;
+      text-align: right;
+      max-width: 110px;
     }
     
-    .status-patience-full {
-      color: #f59e0b !important;
-      border-left: 4px solid #f59e0b;
+    /* 进度条包装器 */
+    .progress-bar-wrapper {
+      position: relative;
+      height: 10px;
+    }
+    
+    .progress-bar-bg {
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 5px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      position: relative;
+      background: linear-gradient(90deg, #0ee7ff, #06b6d4, #0891b2);
+      width: 0%;
+      transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 12px rgba(14, 231, 255, 0.25);
+    }
+    
+    .progress-bar-fill.loss {
+      background: linear-gradient(90deg, #ef4444, #dc2626, #b91c1c);
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+    }
+    
+    .progress-bar-glow {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      animation: glowMove 2.5s linear infinite;
+    }
+    
+    /* 统计徽章 */
+    .stats-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.4rem 0.8rem;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+    }
+    
+    .profit-stats {
+      border-color: rgba(14, 231, 255, 0.2);
+      box-shadow: 0 3px 10px rgba(14, 231, 255, 0.08);
+    }
+    
+    .loss-stats {
+      border-color: rgba(239, 68, 68, 0.2);
+      box-shadow: 0 3px 10px rgba(239, 68, 68, 0.08);
+    }
+    
+    .stats-icon {
+      font-size: 0.8rem;
+    }
+    
+    .stats-text {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 500;
     }
     
     /* 空状态提示 */
@@ -378,85 +840,310 @@
     
     .empty-history::before {
       content: '📊';
-      font-size: 3rem;
+      font-size: 2.5rem;
       margin-bottom: 1rem;
       opacity: 0.5;
+      animation: float 3s ease-in-out infinite;
     }
     
-    /* 响应式设计 */
-    @media (max-width: 1024px) {
-      .quest-main-container {
-        grid-template-columns: 300px 1fr;
-        gap: 1.5rem;
-      }
+    /* 成就徽章 */
+    .achievement-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+      z-index: 2;
+      box-shadow: 0 3px 10px rgba(245, 158, 11, 0.25);
     }
     
-    @media (max-width: 768px) {
-      .quest-main-container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-      
-      .date-history-container {
-        height: 300px;
-      }
-      
-      .combined-card {
-        padding: 2rem 1.5rem;
-        min-height: 500px;
-      }
-      
-      .selected-date-display {
-        padding: 0.6rem;
-      }
-      
-      .combined-card h3 {
-        margin-top: 0.5rem;
-      }
-      
-      .targets-container {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-      }
-      
-      .target-item {
-        padding: 1.2rem;
-      }
-      
-      .target-value {
-        font-size: 2rem;
-      }
+    .achievement-badge::before {
+      content: '🏆';
+      margin-right: 4px;
     }
     
-    @media (max-width: 480px) {
-      .combined-card {
-        padding: 1.5rem 1rem;
-      }
-      
-      .target-value {
-        font-size: 1.8rem;
-      }
-      
-      #tradingStatus {
-        font-size: 1.5rem;
-      }
+    /* 背景装饰 */
+    .professional-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      right: -50%;
+      bottom: -50%;
+      background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.03), transparent 50%),
+                  radial-gradient(circle at 70% 70%, rgba(62, 180, 137, 0.03), transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: rotate 20s linear infinite;
+    }
+    
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .professional-card > * {
+      position: relative;
+      z-index: 1;
     }
     
     /* 完成动画 */
     @keyframes completeAnimation {
       0% {
         transform: scale(1);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
       }
       50% {
         transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.25);
       }
       100% {
         transform: scale(1);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
       }
     }
     
     .quest-complete {
-      animation: completeAnimation 0.5s ease;
+      animation: completeAnimation 0.6s ease;
+    }
+    
+    /* 盈亏指示器 */
+    .pnl-indicator {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .pnl-indicator.positive {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .pnl-indicator.negative {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 1200px) {
+      .quest-main-container {
+        grid-template-columns: 340px 1fr;
+        gap: 2rem;
+      }
+      
+      .professional-card {
+        padding: 1.3rem;
+      }
+      
+      .premium-targets {
+        gap: 1.2rem;
+      }
+      
+      .premium-value {
+        font-size: 1.5rem;
+      }
+      
+      .date-history-container {
+        height: 540px;
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .quest-main-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .date-history-container {
+        height: 320px;
+      }
+      
+      .professional-card {
+        min-height: auto;
+        padding: 1.3rem;
+      }
+      
+      .card-footer-summary {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+        padding: 0.9rem;
+      }
+      
+      .summary-item:not(:last-child)::after {
+        display: none;
+      }
+      
+      .summary-item {
+        padding: 0.6rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      
+      .summary-item:last-child {
+        border-bottom: none;
+      }
+      
+      .premium-targets {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .quest-container {
+        padding: 0 1rem;
+      }
+      
+      .quest-header {
+        padding: 1.2rem;
+        margin-bottom: 1.2rem;
+      }
+      
+      .quest-header h1 {
+        font-size: 1.6rem;
+      }
+      
+      .premium-targets {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      .premium-card {
+        padding: 1.1rem;
+      }
+      
+      .premium-value {
+        font-size: 1.4rem;
+      }
+      
+      .date-badge {
+        padding: 0.5rem 1.2rem;
+      }
+      
+      #selectedDateValue {
+        font-size: 1rem;
+      }
+      
+      .status-pill {
+        padding: 0.5rem 1rem;
+      }
+      
+      .professional-card {
+        padding: 1.1rem;
+      }
+      
+      .card-main-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+      }
+      
+      .summary-value {
+        font-size: 1.1rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .quest-header h1 {
+        font-size: 1.4rem;
+      }
+      
+      .quest-header p {
+        font-size: 0.85rem;
+      }
+      
+      .date-history-container {
+        padding: 1rem;
+      }
+      
+      .professional-card {
+        padding: 1rem;
+      }
+      
+      .premium-value {
+        font-size: 1.2rem;
+      }
+      
+      .summary-value {
+        font-size: 1rem;
+      }
+      
+      .card-main-title {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+      }
+      
+      .progress-label .percentage {
+        font-size: 0.9rem;
+      }
+      
+      .card-footer-summary {
+        padding: 0.8rem;
+      }
+      
+      .summary-label {
+        font-size: 0.7rem;
+      }
+      
+      .target-status-item {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+      }
+    }
+    
+    /* 性能优化 */
+    @media (prefers-reduced-motion: reduce) {
+      .professional-card,
+      .premium-card,
+      .date-history-item,
+      .progress-bar-fill {
+        transition: none !important;
+        animation: none !important;
+      }
+      
+      .progress-bar-fill {
+        transition: width 0.3s ease !important;
+      }
+      
+      .status-check,
+      .status-cross {
+        animation: none !important;
+      }
+    }
+    
+    /* 高对比度模式 */
+    @media (prefers-contrast: high) {
+      .professional-card,
+      .premium-card,
+      .date-history-item {
+        border: 2px solid #3b82f6;
+      }
+      
+      .progress-bar-fill {
+        border: 1px solid white;
+      }
+      
+      .status-pill {
+        border: 2px solid currentColor;
+      }
+      
+      .target-status-item {
+        border: 2px solid currentColor;
+      }
+    }
+    
+    /* 深色模式优化 */
+    @media (prefers-color-scheme: dark) {
+      .professional-card,
+      .premium-card,
+      .date-history-container {
+        background: linear-gradient(145deg, #0a0e1a, #121828);
+      }
     }
   </style>
 </head>
@@ -465,7 +1152,7 @@
   <nav id="sidebar" class="sidebar">
     <ul>
       <li><a href="index.html" data-i18n="dashboard">Dashboard</a></li>
-      <li><a href="quest.html" data-i18n="daily_quest">Daily Quest</a></li>
+      <li><a href="quest.html" data-i18n="daily_quest" class="active">Daily Quest</a></li>
       <li><a href="reports.html" data-i18n="reports">Reports</a></li>
       <li><a href="settings.html" data-i18n="settings">Settings</a></li>
     </ul>
@@ -474,15 +1161,21 @@
   <!-- 主内容 -->
   <div id="pageContent" class="page-content">
     <header>
-      <button id="hamburgerBtn">☰</button>
+      <button id="hamburgerBtn" class="hamburger-btn">☰</button>
       <h1 data-i18n="daily_quest">Daily Quest</h1>
     </header>
 
     <main>
       <div class="quest-container">
+        <!-- 页面标题区域 -->
         <div class="quest-header">
           <h1 data-i18n="daily_quest_title">Daily Trading Challenges</h1>
-          <p data-i18n="quest_desc">Complete daily tasks to earn rewards and improve your trading skills!</p>
+          <p data-i18n="quest_desc">Track your daily performance, achieve targets, and maintain trading discipline. Every day is a new opportunity.</p>
+        </div>
+
+        <!-- 统计摘要 -->
+        <div class="stats-summary" id="statsSummary" style="margin-bottom: 2rem;">
+          <!-- 统计卡片将由 JavaScript 动态生成 -->
         </div>
 
         <!-- 主容器 - 左侧日期记录 + 右侧当日卡片 -->
@@ -490,57 +1183,148 @@
           <!-- 左侧日期记录 -->
           <div class="date-history-container">
             <div class="date-history-header">
-              <h3 data-i18n="history_records">Daily Records</h3>
+              <h3 data-i18n="history_records">Trading History</h3>
             </div>
             <div class="date-list-container" id="dateHistoryList">
               <!-- 日期记录将动态生成在这里 -->
               <div class="empty-history" id="emptyHistory">
-                <p data-i18n="no_history_yet">No records yet</p>
+                <p data-i18n="no_history_yet">No trading records yet</p>
+                <p class="empty-hint" data-i18n="start_trading_hint">Start trading to see your daily performance here</p>
               </div>
             </div>
           </div>
           
-          <!-- 右侧卡片 -->
-          <div class="combined-card">
-            <!-- 选择日期显示区域 -->
-            <div class="selected-date-display">
-              <h4 data-i18n="selected_date">Selected Date</h4>
-              <div id="selectedDateValue">Today</div>
-            </div>
-            
-            <h3 data-i18n="trading_status">Trading Status</h3>
-            
-            <!-- 目标容器 -->
-            <div class="targets-container">
-              <!-- 盈利目标 -->
-              <div class="target-item profit-target">
-                <h4 data-i18n="daily_profit_target">Daily Profit Target</h4>
-                <div class="target-value" id="profitTarget">0 / 100</div>
-                <div class="target-desc" id="profitTargetDesc">10% of daily balance</div>
-                <div class="progress-container">
-                  <div class="progress-bar" id="profitProgress" style="width: 0%"></div>
-                </div>
-              </div>
-              
-              <!-- 亏损限制 -->
-              <div class="target-item loss-limit">
-                <h4 data-i18n="daily_loss_limit">Daily Loss Limit</h4>
-                <div class="target-value" id="lossLimit">0 / 250</div>
-                <div class="target-desc" id="lossLimitDesc">25% of daily balance</div>
-                <div class="progress-container">
-                  <div class="progress-bar" id="lossProgress" style="width: 0%"></div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- 交易状态 -->
-            <div class="trading-status" id="tradingStatusContainer">
-              <h4 data-i18n="status_desc">Trading Result</h4>
-              <div id="tradingStatus">⏳ Patience</div>
+          <!-- 右侧专业卡片 -->
+<div class="professional-card">
+  <!-- 卡片顶部装饰线 -->
+  <div class="card-header-decoration">
+    <div class="decoration-line"></div>
+    <div class="decoration-dot"></div>
+    <div class="decoration-line"></div>
+  </div>
+  
+  <!-- 状态指示器 -->
+  <div class="status-indicator-wrapper">
+    <div class="status-pill" id="statusPill">
+      <span class="status-icon">⏳</span>
+      <span class="status-text" id="statusText">Patience</span>
+    </div>
+  </div>
+  
+  <!-- 数据卡片 -->
+  <div class="card-footer-summary">
+  <div class="summary-item">
+    <div class="summary-label" data-i18n="daily_result">Daily Result</div>
+    <div class="summary-value" id="dailyResult">$0.00</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-label" data-i18n="trades_today">Trades</div>
+    <div class="summary-value" id="tradesCount">0</div>
+  </div>
+  <div class="summary-item">
+    <div class="summary-label" data-i18n="profit_factor">Profit Factor</div>
+    <div class="summary-value" id="profitFactor">0.0</div>
+  </div>
+</div>
+  
+  <!-- 卡片主标题 -->
+  <h3 class="card-main-title">
+    <span class="title-icon">📊</span>
+    <span data-i18n="trading_status">Trading Performance</span>
+  </h3>
+  
+  <!-- 目标容器 -->
+  <div class="premium-targets">
+    <!-- 盈利目标卡片 -->
+    <div class="premium-card profit-target-card">
+      <div class="card-corner-decoration top-left"></div>
+      <div class="card-corner-decoration bottom-right"></div>
+      
+      <!-- 成就徽章 -->
+      <div class="achievement-badge" id="profitBadge" style="display: none;">Goal Achieved</div>
+      
+      <div class="card-header">
+        <div class="card-title-icon profit-icon">💰</div>
+        <h4 data-i18n="daily_profit_target">Profit Target</h4>
+      </div>
+      
+      <div class="card-content">
+        <div class="target-value premium-value" id="profitTarget">
+          <span class="current" id="profitCurrent">0</span>
+          <span class="separator">/</span>
+          <span class="target" id="profitTargetValue">100</span>
+          <span class="currency">USD</span>
+        </div>
+        
+        <div class="progress-section">
+          <div class="progress-label">
+            <span class="percentage" id="profitPercentage">0%</span>
+            <span class="progress-desc" id="profitTargetDesc">of daily balance</span>
+          </div>
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="profitProgress"></div>
+              <div class="progress-bar-glow"></div>
             </div>
           </div>
         </div>
+        
+        <!-- 盈利目标状态 -->
+        <div class="target-status-container" id="profitTargetStatusContainer" style="display: none;">
+          <div class="target-status-item profit" id="profitTargetStatus">
+            <span>📈 10% daily profit target</span>
+            <span class="target-status-indicator" id="profitStatusIndicator"></span>
+          </div>
+        </div>
       </div>
+    </div>
+    
+    <!-- 亏损限制卡片 -->
+    <div class="premium-card loss-limit-card">
+      <div class="card-corner-decoration top-left"></div>
+      <div class="card-corner-decoration bottom-right"></div>
+      
+      <div class="card-header">
+        <div class="card-title-icon loss-icon">🛡️</div>
+        <h4 data-i18n="daily_loss_limit">Loss Limit</h4>
+      </div>
+      
+      <div class="card-content">
+        <div class="target-value premium-value loss" id="lossLimit">
+          <span class="current" id="lossCurrent">0</span>
+          <span class="separator">/</span>
+          <span class="target" id="lossLimitValue">250</span>
+          <span class="currency">USD</span>
+        </div>
+        
+        <div class="progress-section">
+          <div class="progress-label">
+            <span class="percentage" id="lossPercentage">0%</span>
+            <span class="progress-desc" id="lossLimitDesc">of daily balance</span>
+          </div>
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill loss" id="lossProgress"></div>
+              <div class="progress-bar-glow"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 亏损限制状态 -->
+        <div class="target-status-container" id="lossTargetStatusContainer" style="display: none;">
+          <div class="target-status-item loss" id="lossTargetStatus">
+            <span>📉 25% daily loss limit</span>
+            <span class="target-status-indicator" id="lossStatusIndicator"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <!-- 引入脚本 -->
   <script src="language.js"></script>
@@ -563,32 +1347,70 @@
   }
   
   // 添加所有翻译键
-  window.translations.en.selected_date = "Selected Date";
-  window.translations.en.history_records = "Daily Records";
-  window.translations.en.no_history_yet = "No records yet";
-  window.translations.en.trading_status = "Trading Status";
-  window.translations.en.status_desc = "Trading Result";
-  window.translations.en.passed = "Passed";
-  window.translations.en.failed = "Failed";
-  window.translations.en.patience = "Patience";
-  window.translations.en.no_trades = "No Trades";
+  const translationKeys = {
+    en: {
+      profit_factor: "Profit Factor",
+      daily_quest_title: "Daily Trading Challenges",
+      quest_desc: "Track your daily performance, achieve targets, and maintain trading discipline. Every day is a new opportunity.",
+      history_records: "Trading History",
+      no_history_yet: "No trading records yet",
+      start_trading_hint: "Start trading to see your daily performance here",
+      trading_status: "Trading Performance",
+      passed: "Passed",
+      failed: "Failed",
+      patience: "Patience",
+      no_trades: "No Trades",
+      daily_profit_target: "Profit Target",
+      daily_loss_limit: "Loss Limit",
+      daily_result: "Daily Result",
+      trades_today: "Trades",
+      risk_ratio: "Risk Ratio",
+      achievement_goal: "Goal Achieved",
+      total_profit: "Total Profit",
+      total_trades: "Total Trades",
+      win_rate: "Win Rate",
+      avg_profit: "Avg. Profit",
+      max_profit: "Max Profit",
+      max_loss: "Max Loss",
+      consistency: "Consistency",
+      current_streak: "Current Streak",
+      profit_target_status: "10% daily profit target",
+      loss_limit_status: "25% daily loss limit"
+    },
+    zh: {
+      profit_factor: "盈利因子",
+      daily_quest_title: "每日交易挑战",
+      quest_desc: "跟踪您的每日表现，实现目标，并保持交易纪律。每一天都是新的机会。",
+      history_records: "交易历史",
+      no_history_yet: "暂无交易记录",
+      start_trading_hint: "开始交易以查看每日表现",
+      trading_status: "交易表现",
+      passed: "已通过",
+      failed: "已失败",
+      patience: "需耐心",
+      no_trades: "无交易",
+      daily_profit_target: "盈利目标",
+      daily_loss_limit: "亏损限制",
+      daily_result: "当日结果",
+      trades_today: "交易次数",
+      risk_ratio: "风险比率",
+      achievement_goal: "目标达成",
+      total_profit: "总盈利",
+      total_trades: "总交易",
+      win_rate: "胜率",
+      avg_profit: "平均盈利",
+      max_profit: "最大盈利",
+      max_loss: "最大亏损",
+      consistency: "一致性",
+      current_streak: "当前连胜",
+      profit_target_status: "10% 每日盈利目标",
+      loss_limit_status: "25% 每日亏损限制"
+    }
+  };
   
-  window.translations.zh.selected_date = "选择的日期";
-  window.translations.zh.history_records = "每日记录";
-  window.translations.zh.no_history_yet = "暂无记录";
-  window.translations.zh.trading_status = "交易状态";
-  window.translations.zh.status_desc = "交易结果";
-  window.translations.zh.passed = "已通过";
-  window.translations.zh.failed = "已失败";
-  window.translations.zh.patience = "需耐心";
-  window.translations.zh.no_trades = "无交易";
-  
-  // 其他已有的翻译键
-  window.translations.en.daily_profit_target = "Daily Profit Target";
-  window.translations.en.daily_loss_limit = "Daily Loss Limit";
-  
-  window.translations.zh.daily_profit_target = "每日盈利目标";
-  window.translations.zh.daily_loss_limit = "每日亏损限制";
+  // 合并翻译
+  Object.assign(window.translations.en, translationKeys.en);
+  Object.assign(window.translations.zh, translationKeys.zh);
 
     // Supabase 配置
     const SUPABASE_URL = "https://qwcfxuwerdpadntjxwvo.supabase.co";
@@ -597,8 +1419,13 @@
     
     // 全局变量
     let currentUserId = null;
-    let dateHistoryData = {}; // 存储所有日期的数据
-    let selectedDate = null; // 当前选择的日期
+    let dateHistoryData = {};
+    let selectedDate = null;
+    let dateRange = [];
+    
+    // 缓存管理
+    const dateDataCache = new Map();
+    const CACHE_DURATION = 5 * 60 * 1000;
     
     // 汉堡菜单
     const sidebar = document.getElementById("sidebar");
@@ -625,7 +1452,7 @@
       return session;
     }
 
-    // 生成连续的日期列表（过去7天）
+    // 生成连续的日期列表
     function generateDateRange(days = 7) {
       const dates = [];
       const today = new Date();
@@ -648,7 +1475,7 @@
         return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
       } else {
         const day = date.getDate();
-        const month = date.toLocaleDateString('en-US', { month: 'long' });
+        const month = date.toLocaleDateString('en-US', { month: 'short' });
         const year = date.getFullYear();
         return `${day} ${month} ${year}`;
       }
@@ -670,19 +1497,16 @@
       try {
         const { currentBalance, dailyBalances } = await getBalanceByDate(userId);
         
-        // 找到目标日期前一天的日期
         const targetDateObj = new Date(targetDate);
         const previousDay = new Date(targetDateObj);
         previousDay.setDate(previousDay.getDate() - 1);
         const previousDayStr = previousDay.toISOString().split('T')[0];
         
-        // 查找前一天的最终余额
-        let startingBalance = 1000; // 默认值
+        let startingBalance = 1000;
         
         if (dailyBalances[previousDayStr]) {
           startingBalance = dailyBalances[previousDayStr];
         } else if (Object.keys(dailyBalances).length > 0) {
-          // 如果没有前一天的记录，查找最近一天的余额
           const dates = Object.keys(dailyBalances).sort();
           let foundBalance = null;
           
@@ -698,7 +1522,6 @@
           }
         }
         
-        // 如果余额为0或负数，使用合理的默认值
         if (startingBalance <= 0) {
           startingBalance = 1000;
         }
@@ -713,6 +1536,13 @@
 
     // 按日期计算每日结束时的余额
     async function getBalanceByDate(userId) {
+      const cacheKey = `balance_${userId}`;
+      const cached = dateDataCache.get(cacheKey);
+      
+      if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+        return cached.data;
+      }
+      
       try {
         const { data: trades, error } = await client
           .from('trades')
@@ -724,7 +1554,9 @@
         if (error) throw error;
         
         if (!trades || trades.length === 0) {
-          return { currentBalance: 1000, dailyBalances: {} };
+          const result = { currentBalance: 1000, dailyBalances: {} };
+          dateDataCache.set(cacheKey, { data: result, timestamp: Date.now() });
+          return result;
         }
         
         const dailyBalances = {};
@@ -744,7 +1576,9 @@
           dailyBalances[date] = currentBalance;
         });
         
-        return { currentBalance, dailyBalances };
+        const result = { currentBalance, dailyBalances };
+        dateDataCache.set(cacheKey, { data: result, timestamp: Date.now() });
+        return result;
         
       } catch (error) {
         console.error('Error getting balance by date:', error);
@@ -752,7 +1586,85 @@
       }
     }
 
-    // 加载所有日期记录（包括没有交易的日期）
+    // 获取日期统计 - 修改版本（包含盈利因子计算所需数据）
+async function getDateStats(userId, date) {
+  try {
+    const { data: trades, error } = await client
+      .from('trades')
+      .select('id, pnl_amount, direction')
+      .eq('user_id', userId)
+      .eq('date', date);
+    
+    if (error) throw error;
+    
+    let tradeCount = 0;
+    let winCount = 0;
+    let totalProfit = 0;
+    let totalWinningProfit = 0; // 新增：盈利总额
+    let totalLosingLoss = 0;     // 新增：亏损总额（正数）
+    let maxProfit = 0;
+    let maxLoss = 0;
+    
+    if (trades && trades.length > 0) {
+      trades.forEach(trade => {
+        if (trade.direction === 'Buy' || trade.direction === 'Sell') {
+          const pnl = parseFloat(trade.pnl_amount || 0);
+          tradeCount++;
+          totalProfit += pnl;
+          
+          if (pnl > 0) {
+            winCount++;
+            totalWinningProfit += pnl; // 累加盈利
+          } else if (pnl < 0) {
+            totalLosingLoss += Math.abs(pnl); // 累加亏损（转为正数）
+          }
+          
+          if (pnl > maxProfit) maxProfit = pnl;
+          if (pnl < maxLoss) maxLoss = pnl;
+        }
+      });
+    }
+    
+    // 计算盈利因子
+    let profitFactor = 0;
+    if (totalLosingLoss > 0) {
+      profitFactor = totalWinningProfit / totalLosingLoss;
+    } else if (totalWinningProfit > 0) {
+      profitFactor = 99.9; // 只有盈利，没有亏损
+    }
+    // 如果 totalWinningProfit 和 totalLosingLoss 都是 0，profitFactor 保持 0
+    
+    return {
+      tradeCount,
+      winCount,
+      totalProfit,
+      totalWinningProfit, // 返回盈利总额
+      totalLosingLoss,    // 返回亏损总额
+      profitFactor,       // 返回计算好的盈利因子
+      maxProfit,
+      maxLoss,
+      winRate: tradeCount > 0 ? (winCount / tradeCount) * 100 : 0,
+      avgProfit: tradeCount > 0 ? totalProfit / tradeCount : 0
+    };
+    
+  } catch (error) {
+    console.error('Error getting date stats:', error);
+    return {
+      tradeCount: 0,
+      winCount: 0,
+      totalProfit: 0,
+      totalWinningProfit: 0,
+      totalLosingLoss: 0,
+      profitFactor: 0,
+      maxProfit: 0,
+      maxLoss: 0,
+      winRate: 0,
+      avgProfit: 0
+    };
+  }
+}
+
+    // 加载所有日期记录
     async function loadAllDateRecords(userId) {
       try {
         const emptyHistoryEl = document.getElementById('emptyHistory');
@@ -760,11 +1672,18 @@
         
         if (!emptyHistoryEl || !dateHistoryList) return;
         
-        // 获取最近7天的日期（包括今天）
-        const dateRange = generateDateRange(7);
+        // 显示加载状态
+        dateHistoryList.innerHTML = `
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="spinner-text">Loading trading history...</div>
+          </div>
+        `;
+        
+        // 获取最近7天的日期
+        dateRange = generateDateRange(7);
         const today = new Date().toISOString().split('T')[0];
         
-        // 获取这些日期的交易记录
         const { data: allTrades, error } = await client
           .from('trades')
           .select('date, pnl_amount, balance_change, direction')
@@ -816,16 +1735,15 @@
           }
         });
         
-        // 获取所有日期的余额数据
         const { currentBalance, dailyBalances } = await getBalanceByDate(userId);
         
         // 清空现有内容
         dateHistoryList.innerHTML = '';
-        dateHistoryData = {}; // 清空缓存
+        dateHistoryData = {};
         
         const currentLang = localStorage.getItem('language') || 'en';
         
-        // 按日期倒序处理（最新的在前面）
+        // 按日期倒序处理
         const sortedDates = Object.keys(dateGroups).sort((a, b) => b.localeCompare(a));
         
         // 为每个日期获取详细数据
@@ -833,20 +1751,19 @@
           const data = dateGroups[date];
           const totalPnl = data.totalPnl;
           
-          // 获取该日期的起始余额
           const startingBalance = await getDateStartingBalance(userId, date);
           
           const profitTarget = startingBalance * 0.1;
           const lossLimit = startingBalance * 0.25;
           
-          // 计算状态
           let statusInfo;
           if (!data.hasTrades) {
-            // 没有交易的日子总是 Patience
             statusInfo = { status: 'patience', statusClass: 'patience' };
           } else {
             statusInfo = calculateDateStatus(totalPnl, profitTarget, lossLimit);
           }
+          
+          const stats = await getDateStats(userId, date);
           
           // 存储日期数据
           dateHistoryData[date] = {
@@ -857,10 +1774,10 @@
             lossLimit,
             status: statusInfo.status,
             statusClass: statusInfo.statusClass,
-            hasTrades: data.hasTrades
+            hasTrades: data.hasTrades,
+            stats
           };
           
-          // 获取状态文本
           let statusText = '';
           if (!data.hasTrades) {
             statusText = currentLang === 'zh' ? '无交易' : 'No Trades';
@@ -870,7 +1787,6 @@
             statusText = statusInfo.status;
           }
           
-          // 状态图标
           const statusIcons = {
             'passed': '✅',
             'failed': '❌',
@@ -891,12 +1807,16 @@
           historyItem.innerHTML = `
             <div class="date-history-date">${formattedDate}</div>
             <div class="date-history-status">
-              <span class="status-${statusInfo.statusClass}">(${statusText})</span>
-              <span>${statusIcon}</span>
+              <span class="status-${statusInfo.statusClass}">
+                <span class="status-icon">${statusIcon}</span>
+                <span>${statusText}</span>
+              </span>
+              <span class="pnl-indicator ${totalPnl >= 0 ? 'positive' : 'negative'}">
+                ${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(2)}
+              </span>
             </div>
           `;
           
-          // 添加点击事件
           historyItem.addEventListener('click', () => {
             selectDate(date);
           });
@@ -904,19 +1824,110 @@
           dateHistoryList.appendChild(historyItem);
         }
         
-        // 如果没有数据，显示空状态
         if (sortedDates.length === 0) {
           emptyHistoryEl.style.display = 'flex';
+          dateHistoryList.innerHTML = '';
+          dateHistoryList.appendChild(emptyHistoryEl);
         } else {
           emptyHistoryEl.style.display = 'none';
           
-          // 默认选中今天或最近的日期
           const defaultDate = sortedDates.includes(today) ? today : sortedDates[0];
           selectDate(defaultDate);
         }
         
+        updateStatsSummary();
+        
       } catch (error) {
         console.error('Error loading date records:', error);
+        const dateHistoryList = document.getElementById('dateHistoryList');
+        if (dateHistoryList) {
+          dateHistoryList.innerHTML = `
+            <div class="empty-history">
+              <div class="empty-state-icon">⚠️</div>
+              <h4>Error Loading Data</h4>
+              <p>Failed to load trading history. Please try again later.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    // 更新目标状态指示器
+    function updateTargetStatusIndicators(dateData) {
+      const profitTargetStatusContainer = document.getElementById('profitTargetStatusContainer');
+      const lossTargetStatusContainer = document.getElementById('lossTargetStatusContainer');
+      const profitStatusIndicator = document.getElementById('profitStatusIndicator');
+      const lossStatusIndicator = document.getElementById('lossStatusIndicator');
+      const profitTargetStatus = document.getElementById('profitTargetStatus');
+      const lossTargetStatus = document.getElementById('lossTargetStatus');
+      
+      if (!dateData.hasTrades) {
+        // 没有交易记录，隐藏状态指示器
+        if (profitTargetStatusContainer) profitTargetStatusContainer.style.display = 'none';
+        if (lossTargetStatusContainer) lossTargetStatusContainer.style.display = 'none';
+        return;
+      }
+      
+      const currentLang = localStorage.getItem('language') || 'en';
+      
+      // 计算盈利目标状态
+      const profitAchieved = Math.max(0, dateData.totalPnl);
+      const profitPercentage = dateData.profitTarget > 0 ? 
+        (profitAchieved / dateData.profitTarget) * 100 : 0;
+      
+      const isProfitTargetMet = profitPercentage >= 100;
+      
+      // 计算亏损限制状态
+      const todayLoss = Math.max(0, -dateData.totalPnl);
+      const lossPercentage = dateData.lossLimit > 0 ? 
+        (todayLoss / dateData.lossLimit) * 100 : 0;
+      
+      const isLossLimitRespected = lossPercentage < 100;
+      
+      // 更新盈利目标状态
+      if (profitTargetStatusContainer && profitStatusIndicator && profitTargetStatus) {
+        profitTargetStatusContainer.style.display = 'flex';
+        
+        if (isProfitTargetMet) {
+          // 盈利目标达成 - 青色圆形打勾
+          profitStatusIndicator.className = 'target-status-indicator status-check';
+          profitStatusIndicator.innerHTML = '✓';
+          profitTargetStatus.className = 'target-status-item achieved';
+        } else {
+          // 盈利目标未达成 - 红色打叉
+          profitStatusIndicator.className = 'target-status-indicator status-cross';
+          profitStatusIndicator.innerHTML = '✗';
+          profitTargetStatus.className = 'target-status-item profit';
+        }
+        
+        // 更新文本
+        const profitText = profitTargetStatus.querySelector('span:first-child');
+        if (profitText) {
+          profitText.innerHTML = `📈 10% daily profit target`;
+        }
+      }
+      
+      // 更新亏损限制状态
+      if (lossTargetStatusContainer && lossStatusIndicator && lossTargetStatus) {
+        lossTargetStatusContainer.style.display = 'flex';
+        
+        if (isLossLimitRespected) {
+          // 亏损限制未超过 - 青色圆形打勾
+          lossStatusIndicator.className = 'target-status-indicator status-check';
+          lossStatusIndicator.innerHTML = '✓';
+          lossTargetStatus.className = 'target-status-item achieved';
+        } else {
+          // 亏损限制超过 - 红色打叉
+          lossStatusIndicator.className = 'target-status-indicator status-cross';
+          lossStatusIndicator.innerHTML = '✗';
+          lossTargetStatus.className = 'target-status-item loss';
+        }
+        
+        // 更新文本
+        const lossText = lossTargetStatus.querySelector('span:first-child');
+        if (lossText) {
+          lossText.innerHTML = `📉 25% daily loss limit`;
+        }
       }
     }
 
@@ -930,10 +1941,10 @@
           item.classList.remove('active');
           if (item.dataset.date === date) {
             item.classList.add('active');
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
           }
         });
         
-        // 获取日期数据
         const dateData = dateHistoryData[date];
         if (!dateData) {
           console.error('No data for date:', date);
@@ -952,130 +1963,290 @@
             formattedDate;
         }
         
-        // 更新卡片标题
-        const cardTitle = document.querySelector('.combined-card h3');
-        if (cardTitle) {
-          cardTitle.textContent = currentLang === 'zh' ? '交易状态' : 'Trading Status';
+        // 更新状态指示器
+        const statusPill = document.getElementById('statusPill');
+        const statusTextEl = document.getElementById('statusText');
+        
+        if (statusPill && statusTextEl) {
+          statusPill.className = 'status-pill';
+          
+          let statusClass = dateData.status;
+          let statusTranslationKey = dateData.status;
+          
+          if (!dateData.hasTrades) {
+            statusClass = 'no-trades';
+            statusTranslationKey = 'no_trades';
+          }
+          
+          statusPill.classList.add(statusClass);
+          
+          const statusText = window.translations[currentLang]?.[statusTranslationKey] || statusTranslationKey;
+          statusTextEl.textContent = statusText;
+          
+          const statusIcon = statusPill.querySelector('.status-icon');
+          const statusIcons = {
+            'passed': '✅',
+            'failed': '❌',
+            'patience': '⏳',
+            'no_trades': '📊'
+          };
+          
+          if (statusIcon) {
+            statusIcon.textContent = statusIcons[statusClass] || '⏳';
+          }
         }
         
         // 更新盈利目标卡片
-        const profitTargetEl = document.getElementById('profitTarget');
+        const profitCurrentEl = document.getElementById('profitCurrent');
+        const profitTargetValueEl = document.getElementById('profitTargetValue');
         const profitProgressEl = document.getElementById('profitProgress');
-        const profitTargetDescEl = document.getElementById('profitTargetDesc');
+        const profitPercentageEl = document.getElementById('profitPercentage');
+        const profitBadgeEl = document.getElementById('profitBadge');
         
-        if (profitTargetEl) {
+        if (profitCurrentEl) {
           const profitAchieved = Math.max(0, dateData.totalPnl);
           const profitPercentage = dateData.profitTarget > 0 ? 
             Math.min(100, (profitAchieved / dateData.profitTarget) * 100) : 0;
           
-          profitTargetEl.textContent = `${profitAchieved.toFixed(2)} / ${dateData.profitTarget.toFixed(2)}`;
+          profitCurrentEl.textContent = profitAchieved.toFixed(2);
+          profitTargetValueEl.textContent = dateData.profitTarget.toFixed(2);
+          profitPercentageEl.textContent = `${profitPercentage.toFixed(1)}%`;
           
           if (profitProgressEl) {
             profitProgressEl.style.width = `${profitPercentage}%`;
+            profitProgressEl.classList.add('progress-bar-animated');
+            setTimeout(() => {
+              profitProgressEl.classList.remove('progress-bar-animated');
+            }, 1200);
           }
           
-          if (profitTargetDescEl) {
-            profitTargetDescEl.textContent = currentLang === 'zh' ? 
-              `10% 的当日余额 (${dateData.startingBalance.toFixed(2)})` :
-              `10% of daily balance (${dateData.startingBalance.toFixed(2)})`;
-          }
-          
-          // 根据完成度设置颜色
-          if (dateData.totalPnl >= dateData.profitTarget) {
-            profitTargetEl.style.color = '#10b981';
-          } else if (dateData.totalPnl >= dateData.profitTarget * 0.5) {
-            profitTargetEl.style.color = '#f59e0b';
-          } else {
-            profitTargetEl.style.color = '#3b82f6';
+          if (profitBadgeEl) {
+            if (profitPercentage >= 100) {
+              profitBadgeEl.style.display = 'block';
+              profitBadgeEl.parentElement.classList.add('quest-complete');
+              setTimeout(() => {
+                profitBadgeEl.parentElement.classList.remove('quest-complete');
+              }, 600);
+            } else {
+              profitBadgeEl.style.display = 'none';
+            }
           }
         }
         
         // 更新亏损限制卡片
-        const lossLimitEl = document.getElementById('lossLimit');
+        const lossCurrentEl = document.getElementById('lossCurrent');
+        const lossLimitValueEl = document.getElementById('lossLimitValue');
         const lossProgressEl = document.getElementById('lossProgress');
-        const lossLimitDescEl = document.getElementById('lossLimitDesc');
+        const lossPercentageEl = document.getElementById('lossPercentage');
         
-        if (lossLimitEl) {
+        if (lossCurrentEl) {
           const todayLoss = Math.max(0, -dateData.totalPnl);
           const lossPercentage = dateData.lossLimit > 0 ? 
             Math.min(100, (todayLoss / dateData.lossLimit) * 100) : 0;
           
-          lossLimitEl.textContent = `${todayLoss.toFixed(2)} / ${dateData.lossLimit.toFixed(2)}`;
+          lossCurrentEl.textContent = todayLoss.toFixed(2);
+          lossLimitValueEl.textContent = dateData.lossLimit.toFixed(2);
+          lossPercentageEl.textContent = `${lossPercentage.toFixed(1)}%`;
           
           if (lossProgressEl) {
             lossProgressEl.style.width = `${lossPercentage}%`;
-          }
-          
-          if (lossLimitDescEl) {
-            lossLimitDescEl.textContent = currentLang === 'zh' ? 
-              `25% 的当日余额 (${dateData.startingBalance.toFixed(2)})` :
-              `25% of daily balance (${dateData.startingBalance.toFixed(2)})`;
-          }
-          
-          // 根据风险程度设置颜色
-          if (todayLoss >= dateData.lossLimit) {
-            lossLimitEl.style.color = '#ef4444';
-          } else if (todayLoss >= dateData.lossLimit * 0.8) {
-            lossLimitEl.style.color = '#f59e0b';
-          } else {
-            lossLimitEl.style.color = '#3b82f6';
+            lossProgressEl.classList.add('progress-bar-animated');
+            setTimeout(() => {
+              lossProgressEl.classList.remove('progress-bar-animated');
+            }, 1200);
           }
         }
         
-        // 更新交易状态
-        const tradingStatusEl = document.getElementById('tradingStatus');
-        const tradingStatusContainer = document.getElementById('tradingStatusContainer');
+        // 更新目标状态指示器
+        updateTargetStatusIndicators(dateData);
         
-        if (tradingStatusEl && tradingStatusContainer) {
-          let statusEmoji = '';
-          let statusColorClass = '';
-          let statusText = '';
-          
-          // 如果没有交易，显示无交易状态
-          if (!dateData.hasTrades) {
-            statusEmoji = '📊';
-            statusColorClass = 'status-patience-full';
-            statusText = currentLang === 'zh' ? '无交易' : 'No Trades';
-          } else {
-            // 根据状态设置图标和颜色
-            if (dateData.status === 'failed') {
-              statusEmoji = '❌';
-              statusColorClass = 'status-failed-full';
-            } else if (dateData.status === 'passed') {
-              statusEmoji = '✅';
-              statusColorClass = 'status-passed-full';
-            } else {
-              statusEmoji = '⏳';
-              statusColorClass = 'status-patience-full';
-            }
-            
-            // 获取状态文本
-            if (window.translations && window.translations[currentLang] && window.translations[currentLang][dateData.status]) {
-              const translation = window.translations[currentLang][dateData.status];
-              statusText = translation;
-            } else {
-              const defaultTexts = {
-                'passed': 'Passed',
-                'failed': 'Failed',
-                'patience': 'Patience'
-              };
-              statusText = defaultTexts[dateData.status] || 'Patience';
-            }
-          }
-          
-          // 更新显示
-          tradingStatusEl.textContent = `${statusEmoji} ${statusText}`;
-          tradingStatusEl.className = '';
-          tradingStatusEl.classList.add(statusColorClass);
-          tradingStatusContainer.className = 'trading-status';
-          tradingStatusContainer.classList.add(statusColorClass);
+        // 更新底部总结
+        const dailyResultEl = document.getElementById('dailyResult');
+        const tradesCountEl = document.getElementById('tradesCount');
+        const profitFactorEl = document.getElementById('profitFactor');
+        
+        if (dailyResultEl) {
+          dailyResultEl.textContent = `$${dateData.totalPnl.toFixed(2)}`;
+          dailyResultEl.className = 'summary-value ' + (dateData.totalPnl >= 0 ? 'positive' : 'negative');
         }
         
-        console.log('已选择日期:', date, '数据:', dateData);
+        if (tradesCountEl) {
+          tradesCountEl.textContent = dateData.stats.tradeCount;
+        }
+        
+        if (profitFactorEl) {
+  const stats = dateData.stats;
+  
+  if (stats && stats.tradeCount > 0) {
+    const pf = stats.profitFactor;
+    
+    // 格式化显示
+    if (pf > 10) {
+      profitFactorEl.textContent = "10.0+";
+    } else if (pf >= 100) {
+      profitFactorEl.textContent = "99.9";
+    } else {
+      profitFactorEl.textContent = pf.toFixed(1);
+    }
+    
+    // 设置颜色
+    if (pf >= 2.0) {
+      profitFactorEl.className = 'summary-value positive';
+    } else if (pf >= 1.5) {
+      profitFactorEl.className = 'summary-value';
+    } else if (pf >= 1.0) {
+      profitFactorEl.className = 'summary-value';
+    } else if (pf > 0) {
+      profitFactorEl.className = 'summary-value negative';
+    } else {
+      profitFactorEl.className = 'summary-value';
+    }
+  } else {
+    // 没有交易记录
+    profitFactorEl.textContent = "0.0";
+    profitFactorEl.className = 'summary-value';
+  }
+}
+        
+        // 更新描述文本
+        const profitTargetDescEl = document.getElementById('profitTargetDesc');
+        const lossLimitDescEl = document.getElementById('lossLimitDesc');
+        
+        if (profitTargetDescEl) {
+          profitTargetDescEl.textContent = currentLang === 'zh' ? 
+            `基于当日余额 (${dateData.startingBalance.toFixed(2)})` :
+            `Based on daily balance (${dateData.startingBalance.toFixed(2)})`;
+        }
+        
+        if (lossLimitDescEl) {
+          lossLimitDescEl.textContent = currentLang === 'zh' ? 
+            `基于当日余额 (${dateData.startingBalance.toFixed(2)})` :
+            `Based on daily balance (${dateData.startingBalance.toFixed(2)})`;
+        }
         
       } catch (error) {
         console.error('Error selecting date:', error);
+        showToast('Error loading date data', 'error');
       }
+    }
+
+    // 更新统计摘要
+    function updateStatsSummary() {
+      const statsSummaryEl = document.getElementById('statsSummary');
+      if (!statsSummaryEl) return;
+      
+      const currentLang = localStorage.getItem('language') || 'en';
+      
+      let totalProfit = 0;
+      let totalTrades = 0;
+      let totalWinTrades = 0;
+      let maxProfit = 0;
+      let maxLoss = 0;
+      let currentStreak = 0;
+      let consistency = 0;
+      
+      Object.values(dateHistoryData).forEach(data => {
+        if (data.hasTrades) {
+          totalProfit += data.totalPnl;
+          totalTrades += data.stats.tradeCount;
+          totalWinTrades += data.stats.winCount;
+          
+          if (data.stats.maxProfit > maxProfit) maxProfit = data.stats.maxProfit;
+          if (data.stats.maxLoss < maxLoss) maxLoss = data.stats.maxLoss;
+          
+          if (data.status === 'passed') {
+            currentStreak++;
+          } else {
+            currentStreak = 0;
+          }
+        }
+      });
+      
+      const totalDays = Object.keys(dateHistoryData).length;
+      const tradingDays = Object.values(dateHistoryData).filter(d => d.hasTrades).length;
+      consistency = totalDays > 0 ? (tradingDays / totalDays) * 100 : 0;
+      
+      const stats = [
+        {
+          title: 'total_profit',
+          value: `$${totalProfit.toFixed(2)}`,
+          class: totalProfit >= 0 ? 'positive' : 'negative'
+        },
+        {
+          title: 'total_trades',
+          value: totalTrades,
+          class: ''
+        },
+        {
+          title: 'win_rate',
+          value: totalTrades > 0 ? `${((totalWinTrades / totalTrades) * 100).toFixed(1)}%` : '0%',
+          class: ''
+        },
+        {
+          title: 'avg_profit',
+          value: totalTrades > 0 ? `$${(totalProfit / totalTrades).toFixed(2)}` : '$0.00',
+          class: (totalProfit / totalTrades) >= 0 ? 'positive' : 'negative'
+        },
+        {
+          title: 'max_profit',
+          value: `$${maxProfit.toFixed(2)}`,
+          class: 'positive'
+        },
+        {
+          title: 'max_loss',
+          value: `$${maxLoss.toFixed(2)}`,
+          class: 'negative'
+        },
+        {
+          title: 'consistency',
+          value: `${consistency.toFixed(1)}%`,
+          class: ''
+        },
+        {
+          title: 'current_streak',
+          value: `${currentStreak} days`,
+          class: currentStreak > 0 ? 'positive' : ''
+        }
+      ];
+      
+      statsSummaryEl.innerHTML = stats.map(stat => `
+        <div class="stat-card">
+          <h4>${window.translations[currentLang]?.[stat.title] || stat.title}</h4>
+          <div class="value ${stat.class}">${stat.value}</div>
+        </div>
+      `).join('');
+    }
+
+    // 显示Toast通知
+    function showToast(message, type = 'info') {
+      const existingToast = document.querySelector('.toast-notification');
+      if (existingToast) {
+        existingToast.remove();
+      }
+      
+      const toast = document.createElement('div');
+      toast.className = `toast-notification toast-${type}`;
+      toast.innerHTML = `
+        <div class="toast-content">
+          <span class="toast-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
+          <span class="toast-message">${message}</span>
+        </div>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 10);
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.remove();
+          }
+        }, 300);
+      }, 3000);
     }
 
     // 初始化页面
@@ -1083,13 +2254,11 @@
       // 检查登录状态
       checkAuth().then(session => {
         if (session && currentUserId) {
-          // 加载所有日期记录
           loadAllDateRecords(currentUserId);
           
-          // 每分钟刷新一次数据
           setInterval(() => {
             loadAllDateRecords(currentUserId);
-          }, 60000);
+          }, 30000);
         }
       });
       
@@ -1097,6 +2266,25 @@
       if (window.initLanguage) {
         window.initLanguage();
       }
+      
+      // 添加卡片悬停效果
+      document.querySelectorAll('.premium-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          card.style.transform = 'translateY(-6px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'translateY(0) scale(1)';
+        });
+      });
+    });
+    
+    // 监听语言变化
+    window.addEventListener('languageChanged', () => {
+      if (selectedDate) {
+        selectDate(selectedDate);
+      }
+      updateStatsSummary();
     });
   </script>
 </body>
