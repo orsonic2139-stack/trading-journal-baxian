@@ -16,6 +16,9 @@ const translations = {
     "add_trade": "Add Trade",
     "hide": "Hide",
     "show_all": "Show All",
+    "time_session": "Session:",
+    "upload_chart": "Upload Chart",
+    "view_chart": "View Chart"
     
     // 语言设置
     "language": "Language",
@@ -130,6 +133,9 @@ const translations = {
     "add_trade": "添加交易",
     "hide": "隐藏",
     "show_all": "显示全部",
+    "time_session": "盘段:",
+    "upload_chart": "上传",
+    "view_chart": "查看"
     
     // 语言设置
     "language": "语言",

@@ -2077,3 +2077,181 @@ table tbody tr td .rr-loss {
     0 0 16px rgba(239, 68, 68, 0.2) !important;
   background: rgba(239, 68, 68, 0.1) !important;
 }
+
+/* ============== 操作按钮图标样式 ============== */
+
+.action-buttons-cell {
+  white-space: nowrap;
+  text-align: center;
+  min-width: 110px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  margin: 0 2px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 图片按钮 */
+.image-btn {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.image-btn.has-image {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.image-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+  transform: scale(1.05);
+}
+
+/* 编辑按钮 */
+.edit-btn-icon {
+  background: rgba(62, 180, 137, 0.15);
+  color: #3eb489;
+}
+
+.edit-btn-icon:hover {
+  background: rgba(62, 180, 137, 0.3);
+  transform: scale(1.05);
+}
+
+/* 删除按钮 */
+.delete-btn-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.delete-btn-icon:hover {
+  background: rgba(239, 68, 68, 0.3);
+  transform: scale(1.05);
+}
+
+/* 移动端调整 */
+@media (max-width: 768px) {
+  .action-buttons-cell {
+    min-width: 90px;
+  }
+  
+  .action-btn {
+    font-size: 1rem;
+    padding: 4px 6px;
+  }
+}
+
+/* 移除旧的编辑/删除按钮样式 */
+.edit-btn, .delete-btn {
+  display: none;
+}
+
+/* ============== 交易统计徽章样式 - 简洁版 ============== */
+
+.trade-stats-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 0.7rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.trade-stats-badge .stats-total {
+  color: #93c5fd;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.2);
+  padding: 1px 6px;
+  border-radius: 12px;
+  margin-right: 2px;
+}
+
+.trade-stats-badge .stats-win {
+  color: #34d399;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.trade-stats-badge .stats-loss {
+  color: #f87171;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.trade-stats-badge .stats-be {
+  color: #fbbf24;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.trade-stats-badge.balance-only {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.trade-stats-badge.balance-only .stats-total {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.15);
+  font-size: 0.8rem;
+  padding: 1px 5px;
+}
+
+/* 移动端响应式调整 */
+@media (max-width: 768px) {
+  .trade-stats-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    gap: 4px;
+  }
+  
+  .trade-stats-badge .stats-total {
+    padding: 0px 4px;
+  }
+}
+
+/* ============== Session 下拉框样式 ============== */
+
+.session-select {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 20px;
+  padding: 4px 10px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.session-select:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.session-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.session-select option {
+  background: #0f172a;
+  color: #e2e8f0;
+}
