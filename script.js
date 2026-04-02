@@ -38,7 +38,7 @@ const date = document.getElementById("date");
 const symbol = document.getElementById("symbol");
 const direction = document.getElementById("direction");
 const lotSize = document.getElementById("lotSize");
-const sl = document.getElementById("sl"); // 新增 SL 输入框
+const sl = document.getElementById("sl");
 const entry = document.getElementById("entry");
 const exit = document.getElementById("exit");
 const pnlAmount = document.getElementById("pnlAmount");
@@ -48,7 +48,7 @@ let showAll = true;
 let chart;
 let currentTransactionType = null;
 let chartTradeDetails = [];
-let dateGroups = {}; // 存储日期分组状态
+let dateGroups = {}; // 存储日期分组状态（保留用于兼容性，但不再用于控制展开/收缩）
 
 // ============== 性能优化函数 ==============
 
@@ -108,9 +108,9 @@ function calculateRRFromPrices(entry, exit, sl, direction, isProfit) {
   // 如果有止损价，使用止损价计算风险
   if (sl && sl !== 0) {
     if (direction === "Buy") {
-      risk = Math.abs(entry - sl); // 买入的风险是入场价与止损价的差
+      risk = Math.abs(entry - sl);
     } else if (direction === "Sell") {
-      risk = Math.abs(sl - entry); // 卖出的风险是止损价与入场价的差
+      risk = Math.abs(sl - entry);
     }
   } else {
     // 如果没有止损价
@@ -146,7 +146,7 @@ function calculateRRFromPrices(entry, exit, sl, direction, isProfit) {
     // 如果是亏损交易，显示负的R:R
     if (!isProfit) {
       // 亏损等于风险：显示 -1R
-      if (Math.abs(rrRatio - 1) < 0.05) { // 允许5%的误差
+      if (Math.abs(rrRatio - 1) < 0.05) {
         return "-1R";
       }
       // 亏损小于风险：显示 -0.XR
@@ -184,52 +184,43 @@ function calculateRRFromPrices(entry, exit, sl, direction, isProfit) {
 function getRRGradientColor(rrValue) {
   // 如果是亏损交易
   if (rrValue.includes('-') || rrValue.includes('R')) {
-    return 'linear-gradient(135deg, #ef4444, #dc2626)'; // 红色渐变
+    return 'linear-gradient(135deg, #ef4444, #dc2626)';
   }
   
   const rrNum = parseFloat(rrValue);
   
   // 红渐变青的颜色映射
   if (rrNum <= 0) {
-    return 'linear-gradient(135deg, #ef4444, #dc2626)'; // 红色
+    return 'linear-gradient(135deg, #ef4444, #dc2626)';
   } else if (rrNum < 0.5) {
-    return 'linear-gradient(135deg, #ef4444, #f97316)'; // 红到橙
+    return 'linear-gradient(135deg, #ef4444, #f97316)';
   } else if (rrNum < 1) {
-    return 'linear-gradient(135deg, #f97316, #eab308)'; // 橙到黄
+    return 'linear-gradient(135deg, #f97316, #eab308)';
   } else if (rrNum < 1.5) {
-    return 'linear-gradient(135deg, #eab308, #22c55e)'; // 黄到绿
+    return 'linear-gradient(135deg, #eab308, #22c55e)';
   } else if (rrNum < 2) {
-    return 'linear-gradient(135deg, #22c55e, #0ea5e9)'; // 绿到蓝
+    return 'linear-gradient(135deg, #22c55e, #0ea5e9)';
   } else if (rrNum < 3) {
-    return 'linear-gradient(135deg, #0ea5e9, #06b6d4)'; // 蓝到青
+    return 'linear-gradient(135deg, #0ea5e9, #06b6d4)';
   } else if (rrNum < 5) {
-    return 'linear-gradient(135deg, #06b6d4, #8b5cf6)'; // 青到紫
+    return 'linear-gradient(135deg, #06b6d4, #8b5cf6)';
   } else {
-    return 'linear-gradient(135deg, #8b5cf6, #ec4899)'; // 紫到粉（极高R:R）
+    return 'linear-gradient(135deg, #8b5cf6, #ec4899)';
   }
 }
 
 // 暴露给全局使用
 window.calculateRiskReward = calculateRiskReward;
 
-// ============== 日期分组功能 ==============
+// ============== 日期分组功能（全部展开） ==============
 
-// 初始化日期组状态
+// 初始化日期组状态（保留用于兼容性）
 function initDateGroups() {
-  try {
-    const saved = localStorage.getItem('dateGroups');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed) {
-        Object.assign(dateGroups, parsed);
-      }
-    }
-  } catch (e) {
-    console.warn('无法从localStorage恢复日期组状态:', e);
-  }
+  // 不再使用收缩功能，直接清空
+  dateGroups = {};
 }
 
-// 按日期分组交易
+// 按日期分组交易（所有组都设置为展开状态）
 function groupTradesByDate(trades) {
   if (!trades || trades.length === 0) return [];
   
@@ -282,21 +273,13 @@ function groupTradesByDate(trades) {
     }
   });
   
-  // 处理每个分组的展开状态
+  // 处理每个分组 - 全部设置为展开状态
   const result = Object.values(groups).map(group => {
     group.isSingle = group.tradeCount === 1;
     group.hasOnlyBalanceTx = group.hasBalanceTx && !group.hasBuySell;
     
-    // 使用保存的展开状态，如果没有则根据条件设置默认值
-    if (dateGroups[group.date] !== undefined) {
-      group.isExpanded = dateGroups[group.date].isExpanded;
-    } else if (group.isSingle || group.hasOnlyBalanceTx) {
-      group.isExpanded = false;
-      dateGroups[group.date] = { isExpanded: false };
-    } else {
-      group.isExpanded = true;
-      dateGroups[group.date] = { isExpanded: true };
-    }
+    // 所有分组都设置为展开状态
+    group.isExpanded = true;
     
     return group;
   });
@@ -331,16 +314,16 @@ function calculatePerformance(group) {
   const lang = localStorage.getItem('language') || 'en';
   
   if (winPercentage <= 30) {
-    color = '#ef4444'; // 红色 - 差
+    color = '#ef4444';
     label = lang === 'zh' ? '差' : 'Poor';
   } else if (winPercentage <= 50) {
-    color = '#f97316'; // 橙色 - 普通
+    color = '#f97316';
     label = lang === 'zh' ? '普通' : 'Average';
   } else if (winPercentage <= 80) {
-    color = '#eab308'; // 黄色 - 良好
+    color = '#eab308';
     label = lang === 'zh' ? '良好' : 'Good';
   } else {
-    color = '#06b6d4'; // 青色 - 极佳
+    color = '#06b6d4';
     label = lang === 'zh' ? '极佳' : 'Excellent';
   }
   
@@ -365,16 +348,12 @@ function createSolidProgressBar(percentage, color) {
   let gradientColor;
   
   if (percentage <= 30) {
-    // 0-30%: 红色到深红渐变
     gradientColor = 'linear-gradient(90deg, #ef4444, #dc2626)';
   } else if (percentage <= 50) {
-    // 31-50%: 橙色到深橙渐变
     gradientColor = 'linear-gradient(90deg, #f97316, #ea580c)';
   } else if (percentage <= 80) {
-    // 51-80%: 黄色到金色渐变
     gradientColor = 'linear-gradient(90deg, #eab308, #ca8a04)';
   } else {
-    // 81-100%: 青色到亮青渐变
     gradientColor = 'linear-gradient(90deg, #06b6d4, #0891b2)';
   }
   
@@ -413,23 +392,17 @@ function createSolidProgressBar(percentage, color) {
   `;
 }
 
-// ============== 更新表格标题 ==============
+// ============== 更新表格标题（始终显示展开表头） ==============
 
-function updateTableHeaders(isExpanded = false) {
+function updateTableHeaders() {
   const collapsedHeader = document.getElementById('collapsedHeader');
   const expandedHeader = document.getElementById('expandedHeader');
   
   if (!collapsedHeader || !expandedHeader) return;
   
-  const lang = localStorage.getItem('language') || 'en';
-  
-  if (isExpanded) {
-    collapsedHeader.style.display = 'none';
-    expandedHeader.style.display = 'table-row';
-  } else {
-    collapsedHeader.style.display = 'table-row';
-    expandedHeader.style.display = 'none';
-  }
+  // 始终隐藏收缩表头，显示展开表头（因为所有交易都展开显示）
+  collapsedHeader.style.display = 'none';
+  expandedHeader.style.display = 'table-row';
   
   // 更新语言
   if (window.initLanguage) {
@@ -437,14 +410,14 @@ function updateTableHeaders(isExpanded = false) {
   }
 }
 
-// ============== 渲染表格函数 ==============
+// ============== 渲染表格函数（全部展开） ==============
 
 function renderTable(groups) {
-  console.log('渲染分组表格，组数:', groups?.length);
+  console.log('渲染分组表格（全部展开），组数:', groups?.length);
   
   if (!groups || groups.length === 0) {
     tradeList.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 2rem; color: #94a3b8;">No trades found</td></tr>';
-    updateTableHeaders(false);
+    updateTableHeaders();
     return;
   }
   
@@ -453,19 +426,13 @@ function renderTable(groups) {
   
   const rows = showAll ? groups : groups.slice(0, 5);
   
-  // 检查是否有展开的组，以确定显示哪个表头
-  let hasExpandedGroup = false;
+  // 始终显示展开表头
+  updateTableHeaders();
   
   rows.forEach(group => {
     const dateStr = group.date;
-    const isExpanded = group.isExpanded;
-    const isSingle = group.isSingle;
-    const hasOnlyBalanceTx = group.hasOnlyBalanceTx;
+    const isExpanded = true; // 所有组都展开
     const hasMultiple = group.tradeCount > 1;
-    
-    if (isExpanded) {
-      hasExpandedGroup = true;
-    }
     
     // 格式化日期显示
     const dateObj = new Date(dateStr);
@@ -491,296 +458,138 @@ function renderTable(groups) {
     // 获取当前语言
     const lang = localStorage.getItem('language') || 'en';
     
-    if (!isExpanded) {
-      // 收缩状态：显示汇总信息
-      const dateRow = document.createElement('tr');
-      dateRow.className = `date-group-header collapsed`;
-      dateRow.dataset.date = dateStr;
+    // 对交易进行降序排序（最新的在前）
+    const sortedTrades = [...group.trades].sort((a, b) => {
+      const timeA = new Date(a.created_at || a.date || 0).getTime();
+      const timeB = new Date(b.created_at || b.date || 0).getTime();
+      return timeB - timeA;
+    });
+    
+    // 创建日期分组头行（简化版，不包含展开按钮）
+    const headerRow = document.createElement('tr');
+    headerRow.className = `date-group-header expanded`;
+    headerRow.dataset.date = dateStr;
+    
+    headerRow.innerHTML = `
+      <td colspan="11" style="padding: 0.8rem 0.7rem !important; background: rgba(15, 23, 42, 0.95);">
+        <div class="date-header" style="display: flex; align-items: center; gap: 10px;">
+          <strong style="color: #3b82f6; font-size: 1rem;">${formattedDate}</strong>
+          ${hasMultiple ? `<span class="trade-count-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important; color: white !important; padding: 3px 8px !important; border-radius: 12px !important; font-size: 0.7rem !important; font-weight: 600 !important; min-width: 24px !important; text-align: center !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">${totalTrades}</span>` : ''}
+          <span style="color: #94a3b8; font-size: 0.85rem; margin-left: auto;">${totalTrades} trade${totalTrades !== 1 ? 's' : ''}</span>
+        </div>
+      </td>
+    `;
+    
+    tradeList.appendChild(headerRow);
+    
+    // 添加详细交易行
+    sortedTrades.forEach((t, index) => {
+      const isBalanceTransaction = t.direction === "Deposit" || t.direction === "Withdrawal";
+      const isBuySell = t.direction === "Buy" || t.direction === "Sell";
       
-      // 判断显示内容
-      let symbolDisplay = '';
-      let tradesDisplay = '';
-      let lotDisplay = '';
-      let dwDisplay = '';
-      let summaryDisplay = '';
+      let directionClass = "";
+      let directionDisplay = t.direction;
       
-      if (hasOnlyBalanceTx) {
-        // 只有资金操作
-        symbolDisplay = lang === 'zh' ? '资金操作' : 'Balance';
-        tradesDisplay = totalTrades;
-        lotDisplay = '-';
-        
-        // D/W显示 - 只显示金额
-        if (depositAmount > 0 && withdrawalAmount > 0) {
-          // 既有入金又有出金
-          dwDisplay = `<span class="dw-positive">+$${depositAmount.toFixed(2)}</span> / <span class="dw-negative">-$${Math.abs(withdrawalAmount).toFixed(2)}</span>`;
-        } else if (depositAmount > 0) {
-          dwDisplay = `<span class="dw-positive">+$${depositAmount.toFixed(2)}</span>`;
-        } else {
-          dwDisplay = `<span class="dw-negative">-$${Math.abs(withdrawalAmount).toFixed(2)}</span>`;
+      if (isBalanceTransaction) {
+        const lang = localStorage.getItem('language') || 'en';
+        if (lang === 'zh') {
+          directionDisplay = t.direction === "Deposit" ? "入金" : "出金";
         }
-        
-        summaryDisplay = lang === 'zh' ? `${totalTrades}笔操作` : `${totalTrades} transactions`;
-      } else if (isSingle) {
-        // 单笔交易
-        const trade = group.trades[0];
-        if (trade.direction === "Buy" || trade.direction === "Sell") {
-          symbolDisplay = trade.symbol || '-';
-          tradesDisplay = '1';
-          lotDisplay = Number(trade.lot_size || 0).toFixed(2);
-          dwDisplay = '-';
-          summaryDisplay = lang === 'zh' ? '单笔交易' : 'Single Trade';
-        } else {
-          symbolDisplay = lang === 'zh' ? '资金操作' : 'Balance';
-          tradesDisplay = '1';
-          lotDisplay = '-';
-          dwDisplay = trade.direction === "Deposit" ? 
-            (lang === 'zh' ? '入金' : 'Deposit') : 
-            (lang === 'zh' ? '出金' : 'Withdrawal');
-          summaryDisplay = lang === 'zh' ? '单笔操作' : 'Single Transaction';
-        }
-      } else {
-        // 多笔交易
-        symbolDisplay = 'Multiple';
-        tradesDisplay = totalTrades;
-        lotDisplay = totalLots.toFixed(2);
-        
-        if (depositAmount > 0 || withdrawalAmount > 0) {
-          if (depositAmount > 0 && withdrawalAmount > 0) {
-            // 既有入金又有出金 - 显示两个金额
-            dwDisplay = `<span class="dw-positive">+$${depositAmount.toFixed(2)}</span> / <span class="dw-negative">-$${Math.abs(withdrawalAmount).toFixed(2)}</span>`;
-          } else if (depositAmount > 0) {
-            // 只有入金
-            dwDisplay = `<span class="dw-positive">+$${depositAmount.toFixed(2)}</span>`;
-          } else {
-            // 只有出金
-            dwDisplay = `<span class="dw-negative">-$${Math.abs(withdrawalAmount).toFixed(2)}</span>`;
-          }
-        } else {
-          dwDisplay = '-';
-        }
-        
-        if (performance.totalTrades > 0) {
-          summaryDisplay = `${performance.winningTrades}/${performance.totalTrades} ${performance.label}`;
-        } else {
-          summaryDisplay = lang === 'zh' ? '无买卖交易' : 'No Buy/Sell Trades';
-        }
+        directionClass = t.direction === "Deposit" ? "balance-transaction deposit" : "balance-transaction withdrawal";
+      } else if (isBuySell) {
+        directionClass = t.direction === "Buy" ? "buy" : "sell";
       }
       
-      // 创建箭头按钮
-      const arrowIcon = isExpanded ? '▼' : '▶';
-      const rotation = isExpanded ? 'rotate(90deg)' : 'rotate(0deg)';
+      // 显示时间
+      let displayTime = '';
+      if (t.created_at) {
+        try {
+          const createdDate = new Date(t.created_at);
+          displayTime = createdDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        } catch (e) {}
+      }
       
-      dateRow.innerHTML = `
-  <td class="date-cell">
-    <div class="date-header" style="display: flex; align-items: center; gap: 10px;">
-      ${hasMultiple ? `
-        <button class="expand-btn" onclick="window.toggleDateGroup('${dateStr.replace(/'/g, "\\'")}')" 
-          style="background: none; border: none; color: #3b82f6; cursor: pointer; 
-          padding: 4px 8px; border-radius: 4px; width: 24px; height: 24px;
-          display: flex; align-items: center; justify-content: center;
-          transition: transform 0.3s ease; transform: ${rotation};
-          font-family: monospace; font-weight: bold; font-size: 12px;">
-          ${arrowIcon}
-        </button>
-      ` : '<div style="width: 24px;"></div>'}
-      <strong>${formattedDate}</strong>
-      ${hasMultiple ? `<span class="trade-count-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important; color: white !important; padding: 3px 8px !important; border-radius: 12px !important; font-size: 0.75rem !important; font-weight: 600 !important; min-width: 24px !important; text-align: center !important; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">${totalTrades}</span>` : ''}
-    </div>
-  </td>
-  <td class="group-summary">${symbolDisplay}</td>
-  <td class="group-summary">${tradesDisplay}</td>
-  <td class="group-summary">${lotDisplay}</td>
-  <td class="group-summary">${performance.progressBar}</td>
-  <td class="${pnlClass} group-summary" style="color: ${totalPnl >= 0 ? '#0ee7ff' : '#ef4444'} !important;">${pnlSign}$${Math.abs(totalPnl).toFixed(2)}</td>
-  <td class="group-summary">${dwDisplay}</td>
-  <td class="group-summary">${summaryDisplay}</td>
-`;
+      let displayAmount = 0;
+      let amountClass = "";
+      let amountSign = "";
       
-      tradeList.appendChild(dateRow);
-    } else {
-      // 展开状态：显示详细交易行
-      updateTableHeaders(true);
+      if (isBalanceTransaction) {
+        displayAmount = Math.abs(t.balance_change || 0);
+        amountClass = t.direction === "Deposit" ? "pnl-positive" : "pnl-negative";
+        amountSign = t.direction === "Deposit" ? "+" : "-";
+      } else {
+        displayAmount = t.pnl_amount || 0;
+        amountClass = displayAmount >= 0 ? "pnl-positive" : "pnl-negative";
+        amountSign = displayAmount >= 0 ? "+" : "";
+      }
       
-      // 对单笔交易进行降序排序（最新的在前）
-      const sortedTrades = [...group.trades].sort((a, b) => {
-        const timeA = new Date(a.created_at || a.date || 0).getTime();
-        const timeB = new Date(b.created_at || b.date || 0).getTime();
-        return timeB - timeA; // 降序
-      });
+      // 计算风险回报比并生成带样式的 HTML
+      let riskRewardHtml = "";
+      if (isBuySell) {
+        const rrValue = calculateRiskReward(t);
+        const isProfit = parseFloat(t.pnl_amount || 0) > 0;
+        
+        if (rrValue === "N/A") {
+          riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">N/A</span>';
+        } else if (rrValue === "0") {
+          riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">0</span>';
+        } else if (rrValue === "∞") {
+          riskRewardHtml = '<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: linear-gradient(135deg, #ec4899, #db2777) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">∞</span>';
+        } else {
+          const gradientColor = getRRGradientColor(rrValue);
+          
+          if (rrValue.includes('-') || rrValue.includes('R')) {
+            riskRewardHtml = `<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: ${gradientColor} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">${rrValue}</span>`;
+          } else {
+            const displayValue = `1:${rrValue}`;
+            riskRewardHtml = `<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: ${gradientColor} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">${displayValue}</span>`;
+          }
+        }
+      } else {
+        riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">-</span>';
+      }
       
-      // 创建展开状态的行头
-      const headerRow = document.createElement('tr');
-      headerRow.className = `date-group-header expanded`;
-      headerRow.dataset.date = dateStr;
+      let notesDisplay = t.notes || "";
+      if (isBalanceTransaction && !notesDisplay) {
+        const lang = localStorage.getItem('language') || 'en';
+        notesDisplay = lang === 'zh' 
+          ? (t.direction === "Deposit" ? "资金存入" : "资金取出")
+          : (t.direction === "Deposit" ? "Funds deposited" : "Funds withdrawn");
+      }
       
-      const arrowIcon = isExpanded ? '▼' : '▶';
-      const rotation = isExpanded ? 'rotate(90deg)' : 'rotate(0deg)';
+      const detailRow = document.createElement('tr');
+      detailRow.className = `trade-detail-row visible`;
+      detailRow.dataset.date = dateStr;
       
-      headerRow.innerHTML = `
-        <td colspan="11" style="padding: 1rem 0.7rem !important; background: rgba(15, 23, 42, 0.95);">
-          <div class="date-header" style="display: flex; align-items: center; gap: 10px;">
-            ${hasMultiple ? `
-              <button class="expand-btn" onclick="window.toggleDateGroup('${dateStr.replace(/'/g, "\\'")}')" 
-                style="background: none; border: none; color: #3b82f6; cursor: pointer; 
-                padding: 4px 8px; border-radius: 4px; width: 24px; height: 24px;
-                display: flex; align-items: center; justify-content: center;
-                transition: transform 0.3s ease; transform: ${rotation};
-                font-family: monospace; font-weight: bold; font-size: 12px;">
-                ${arrowIcon}
-              </button>
-            ` : '<div style="width: 24px;"></div>'}
-            <strong style="color: #94a3b8;">${formattedDate} (${totalTrades} trades)</strong>
-          </div>
+      detailRow.innerHTML = `
+        <td style="color: #94a3b8; font-size: 0.9rem;">
+          ${displayTime || ''}
+        </td>
+        <td>${t.symbol || (isBalanceTransaction ? '' : '-')}</td>
+        <td><span class="${directionClass}">${directionDisplay}</span></td>
+        <td>${isBuySell ? Number(t.lot_size||0).toFixed(2) : ''}</td>
+        <td>${isBuySell ? (t.sl ? Number(t.sl||0).toFixed(4) : '-') : ''}</td>
+        <td>${isBuySell ? (t.entry ? Number(t.entry||0).toFixed(4) : '-') : ''}</td>
+        <td>${isBuySell ? (t.exit ? Number(t.exit||0).toFixed(4) : '-') : ''}</td>
+        <td style="text-align: center; min-width: 90px;">${riskRewardHtml}</td>
+        <td class="${amountClass}" style="color: ${displayAmount >= 0 ? '#0ee7ff' : '#ef4444'} !important;">${amountSign}$${Math.abs(displayAmount).toFixed(2)}</td>
+        <td>${notesDisplay}</td>
+        <td>
+          ${isBuySell ? `<button class="edit-btn" onclick="window.showEditForm(${JSON.stringify(t).replace(/"/g, '&quot;')})" data-i18n="edit">Edit</button>` : ''}
+          <button class="delete-btn" onclick="deleteTrade('${t.id}')" data-i18n="delete">Delete</button>
         </td>
       `;
       
-      tradeList.appendChild(headerRow);
-      
-      // 添加详细交易行
-      sortedTrades.forEach((t, index) => {
-        const isBalanceTransaction = t.direction === "Deposit" || t.direction === "Withdrawal";
-        const isBuySell = t.direction === "Buy" || t.direction === "Sell";
-        
-        let directionClass = "";
-        let directionDisplay = t.direction;
-        
-        if (isBalanceTransaction) {
-          const lang = localStorage.getItem('language') || 'en';
-          if (lang === 'zh') {
-            directionDisplay = t.direction === "Deposit" ? "入金" : "出金";
-          }
-          directionClass = t.direction === "Deposit" ? "balance-transaction deposit" : "balance-transaction withdrawal";
-        } else if (isBuySell) {
-          directionClass = t.direction === "Buy" ? "buy" : "sell";
-        }
-        
-        // 显示时间
-        let displayTime = '';
-        if (t.created_at) {
-          try {
-            const createdDate = new Date(t.created_at);
-            displayTime = createdDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-          } catch (e) {}
-        }
-        
-        let displayAmount = 0;
-        let amountClass = "";
-        let amountSign = "";
-        
-        if (isBalanceTransaction) {
-          displayAmount = Math.abs(t.balance_change || 0);
-          amountClass = t.direction === "Deposit" ? "pnl-positive" : "pnl-negative";
-          amountSign = t.direction === "Deposit" ? "+" : "-";
-        } else {
-          displayAmount = t.pnl_amount || 0;
-          amountClass = displayAmount >= 0 ? "pnl-positive" : "pnl-negative";
-          amountSign = displayAmount >= 0 ? "+" : "";
-        }
-        
-        // 计算风险回报比并生成带样式的 HTML - 使用红渐变青
-        let riskRewardHtml = "";
-        if (isBuySell) {
-          const rrValue = calculateRiskReward(t);
-          const isProfit = parseFloat(t.pnl_amount || 0) > 0;
-          
-          if (rrValue === "N/A") {
-            riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">N/A</span>';
-          } else if (rrValue === "0") {
-            riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">0</span>';
-          } else if (rrValue === "∞") {
-            riskRewardHtml = '<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: linear-gradient(135deg, #ec4899, #db2777) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">∞</span>';
-          } else {
-            const gradientColor = getRRGradientColor(rrValue);
-            
-            // 检查是否是亏损交易的R:R（包含"R"或"-"）
-            if (rrValue.includes('-') || rrValue.includes('R')) {
-              // 亏损交易：使用红色渐变
-              riskRewardHtml = `<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: ${gradientColor} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">${rrValue}</span>`;
-            } else {
-              const displayValue = `1:${rrValue}`;
-              riskRewardHtml = `<span class="rr-value" style="display: inline-block !important; min-width: 70px !important; background: ${gradientColor} !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;">${displayValue}</span>`;
-            }
-          }
-        } else {
-          // 非买卖交易（资金操作）显示横线
-          riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">-</span>';
-        }
-        
-        let notesDisplay = t.notes || "";
-        if (isBalanceTransaction && !notesDisplay) {
-          const lang = localStorage.getItem('language') || 'en';
-          notesDisplay = lang === 'zh' 
-            ? (t.direction === "Deposit" ? "资金存入" : "资金取出")
-            : (t.direction === "Deposit" ? "Funds deposited" : "Funds withdrawn");
-        }
-        
-        const detailRow = document.createElement('tr');
-        detailRow.className = `trade-detail-row visible`;
-        detailRow.dataset.date = dateStr;
-        
-        detailRow.innerHTML = `
-          <td style="color: #94a3b8; font-size: 0.9rem;">
-            ${displayTime || ''}
-          </td>
-          <td>${t.symbol || (isBalanceTransaction ? '' : "-")}</td>
-          <td><span class="${directionClass}">${directionDisplay}</span></td>
-          <td>${isBuySell ? Number(t.lot_size||0).toFixed(2) : ''}</td>
-          <td>${isBuySell ? (t.sl ? Number(t.sl||0).toFixed(4) : '-') : ''}</td>
-          <td>${isBuySell ? (t.entry ? Number(t.entry||0).toFixed(4) : '-') : ''}</td>
-          <td>${isBuySell ? (t.exit ? Number(t.exit||0).toFixed(4) : '-') : ''}</td>
-          <td style="text-align: center; min-width: 90px;">${riskRewardHtml}</td>
-          <td class="${amountClass}" style="color: ${displayAmount >= 0 ? '#0ee7ff' : '#ef4444'} !important;">${amountSign}$${Math.abs(displayAmount).toFixed(2)}</td>
-          <td>${notesDisplay}</td>
-          <td>
-            ${isBuySell ? `<button class="edit-btn" onclick="window.showEditForm(${JSON.stringify(t).replace(/"/g, '&quot;')})" data-i18n="edit">Edit</button>` : ''}
-            <button class="delete-btn" onclick="deleteTrade('${t.id}')" data-i18n="delete">Delete</button>
-          </td>
-        `;
-        
-        tradeList.appendChild(detailRow);
-      });
-    }
+      tradeList.appendChild(detailRow);
+    });
   });
-  
-  // 如果没有展开的组，显示收缩表头
-  if (!hasExpandedGroup) {
-    updateTableHeaders(false);
-  }
 }
 
-// 切换日期组的展开状态
-function toggleDateGroup(date) {
-  console.log('切换日期组:', date);
-  
-  if (!date) {
-    console.error('没有提供日期参数');
-    return;
-  }
-  
-  // 如果还没有这个日期的状态，初始化为展开
-  if (!dateGroups[date]) {
-    dateGroups[date] = { isExpanded: true };
-  } else {
-    // 切换状态
-    dateGroups[date].isExpanded = !dateGroups[date].isExpanded;
-  }
-  
-  console.log('切换后状态:', date, '=>', dateGroups[date].isExpanded);
-  
-  // 保存到localStorage，防止页面刷新后状态丢失
-  try {
-    localStorage.setItem('dateGroups', JSON.stringify(dateGroups));
-  } catch (e) {
-    console.warn('无法保存到localStorage:', e);
-  }
-  
-  // 重新渲染表格
-  fetchTrades();
-}
-
-// 暴露到全局
-window.toggleDateGroup = toggleDateGroup;
+// 移除 toggleDateGroup 函数（不再需要）
+// 保留空函数避免报错
+window.toggleDateGroup = function(date) {
+  console.log('展开/收缩功能已禁用，所有交易保持展开状态');
+};
 
 // ---------------- 检查登录状态 ----------------
 async function checkAuth() {
@@ -907,10 +716,8 @@ function initChart() {
               
               const { direction, symbol, pnl_amount, balance_change } = tradeDetail;
               
-              // Balance 行
               const balanceLine = `Balance: $${balance.toFixed(2)}`;
               
-              // Pair 行
               let pairLine = 'Pair: ';
               if (direction === 'Buy' || direction === 'Sell') {
                 pairLine += symbol || 'N/A';
@@ -922,7 +729,6 @@ function initChart() {
                 pairLine += 'N/A';
               }
               
-              // P&L 行
               let pnlChange = 0;
               if (direction === 'Deposit' || direction === 'Withdrawal') {
                 pnlChange = balance_change || 0;
@@ -1058,7 +864,7 @@ const updateChart = debounce(function(data) {
   const chartData = [...data].sort((a, b) => {
     const timeA = new Date(a.created_at || a.date || 0).getTime();
     const timeB = new Date(b.created_at || b.date || 0).getTime();
-    return timeA - timeB; // 按创建时间升序
+    return timeA - timeB;
   });
   
   let balance = 0;
@@ -1151,7 +957,7 @@ form.addEventListener("submit", async e => {
     symbol: symbol.value,
     direction: direction.value,
     lot_size: parseFloat(lotSize.value) || 0,
-    sl: parseFloat(sl.value) || 0, // 新增 SL 字段
+    sl: parseFloat(sl.value) || 0,
     entry: parseFloat(entry.value) || 0,
     exit: parseFloat(exit.value) || 0,
     pnl_amount: parseFloat(pnlAmount.value) || 0,
@@ -1345,7 +1151,7 @@ function showEditForm(trade) {
   if (editSymbol) editSymbol.value = trade.symbol || '';
   if (editDirection) editDirection.value = trade.direction || 'Buy';
   if (editLotSize) editLotSize.value = trade.lot_size || '';
-  if (editSl) editSl.value = trade.sl || ''; // 新增 SL 字段
+  if (editSl) editSl.value = trade.sl || '';
   if (editEntry) editEntry.value = trade.entry || '';
   if (editExit) editExit.value = trade.exit || '';
   if (editPnlAmount) editPnlAmount.value = trade.pnl_amount || '';
@@ -1400,7 +1206,7 @@ if (editTradeForm) {
       symbol: editSymbol ? editSymbol.value : '',
       direction: editDirection ? editDirection.value : 'Buy',
       lot_size: editLotSize ? parseFloat(editLotSize.value) || 0 : 0,
-      sl: editSl ? parseFloat(editSl.value) || 0 : 0, // 新增 SL 字段
+      sl: editSl ? parseFloat(editSl.value) || 0 : 0,
       entry: editEntry ? parseFloat(editEntry.value) || 0 : 0,
       exit: editExit ? parseFloat(editExit.value) || 0 : 0,
       pnl_amount: editPnlAmount ? parseFloat(editPnlAmount.value) || 0 : 0,
@@ -1565,7 +1371,6 @@ function addCardGlowEffect() {
 
 // ============== 全局函数暴露 ==============
 
-// 其他全局函数
 window.showEditForm = showEditForm;
 window.hideEditForm = hideEditForm;
 window.deleteTrade = deleteTrade;
@@ -1579,7 +1384,7 @@ async function initApp() {
     displayUserInfo(session);
     initChart();
     
-    // 初始化日期组状态
+    // 初始化日期组状态（清空收缩状态）
     initDateGroups();
     
     fetchTrades();
