@@ -168,7 +168,6 @@ function openImageUploadModal(tradeId, existingNotes = '') {
     saveBtn.addEventListener('click', async () => {
       const notes = notesInput ? notesInput.value : '';
       
-      // 保存 notes 到数据库
       if (notes && notes !== existingNotes) {
         await saveTradeNotes(tradeId, notes);
       }
@@ -524,7 +523,6 @@ function addImageUploadStyles() {
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
     
-    /* Notes 输入框样式 */
     .notes-input-container {
       margin-top: 1.5rem;
     }
@@ -628,7 +626,6 @@ function addImageViewStyles() {
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     }
     
-    /* Notes 显示区域样式 */
     .image-view-notes {
       margin-top: 1rem;
       padding: 0.8rem;
@@ -685,6 +682,90 @@ function addImageViewStyles() {
   document.head.appendChild(style);
 }
 
+// ============== Session 存储功能 ==============
+
+// 存储交易 Session 的 Map
+const tradeSessions = new Map();
+
+// 加载保存的 Session
+function loadSavedSessions() {
+  const saved = localStorage.getItem('trade_sessions');
+  if (saved) {
+    const sessions = JSON.parse(saved);
+    Object.entries(sessions).forEach(([id, session]) => {
+      tradeSessions.set(id, session);
+    });
+  }
+}
+
+// 保存 Session 到 localStorage
+function saveTradeSession(tradeId, session) {
+  tradeSessions.set(tradeId, session);
+  const allSessions = JSON.parse(localStorage.getItem('trade_sessions') || '{}');
+  allSessions[tradeId] = session;
+  localStorage.setItem('trade_sessions', JSON.stringify(allSessions));
+}
+
+// 获取交易的 Session
+function getTradeSession(tradeId) {
+  return tradeSessions.get(tradeId) || 'Asia';
+}
+
+// 更新交易的 Session
+async function updateTradeSession(tradeId, session) {
+  saveTradeSession(tradeId, session);
+  showNotification(`Session changed to ${session}`, 'success');
+}
+
+// 批量加载 Session（渲染表格后调用）
+function loadAllSessionsToSelects() {
+  document.querySelectorAll('.session-select').forEach(select => {
+    const tradeId = select.dataset.tradeId;
+    if (tradeId && tradeSessions.has(tradeId)) {
+      select.value = tradeSessions.get(tradeId);
+    }
+  });
+}
+
+// 保存交易备注到数据库
+async function saveTradeNotes(tradeId, notes) {
+  const session = await checkAuth();
+  if (!session) return;
+  
+  try {
+    const { error } = await client
+      .from('trades')
+      .update({ notes: notes })
+      .eq('id', tradeId)
+      .eq('user_id', session.user.id);
+    
+    if (error) throw error;
+    console.log('Notes saved successfully');
+  } catch (error) {
+    console.error('Error saving notes:', error);
+  }
+}
+
+// 获取交易备注
+async function getTradeNotes(tradeId) {
+  const session = await checkAuth();
+  if (!session) return '';
+  
+  try {
+    const { data, error } = await client
+      .from('trades')
+      .select('notes')
+      .eq('id', tradeId)
+      .single();
+    
+    if (error) throw error;
+    return data?.notes || '';
+  } catch (error) {
+    console.error('Error fetching notes:', error);
+    return '';
+  }
+}
+
 // ============== 时间会话选择 ==============
 
 let currentTimeSession = localStorage.getItem('timeSession') || 'Asia';
@@ -727,31 +808,9 @@ function getFormattedTimeWithSession(trade) {
   return `${hour12.toString().padStart(2, ' ')}:${utcMinutes.toString().padStart(2, '0')} ${ampm}`;
 }
 
-function createTimeSessionSelector() {
-  const selector = document.createElement('div');
-  selector.className = 'time-session-selector';
-  selector.innerHTML = `
-    <span class="session-label" data-i18n="time_session">Session:</span>
-    <select id="timeSessionSelect" class="session-dropdown">
-      <option value="Asia" ${currentTimeSession === 'Asia' ? 'selected' : ''}>🇸🇬 Asia (Singapore)</option>
-      <option value="London" ${currentTimeSession === 'London' ? 'selected' : ''}>🇬🇧 London (GMT)</option>
-      <option value="NewYork" ${currentTimeSession === 'NewYork' ? 'selected' : ''}>🇺🇸 New York (EST)</option>
-    </select>
-  `;
-  
-  const select = selector.querySelector('#timeSessionSelect');
-  select.addEventListener('change', (e) => setTimeSession(e.target.value));
-  
-  return selector;
-}
-
 function addTimeSessionSelector() {
-  const tradeHeader = document.querySelector('.trade-header');
-  if (tradeHeader && !document.querySelector('.time-session-selector')) {
-    const selector = createTimeSessionSelector();
-    tradeHeader.appendChild(selector);
-    addTimeSessionStyles();
-  }
+  // 已删除 - 不再显示标题旁边的 Session 下拉框
+  return;
 }
 
 function addTimeSessionStyles() {
@@ -1035,7 +1094,6 @@ function calculatePerformance(group) {
 }
 
 function createSolidProgressBar(percentage, color) {
-  const lang = localStorage.getItem('language') || 'en';
   const percentageText = `${percentage.toFixed(0)}%`;
   
   let gradientColor;
@@ -1071,10 +1129,16 @@ function renderTable(groups) {
   console.log('渲染分组表格（全部展开），组数:', groups?.length);
   
   if (!groups || groups.length === 0) {
-    tradeList.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 2rem; color: #94a3b8;">No trades found</td></tr>';
-    updateTableHeaders();
-    return;
-  }
+  tradeList.innerHTML = `
+    <tr class="empty-state-row">
+      <td colspan="10" style="text-align: center; padding: 1.2rem; color: #64748b; font-size: 0.85rem;">
+        <span style="opacity: 0.6;">📊</span> No trades found
+      </td>
+    </tr>
+  `;
+  updateTableHeaders();
+  return;
+}
   
   tradeList.innerHTML = '';
   
@@ -1084,7 +1148,6 @@ function renderTable(groups) {
   
   rows.forEach(group => {
     const dateStr = group.date;
-    const isExpanded = true;
     const hasMultiple = group.tradeCount > 1;
     
     const dateObj = new Date(dateStr);
@@ -1095,42 +1158,32 @@ function renderTable(groups) {
     }).replace(/\//g, '/');
     
     const totalTrades = group.tradeCount;
-    const totalPnl = group.totalPnl;
-    const totalLots = group.totalLots;
-    const depositAmount = group.depositAmount;
-    const withdrawalAmount = group.withdrawalAmount;
     
-    const pnlClass = totalPnl >= 0 ? 'pnl-positive' : 'pnl-negative';
-    const pnlSign = totalPnl >= 0 ? '+' : '';
-    
-    const performance = calculatePerformance(group);
-    const lang = localStorage.getItem('language') || 'en';
-    
-    // ========== 计算当日盈亏统计 (TP/SL/BE) ==========
+    // 计算当日盈亏统计 (TP/SL/BE)
     const buySellTrades = group.trades.filter(t => t.direction === "Buy" || t.direction === "Sell");
-const winCount = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0).length;
-const lossCount = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0).length;
-const breakEvenCount = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) === 0).length;
+    const winCount = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0).length;
+    const lossCount = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0).length;
+    const breakEvenCount = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) === 0).length;
     
-    // 生成统计徽章HTML
+    // 生成统计徽章HTML - 简洁版本
     let statsBadgeHtml = '';
-if (buySellTrades.length > 0) {
-  statsBadgeHtml = `
-    <div class="trade-stats-badge">
-      <span class="stats-total">${buySellTrades.length}</span>
-      <span class="stats-win">+${winCount}</span>
-      <span class="stats-loss">-${lossCount}</span>
-      ${breakEvenCount > 0 ? `<span class="stats-be">=${breakEvenCount}</span>` : ''}
-    </div>
-  `;
-} else if (group.hasBalanceTx) {
-  const lang = localStorage.getItem('language') || 'en';
-  statsBadgeHtml = `
-    <div class="trade-stats-badge balance-only">
-      <span class="stats-total">💰</span>
-    </div>
-  `;
-}
+    if (buySellTrades.length > 0) {
+      statsBadgeHtml = `
+        <div class="trade-stats-badge">
+          <span class="stats-total">${buySellTrades.length}</span>
+          <span class="stats-win">+${winCount}</span>
+          <span class="stats-loss">-${lossCount}</span>
+          ${breakEvenCount > 0 ? `<span class="stats-be">=${breakEvenCount}</span>` : ''}
+        </div>
+      `;
+    } else if (group.hasBalanceTx) {
+      const lang = localStorage.getItem('language') || 'en';
+      statsBadgeHtml = `
+        <div class="trade-stats-badge balance-only">
+          <span class="stats-total">💰</span>
+        </div>
+      `;
+    }
     
     const sortedTrades = [...group.trades].sort((a, b) => {
       const timeA = new Date(a.created_at || a.date || 0).getTime();
@@ -1142,12 +1195,57 @@ if (buySellTrades.length > 0) {
     headerRow.className = `date-group-header expanded`;
     headerRow.dataset.date = dateStr;
     
-    headerRow.innerHTML = `
-  <td colspan="11" style="padding: 0.8rem 0.7rem !important; background: rgba(15, 23, 42, 0.95);">
-    <div class="date-header" style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-      <strong style="color: #3b82f6; font-size: 1rem;">${formattedDate}</strong>
+// 获取买卖交易数组（如果还没有定义）
+const buySellTradesForQuest = group.trades.filter(t => t.direction === "Buy" || t.direction === "Sell");
+const dailyPnl = group.totalPnl;
+
+// 计算 Daily Quest 状态（基于起始余额百分比）
+let questStatus = '';
+let questStatusText = '';
+
+// 获取当日起始余额
+let startingBalance = 1000; // 默认值
+
+// 尝试从 group 中获取起始余额
+if (group.startingBalance) {
+  startingBalance = group.startingBalance;
+} else {
+  // 如果没有起始余额，从交易历史中计算
+  const tradesOnDate = group.trades.filter(t => t.date === group.date);
+  let balance = 1000;
+  // 按时间顺序计算该日之前的余额
+  // 简化处理：使用1000作为默认
+  startingBalance = 1000;
+}
+
+const profitTarget = startingBalance * 0.1;  // 10% 盈利目标
+const lossLimit = startingBalance * 0.25;   // 25% 亏损限制
+
+if (buySellTradesForQuest.length === 0) {
+  questStatus = 'no-trades';
+  questStatusText = 'No Trades';
+} else if (dailyPnl >= profitTarget) {
+  questStatus = 'passed';
+  questStatusText = 'Passed';
+} else if (dailyPnl <= -lossLimit) {
+  questStatus = 'failed';
+  questStatusText = 'Failed';
+} else {
+  questStatus = 'patience';
+  questStatusText = 'Patience';
+}
+
+console.log('DQ Status:', questStatusText, 'Pnl:', dailyPnl, 'Target:', profitTarget, 'Limit:', lossLimit);
+
+headerRow.innerHTML = `
+  <td colspan="10" style="padding: 0.3rem 0.5rem !important; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(59, 130, 246, 0.15);">
+    <div class="date-header" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%;">
+      <strong style="color: #3b82f6; font-size: 0.85rem; font-weight: 600;">${formattedDate}</strong>
       ${statsBadgeHtml}
-      <span style="color: #94a3b8; font-size: 0.85rem; margin-left: auto;">${totalTrades} trade${totalTrades !== 1 ? 's' : ''}</span>
+      <div class="quest-status-badge ${questStatus}">
+  <span class="quest-label">DQ:</span>
+  <span class="quest-value">${questStatusText}</span>
+</div>
     </div>
   </td>
 `;
@@ -1171,14 +1269,6 @@ if (buySellTrades.length > 0) {
         directionClass = t.direction === "Buy" ? "buy" : "sell";
       }
       
-      let displayTime = '';
-      if (t.created_at) {
-        try {
-          const createdDate = new Date(t.created_at);
-          displayTime = createdDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        } catch (e) {}
-      }
-      
       let displayAmount = 0;
       let amountClass = "";
       let amountSign = "";
@@ -1196,7 +1286,6 @@ if (buySellTrades.length > 0) {
       let riskRewardHtml = "";
       if (isBuySell) {
         const rrValue = calculateRiskReward(t);
-        const isProfit = parseFloat(t.pnl_amount || 0) > 0;
         
         if (rrValue === "N/A") {
           riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">N/A</span>';
@@ -1217,23 +1306,14 @@ if (buySellTrades.length > 0) {
         riskRewardHtml = '<span class="rr-value rr-na" style="display: inline-block !important; min-width: 70px !important;">-</span>';
       }
       
-      let notesDisplay = t.notes || "";
-      if (isBalanceTransaction && !notesDisplay) {
-        const lang = localStorage.getItem('language') || 'en';
-        notesDisplay = lang === 'zh' 
-          ? (t.direction === "Deposit" ? "资金存入" : "资金取出")
-          : (t.direction === "Deposit" ? "Funds deposited" : "Funds withdrawn");
-      }
-      
       const detailRow = document.createElement('tr');
       detailRow.className = `trade-detail-row visible`;
       detailRow.dataset.date = dateStr;
       
       detailRow.innerHTML = `
   <td style="color: #94a3b8; font-size: 0.9rem;">
-    ${getFormattedTimeWithSession(t)}
+    ${t.symbol || (isBalanceTransaction ? '' : '-')}
   </td>
-  <td>${t.symbol || (isBalanceTransaction ? '' : '-')}</td>
   <td style="text-align: center;">
     <select class="session-select" data-trade-id="${t.id}" onchange="window.updateTradeSession('${t.id}', this.value)">
       <option value="Asia" ${getTradeSession(t.id) === 'Asia' ? 'selected' : ''}>Asia</option>
@@ -1266,6 +1346,7 @@ if (buySellTrades.length > 0) {
   });
   
   updateAllImageButtons();
+  loadAllSessionsToSelects();
 }
 
 window.toggleDateGroup = function(date) {
@@ -1442,6 +1523,7 @@ async function fetchTrades() {
     updateStats(groupedData.flatMap(g => g.trades));
     updateChart(data);
     updateTopBalance(data);
+    
     addTimeSessionSelector();
     
   } catch (error) {
@@ -2007,11 +2089,10 @@ window.fetchTrades = fetchTrades;
 window.showBalanceModal = showBalanceModal;
 window.viewTradeImage = viewTradeImage;
 window.removeTradeImage = removeTradeImage;
-window.showNotesModal = showNotesModal;
-window.saveTradeNotes = saveTradeNotes;
-window.getTradeNotes = getTradeNotes;
 window.updateTradeSession = updateTradeSession;
 window.getTradeSession = getTradeSession;
+window.saveTradeNotes = saveTradeNotes;
+window.getTradeNotes = getTradeNotes;
 
 // ---------------- Initial Load ----------------
 async function initApp() {
@@ -2040,253 +2121,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
 } else {
   initApp();
-}
-
-// ============== Notes 弹窗功能 ==============
-
-function showNotesModal(notes) {
-  const modal = document.createElement('div');
-  modal.className = 'notes-modal';
-  modal.innerHTML = `
-    <div class="notes-modal-content">
-      <div class="notes-modal-header">
-        <h3>📝 Trade Notes</h3>
-        <button class="notes-modal-close">&times;</button>
-      </div>
-      <div class="notes-modal-body">
-        <div class="notes-text">${notes.replace(/\n/g, '<br>')}</div>
-      </div>
-      <div class="notes-modal-footer">
-        <button class="notes-modal-close-btn">Close</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.appendChild(modal);
-  
-  setTimeout(() => modal.classList.add('show'), 10);
-  
-  function closeModal() {
-    modal.classList.remove('show');
-    setTimeout(() => modal.remove(), 300);
-  }
-  
-  modal.querySelectorAll('.notes-modal-close, .notes-modal-close-btn').forEach(btn => {
-    btn.addEventListener('click', closeModal);
-  });
-  
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-}
-
-// 添加样式
-function addNotesModalStyles() {
-  if (document.getElementById('notes-modal-styles')) return;
-  
-  const style = document.createElement('style');
-  style.id = 'notes-modal-styles';
-  style.textContent = `
-    .notes-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(5px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10002;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    
-    .notes-modal.show { opacity: 1; }
-    
-    .notes-modal-content {
-      background: linear-gradient(145deg, #0f172a, #1e293b);
-      border-radius: 20px;
-      width: 90%;
-      max-width: 450px;
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-      overflow: hidden;
-    }
-    
-    .notes-modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.2rem 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .notes-modal-header h3 {
-      color: #3b82f6;
-      margin: 0;
-      font-size: 1.2rem;
-    }
-    
-    .notes-modal-close {
-      background: none;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.8rem;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    
-    .notes-modal-close:hover { color: #ef4444; }
-    
-    .notes-modal-body {
-      padding: 1.8rem;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-    
-    .notes-text {
-      color: #e2e8f0;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 1rem;
-      border-radius: 12px;
-    }
-    
-    .notes-modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      padding: 1rem 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .notes-modal-close-btn {
-      padding: 0.5rem 1.5rem;
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      border: none;
-      border-radius: 10px;
-      color: white;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    
-    .notes-modal-close-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-    
-    .notes-btn {
-      background: rgba(59, 130, 246, 0.15);
-      border: none;
-      border-radius: 8px;
-      padding: 4px 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.2s;
-      color: #3b82f6;
-    }
-    
-    .notes-btn:hover {
-      background: rgba(59, 130, 246, 0.3);
-      transform: scale(1.05);
-    }
-    
-    .notes-empty {
-      color: #475569;
-      font-size: 0.9rem;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-// 调用添加样式
-addNotesModalStyles();
-
-// 保存交易备注到数据库
-async function saveTradeNotes(tradeId, notes) {
-  const session = await checkAuth();
-  if (!session) return;
-  
-  try {
-    const { error } = await client
-      .from('trades')
-      .update({ notes: notes })
-      .eq('id', tradeId)
-      .eq('user_id', session.user.id);
-    
-    if (error) throw error;
-    console.log('Notes saved successfully');
-  } catch (error) {
-    console.error('Error saving notes:', error);
-  }
-}
-
-// 获取交易备注
-async function getTradeNotes(tradeId) {
-  const session = await checkAuth();
-  if (!session) return '';
-  
-  try {
-    const { data, error } = await client
-      .from('trades')
-      .select('notes')
-      .eq('id', tradeId)
-      .single();
-    
-    if (error) throw error;
-    return data?.notes || '';
-  } catch (error) {
-    console.error('Error fetching notes:', error);
-    return '';
-  }
-}
-
-// ============== Session 存储功能 ==============
-
-// 存储交易 Session 的 Map
-const tradeSessions = new Map();
-
-// 加载保存的 Session
-function loadSavedSessions() {
-  const saved = localStorage.getItem('trade_sessions');
-  if (saved) {
-    const sessions = JSON.parse(saved);
-    Object.entries(sessions).forEach(([id, session]) => {
-      tradeSessions.set(id, session);
-    });
-  }
-}
-
-// 保存 Session 到 localStorage
-function saveTradeSession(tradeId, session) {
-  tradeSessions.set(tradeId, session);
-  const allSessions = JSON.parse(localStorage.getItem('trade_sessions') || '{}');
-  allSessions[tradeId] = session;
-  localStorage.setItem('trade_sessions', JSON.stringify(allSessions));
-}
-
-// 获取交易的 Session
-function getTradeSession(tradeId) {
-  return tradeSessions.get(tradeId) || 'Asia';
-}
-
-// 更新交易的 Session
-async function updateTradeSession(tradeId, session) {
-  saveTradeSession(tradeId, session);
-  showNotification(`Session changed to ${session}`, 'success');
-}
-
-// 批量加载 Session（渲染表格后调用）
-function loadAllSessionsToSelects() {
-  document.querySelectorAll('.session-select').forEach(select => {
-    const tradeId = select.dataset.tradeId;
-    if (tradeId && tradeSessions.has(tradeId)) {
-      select.value = tradeSessions.get(tradeId);
-    }
-  });
 }

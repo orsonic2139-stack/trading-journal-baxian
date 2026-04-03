@@ -2255,3 +2255,373 @@ table tbody tr td .rr-loss {
   background: #0f172a;
   color: #e2e8f0;
 }
+
+/* 确保日期行占满整行 */
+.date-group-header td {
+  width: 100%;
+}
+
+#tradeSection table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+#tradeSection td,
+#tradeSection th {
+  border-collapse: collapse;
+}
+
+/* 让日期行的背景覆盖整行 */
+.date-group-header {
+  display: table-row;
+  width: 100%;
+}
+
+/* ============== 交易统计徽章样式 ============== */
+
+.trade-stats-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 0.7rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.trade-stats-badge .stats-total {
+  color: #93c5fd;
+  font-weight: 600;
+  background: rgba(59, 130, 246, 0.2);
+  padding: 1px 6px;
+  border-radius: 12px;
+  margin-right: 2px;
+}
+
+.trade-stats-badge .stats-win {
+  color: #34d399;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.trade-stats-badge .stats-loss {
+  color: #f87171;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.trade-stats-badge .stats-be {
+  color: #fbbf24;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.trade-stats-badge.balance-only {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.trade-stats-badge.balance-only .stats-total {
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.15);
+  font-size: 0.8rem;
+  padding: 1px 5px;
+}
+
+/* ============== 表格列宽优化 ============== */
+
+#tradeSection table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+#tradeSection th,
+#tradeSection td {
+  padding: 8px 6px;
+  vertical-align: middle;
+}
+
+/* 各列宽度分配 */
+#tradeSection th:nth-child(1), /* Symbol */
+#tradeSection td:nth-child(1) {
+  width: 12%;
+  min-width: 80px;
+}
+
+#tradeSection th:nth-child(2), /* Session */
+#tradeSection td:nth-child(2) {
+  width: 10%;
+  min-width: 70px;
+}
+
+#tradeSection th:nth-child(3), /* Direction */
+#tradeSection td:nth-child(3) {
+  width: 8%;
+  min-width: 60px;
+}
+
+#tradeSection th:nth-child(4), /* Lot */
+#tradeSection td:nth-child(4) {
+  width: 6%;
+  min-width: 50px;
+}
+
+#tradeSection th:nth-child(5), /* SL */
+#tradeSection td:nth-child(5) {
+  width: 8%;
+  min-width: 60px;
+}
+
+#tradeSection th:nth-child(6), /* Entry */
+#tradeSection td:nth-child(6) {
+  width: 8%;
+  min-width: 60px;
+}
+
+#tradeSection th:nth-child(7), /* Exit */
+#tradeSection td:nth-child(7) {
+  width: 8%;
+  min-width: 60px;
+}
+
+#tradeSection th:nth-child(8), /* R:R */
+#tradeSection td:nth-child(8) {
+  width: 8%;
+  min-width: 70px;
+}
+
+#tradeSection th:nth-child(9), /* P/L */
+#tradeSection td:nth-child(9) {
+  width: 10%;
+  min-width: 80px;
+}
+
+#tradeSection th:nth-child(10), /* Actions */
+#tradeSection td:nth-child(10) {
+  width: 14%;
+  min-width: 100px;
+}
+
+/* Session 下拉框样式优化 */
+.session-select {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 16px;
+  padding: 4px 8px;
+  color: #e2e8f0;
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  width: 85px;
+  text-align: center;
+}
+
+.session-select:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+/* 操作按钮容器 */
+.action-buttons-cell {
+  white-space: nowrap;
+  text-align: center;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  margin: 0 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 图片按钮 */
+.image-btn {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+}
+
+.image-btn.has-image {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+/* 编辑按钮 */
+.edit-btn-icon {
+  background: rgba(62, 180, 137, 0.15);
+  color: #3eb489;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+}
+
+/* 删除按钮 */
+.delete-btn-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+}
+
+.action-btn:hover {
+  transform: scale(1.05);
+}
+
+/* R:R 值样式优化 */
+.rr-value {
+  display: inline-block !important;
+  min-width: 55px !important;
+  padding: 2px 6px !important;
+  font-size: 0.7rem !important;
+  text-align: center !important;
+}
+
+/* P/L 数字样式 */
+.pnl-positive {
+  color: #0ee7ff !important;
+  font-weight: 600;
+}
+
+.pnl-negative {
+  color: #ef4444 !important;
+  font-weight: 600;
+}
+
+/* 响应式 - 小屏幕时允许水平滚动 */
+@media (max-width: 1000px) {
+  #tradeSection {
+    overflow-x: auto;
+  }
+  
+  #tradeSection table {
+    min-width: 900px;
+  }
+}
+
+/* 响应式 - 移动端 */
+@media (max-width: 768px) {
+  #tradeSection {
+    overflow-x: auto;
+  }
+  
+  #tradeSection table {
+    min-width: 850px;
+  }
+  
+  .session-select {
+    width: 70px;
+    font-size: 0.65rem;
+    padding: 3px 5px;
+  }
+  
+  .action-btn {
+    font-size: 0.85rem;
+    padding: 3px 5px;
+  }
+}
+
+/* ============== Daily Quest 状态徽章 ============== */
+
+.quest-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.quest-label {
+  color: #f1f5f9 !important;  /* 亮白色 */
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.quest-value {
+  font-weight: 600;
+  font-size: 0.7rem;
+}
+
+/* Passed 状态 */
+.quest-status-badge.passed {
+  border-color: rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.2));
+}
+
+.quest-status-badge.passed .quest-value {
+  color: #34d399;  /* 亮绿色 */
+}
+
+/* Failed 状态 */
+.quest-status-badge.failed {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(153, 27, 27, 0.2));
+}
+
+.quest-status-badge.failed .quest-value {
+  color: #f87171;  /* 亮红色 */
+}
+
+/* No Trades 状态 */
+.quest-status-badge.no-trades {
+  border-color: rgba(148, 163, 184, 0.3);
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(71, 85, 105, 0.15));
+}
+
+.quest-status-badge.no-trades .quest-value {
+  color: #cbd5e1;  /* 亮灰色 */
+}
+
+/* Pending 状态 */
+.quest-status-badge.pending {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(180, 83, 9, 0.2));
+}
+
+.quest-status-badge.pending .quest-value {
+  color: #fbbf24;  /* 亮橙色 */
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .quest-status-badge {
+    padding: 2px 8px;
+    gap: 4px;
+  }
+  
+  .quest-label {
+    font-size: 0.6rem;
+  }
+  
+  .quest-value {
+    font-size: 0.65rem;
+  }
+}
+
+/* Patience 状态（未达标） */
+.quest-status-badge.patience {
+  border-color: rgba(245, 158, 11, 0.5);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(180, 83, 9, 0.2));
+}
+
+.quest-status-badge.patience .quest-value {
+  color: #fbbf24;  /* 亮橙色 */
+}
