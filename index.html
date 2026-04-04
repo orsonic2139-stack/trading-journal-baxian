@@ -45,22 +45,23 @@
           <!-- 五维能力雷达图 -->
           <div class="radar-capability-card">
             <div class="card-header-glow">
-              <div class="card-title-section">
-                <span class="title-icon">📊</span>
-                <h3 class="card-title">五维交易能力图</h3>
-              </div>
-              <span class="card-badge">实时分析</span>
-            </div>
+  <div class="card-title-section">
+    <span class="title-icon">📊</span>
+    <h3 class="card-title">6-Dimension Trading Ability</h3>
+  </div>
+  <span class="card-badge">Real-time Analysis</span>
+</div>
             <div class="radar-chart-wrapper">
               <canvas id="radarChart" width="320" height="320" style="width: 100%; max-width: 320px; height: auto; margin: 0 auto;"></canvas>
             </div>
             <div class="radar-legend">
-              <div class="legend-item"><span class="legend-dot" style="background: #3b82f6;"></span>🎯 胜率</div>
-              <div class="legend-item"><span class="legend-dot" style="background: #10b981;"></span>💰 盈利效率</div>
-              <div class="legend-item"><span class="legend-dot" style="background: #f59e0b;"></span>🛡️ 风险控制</div>
-              <div class="legend-item"><span class="legend-dot" style="background: #8b5cf6;"></span>📈 一致性</div>
-              <div class="legend-item"><span class="legend-dot" style="background: #ec4899;"></span>⚡ 活跃度</div>
-            </div>
+  <div class="legend-item"><span class="legend-dot" style="background: #3b82f6;"></span>🎯 Win Rate</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #10b981;"></span>📊 Profit Factor</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #f59e0b;"></span>📈 Consistency</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #ef4444;"></span>📉 Max Drawdown</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #8b5cf6;"></span>🔄 Recovery Factor</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #ec4899;"></span>⚖️ Avg Win/Loss</div>
+</div>
           </div>
 
           <!-- 6个统计卡片 -->
@@ -68,42 +69,42 @@
             <div class="stats-card-modern">
               <div class="stats-card-icon">📈</div>
               <div class="stats-card-info">
-                <span class="stats-card-label">总交易数</span>
+                <span class="stats-card-label">Total Trades</span>
                 <strong class="stats-card-value" id="totalTrades">0</strong>
               </div>
             </div>
             <div class="stats-card-modern">
               <div class="stats-card-icon">✅</div>
               <div class="stats-card-info">
-                <span class="stats-card-label">盈利交易</span>
+                <span class="stats-card-label">Winning Trades</span>
                 <strong class="stats-card-value" id="winningTrades">0</strong>
               </div>
             </div>
             <div class="stats-card-modern">
               <div class="stats-card-icon">🎯</div>
               <div class="stats-card-info">
-                <span class="stats-card-label">胜率</span>
+                <span class="stats-card-label">Win Rate</span>
                 <strong class="stats-card-value" id="winRate">0%</strong>
               </div>
             </div>
             <div class="stats-card-modern">
               <div class="stats-card-icon">💰</div>
               <div class="stats-card-info">
-                <span class="stats-card-label">平均盈亏</span>
+                <span class="stats-card-label">Avg P/L</span>
                 <strong class="stats-card-value" id="avgPnl">0.00</strong>
               </div>
             </div>
             <div class="stats-card-modern">
               <div class="stats-card-icon">🏆</div>
               <div class="stats-card-info">
-                <span class="stats-card-label">最大盈利</span>
+                <span class="stats-card-label">Best Profit</span>
                 <strong class="stats-card-value" id="maxPnl">0.00</strong>
               </div>
             </div>
             <div class="stats-card-modern">
               <div class="stats-card-icon">⚠️</div>
               <div class="stats-card-info">
-                <span class="stats-card-label">最大亏损</span>
+                <span class="stats-card-label">Biggest Loss</span>
                 <strong class="stats-card-value" id="minPnl">0.00</strong>
               </div>
             </div>
@@ -115,7 +116,7 @@
           <div class="rank-score-card">
             <div class="score-header">
               <span class="score-icon">🏆</span>
-              <span class="score-label">综合评分</span>
+              <span class="score-label">Overall Score</span>
             </div>
             <div class="score-value" id="overallScore">0</div>
             <div class="score-max">/ 100</div>
@@ -130,11 +131,11 @@
           <div class="rank-level-card">
             <div class="level-icon" id="levelIcon">🌱</div>
             <div class="level-info">
-              <div class="level-label">当前等级</div>
-              <div class="level-name" id="currentLevel">见习生</div>
+              <div class="level-label">Current Level</div>
+              <div class="level-name" id="currentLevel">Apprentice</div>
             </div>
             <div class="next-level-info">
-              <div class="next-label">升级还需</div>
+              <div class="next-label">Next Level</div>
               <div class="next-value" id="nextLevelNeeded">--</div>
             </div>
           </div>
@@ -142,11 +143,56 @@
           <div class="rank-streak-card">
             <div class="streak-icon">🔥</div>
             <div class="streak-info">
-              <div class="streak-label">连胜天数</div>
+              <div class="streak-label">Winning Streak</div>
               <div class="streak-value" id="winningStreak">0</div>
-              <div class="streak-unit">天</div>
+              <div class="streak-unit">days</div>
             </div>
           </div>
+
+<div class="rank-discipline-card">
+  <div class="discipline-header">
+    <span class="discipline-icon">📋</span>
+    <span class="discipline-label">Discipline Score</span>
+  </div>
+  <div class="discipline-score-wrapper">
+    <div class="discipline-score" id="disciplineScore">0</div>
+    <div class="discipline-max">/ 100</div>
+  </div>
+  <div class="discipline-progress">
+    <div class="discipline-progress-fill" id="disciplineProgress" style="width: 0%;"></div>
+  </div>
+  <div class="discipline-details" id="disciplineDetails">
+    <span>📊 Based on stop loss & consistency</span>
+  </div>
+</div>
+
+<div class="rank-emotion-card">
+  <div class="emotion-header">
+    <span class="emotion-icon">🧠</span>
+    <span class="emotion-label">Emotional State</span>
+    <span class="emotion-status" id="emotionStatus">Calm</span>
+  </div>
+  <div class="emotion-indicator" id="emotionIndicator">
+    <div class="emotion-level" style="width: 60%;"></div>
+  </div>
+  <div class="emotion-factors">
+    <div class="factor-item">
+      <span class="factor-name">Win Streak Effect</span>
+      <span class="factor-value positive" id="winStreakEffect">+0%</span>
+    </div>
+    <div class="factor-item">
+      <span class="factor-name">Loss Streak Effect</span>
+      <span class="factor-value negative" id="lossStreakEffect">-0%</span>
+    </div>
+    <div class="factor-item">
+      <span class="factor-name">Risk Adherence</span>
+      <span class="factor-value" id="riskAdherence">0%</span>
+    </div>
+  </div>
+  <div class="emotion-message" id="emotionMessage">
+    🧘 Keep up the good discipline!
+  </div>
+</div>
         </div>
       </div>
 

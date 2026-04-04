@@ -1316,12 +1316,12 @@ function calculateOverallScore(statsData) {
 
 // ============== 等级判定函数 ==============
 function getRankByScore(score) {
-  if (score <= 20) return { name: '见习生', icon: '🌱', nextNeeded: 21 - score };
-  if (score <= 40) return { name: '学徒', icon: '📘', nextNeeded: 41 - score };
-  if (score <= 60) return { name: '交易员', icon: '📈', nextNeeded: 61 - score };
-  if (score <= 75) return { name: '狙击手', icon: '🎯', nextNeeded: 76 - score };
-  if (score <= 88) return { name: '精英交易员', icon: '💎', nextNeeded: 89 - score };
-  return { name: '市场巫师', icon: '👑', nextNeeded: 0 };
+  if (score <= 20) return { name: 'Apprentice', icon: '🌱', nextNeeded: 21 - score };
+  if (score <= 40) return { name: 'Learner', icon: '📘', nextNeeded: 41 - score };
+  if (score <= 60) return { name: 'Trader', icon: '📈', nextNeeded: 61 - score };
+  if (score <= 75) return { name: 'Sniper', icon: '🎯', nextNeeded: 76 - score };
+  if (score <= 88) return { name: 'Elite Trader', icon: '💎', nextNeeded: 89 - score };
+  return { name: 'Market Wizard', icon: '👑', nextNeeded: 0 };
 }
 
 // ============== 连胜天数计算函数 ==============
@@ -1367,11 +1367,11 @@ function updateRankingSystem(statsData, allTrades) {
   if (scoreProgressEl) scoreProgressEl.style.width = `${scorePercent}%`;
   
   if (scoreStatusEl) {
-    if (overallScore >= 85) scoreStatusEl.textContent = '🏆 卓越';
-    else if (overallScore >= 70) scoreStatusEl.textContent = '✨ 优秀';
-    else if (overallScore >= 55) scoreStatusEl.textContent = '📈 良好';
-    else if (overallScore >= 40) scoreStatusEl.textContent = '🌱 进阶中';
-    else scoreStatusEl.textContent = '💪 继续努力';
+    if (overallScore >= 85) scoreStatusEl.textContent = '🏆 Excellent';
+    else if (overallScore >= 70) scoreStatusEl.textContent = '✨ Great';
+    else if (overallScore >= 55) scoreStatusEl.textContent = '📈 Good';
+    else if (overallScore >= 40) scoreStatusEl.textContent = '🌱 Improving';
+    else scoreStatusEl.textContent = '💪 Keep Going';
   }
   
   const rank = getRankByScore(overallScore);
@@ -1383,9 +1383,9 @@ function updateRankingSystem(statsData, allTrades) {
   if (currentLevelEl) currentLevelEl.textContent = rank.name;
   if (nextLevelNeededEl) {
     if (rank.nextNeeded > 0) {
-      nextLevelNeededEl.textContent = `${rank.nextNeeded}分`;
+      nextLevelNeededEl.textContent = `${rank.nextNeeded} pts`;
     } else {
-      nextLevelNeededEl.textContent = '已达最高';
+      nextLevelNeededEl.textContent = 'Max Level';
     }
   }
   
@@ -1394,7 +1394,279 @@ function updateRankingSystem(statsData, allTrades) {
   if (streakValueEl) streakValueEl.textContent = winningStreak;
 }
 
-// ============== 五维雷达图绘制函数 ==============
+// ============== 纪律评分计算函数 ==============
+function calculateDisciplineScore(trades) {
+  // 只统计真实交易（Buy/Sell）
+  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  
+  if (buySellTrades.length === 0) {
+    return { score: 0, details: { stopLossUsage: 0, consistency: 0, riskManagement: 0, tradeFrequency: 0 } };
+  }
+  
+  // 1. 止损使用率 (40分) - 是否设置了止损
+  let stopLossUsage = 0;
+  let tradesWithSL = 0;
+  buySellTrades.forEach(trade => {
+    const sl = parseFloat(trade.sl || 0);
+    if (sl && sl !== 0) {
+      tradesWithSL++;
+    }
+  });
+  stopLossUsage = (tradesWithSL / buySellTrades.length) * 40;
+  
+  // 2. 交易一致性 (25分) - 每日交易次数是否稳定，避免过度交易
+  let consistencyScore = 25;
+  const dailyTradeCount = {};
+  buySellTrades.forEach(trade => {
+    const date = trade.date;
+    if (!dailyTradeCount[date]) dailyTradeCount[date] = 0;
+    dailyTradeCount[date]++;
+  });
+  
+  const dailyCounts = Object.values(dailyTradeCount);
+  if (dailyCounts.length > 1) {
+    const avgTrades = dailyCounts.reduce((a, b) => a + b, 0) / dailyCounts.length;
+    const variance = dailyCounts.reduce((acc, val) => acc + Math.pow(val - avgTrades, 2), 0) / dailyCounts.length;
+    const stdDev = Math.sqrt(variance);
+    // 标准差越小，一致性越高
+    const consistencyFactor = Math.max(0, Math.min(1, 1 - (stdDev / avgTrades)));
+    consistencyScore = 15 + (consistencyFactor * 10); // 15-25分
+  }
+  
+  // 3. 风险管理 (20分) - 单笔亏损是否控制在合理范围
+  let riskScore = 20;
+  let totalLosses = 0;
+  let lossCount = 0;
+  let largeLosses = 0; // 亏损超过平均亏损2倍的交易
+  
+  buySellTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (pnl < 0) {
+      totalLosses += Math.abs(pnl);
+      lossCount++;
+    }
+  });
+  
+  const avgLoss = lossCount > 0 ? totalLosses / lossCount : 0;
+  
+  buySellTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (pnl < 0 && avgLoss > 0) {
+      if (Math.abs(pnl) > avgLoss * 2) {
+        largeLosses++;
+      }
+    }
+  });
+  
+  if (largeLosses > 0) {
+    riskScore = Math.max(5, 20 - (largeLosses * 5));
+  }
+  
+  // 4. 交易频率 (15分) - 每日交易不超过5笔为佳
+  let frequencyScore = 15;
+  const tradingDays = Object.keys(dailyTradeCount).length;
+  if (tradingDays > 0) {
+    const avgTradesPerDay = buySellTrades.length / tradingDays;
+    if (avgTradesPerDay > 10) {
+      frequencyScore = 5;
+    } else if (avgTradesPerDay > 7) {
+      frequencyScore = 8;
+    } else if (avgTradesPerDay > 5) {
+      frequencyScore = 11;
+    } else if (avgTradesPerDay <= 3) {
+      frequencyScore = 15;
+    }
+  }
+  
+  const totalScore = Math.min(100, Math.max(0, Math.floor(stopLossUsage + consistencyScore + riskScore + frequencyScore)));
+  
+  // 生成纪律详情文本
+  let detailsText = '';
+  if (stopLossUsage >= 35) {
+    detailsText = '✅ 止损纪律优秀';
+  } else if (stopLossUsage >= 20) {
+    detailsText = '⚠️ 止损使用率偏低';
+  } else {
+    detailsText = '❌ 请设置止损保护';
+  }
+  
+  if (largeLosses > 0) {
+    detailsText += ` | 有${largeLosses}笔大额亏损`;
+  }
+  
+  return {
+    score: totalScore,
+    details: {
+      stopLossUsage: Math.round(stopLossUsage),
+      consistency: Math.round(consistencyScore),
+      riskManagement: Math.round(riskScore),
+      tradeFrequency: Math.round(frequencyScore),
+      detailsText: detailsText
+    }
+  };
+}
+
+// ============== 情绪状态计算函数 ==============
+function calculateEmotionalState(trades, winningStreak = null) {
+  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  
+  if (buySellTrades.length === 0) {
+    return {
+      state: 'Calm',
+      stateClass: 'calm',
+      level: 30,
+      winStreakEffect: 0,
+      lossStreakEffect: 0,
+      riskAdherence: 100,
+      message: '📊 开始交易以追踪情绪状态',
+      color: '#34d399'
+    };
+  }
+  
+  // 计算当前连胜/连败
+  let currentWinStreak = 0;
+  let currentLossStreak = 0;
+  let lastResult = null;
+  
+  // 按日期排序，从最近开始
+  const sortedTrades = [...buySellTrades].sort((a, b) => {
+    const dateA = new Date(a.created_at || a.date || 0);
+    const dateB = new Date(b.created_at || b.date || 0);
+    return dateB - dateA;
+  });
+  
+  for (const trade of sortedTrades) {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    const isWin = pnl > 0;
+    
+    if (lastResult === null) {
+      if (isWin) currentWinStreak = 1;
+      else currentLossStreak = 1;
+      lastResult = isWin;
+    } else if (lastResult === isWin) {
+      if (isWin) currentWinStreak++;
+      else currentLossStreak++;
+    } else {
+      break;
+    }
+  }
+  
+  // 计算连胜/连败影响系数
+  let winStreakEffect = 0;
+  let lossStreakEffect = 0;
+  
+  if (currentWinStreak >= 5) {
+    winStreakEffect = 25;
+  } else if (currentWinStreak >= 3) {
+    winStreakEffect = 15;
+  } else if (currentWinStreak >= 2) {
+    winStreakEffect = 8;
+  } else if (currentWinStreak === 1) {
+    winStreakEffect = 3;
+  }
+  
+  if (currentLossStreak >= 5) {
+    lossStreakEffect = -30;
+  } else if (currentLossStreak >= 3) {
+    lossStreakEffect = -20;
+  } else if (currentLossStreak >= 2) {
+    lossStreakEffect = -10;
+  } else if (currentLossStreak === 1) {
+    lossStreakEffect = -5;
+  }
+  
+  // 计算风险遵守度（基于止损设置）
+  let tradesWithSL = 0;
+  buySellTrades.forEach(trade => {
+    const sl = parseFloat(trade.sl || 0);
+    if (sl && sl !== 0) tradesWithSL++;
+  });
+  const riskAdherence = buySellTrades.length > 0 ? (tradesWithSL / buySellTrades.length) * 100 : 100;
+  
+  // 计算整体盈利表现对情绪的影响
+  let totalPnl = 0;
+  buySellTrades.forEach(trade => {
+    totalPnl += parseFloat(trade.pnl_amount || 0);
+  });
+  
+  let performanceEffect = 0;
+  if (totalPnl > 500) performanceEffect = 15;
+  else if (totalPnl > 200) performanceEffect = 8;
+  else if (totalPnl > 50) performanceEffect = 3;
+  else if (totalPnl < -500) performanceEffect = -20;
+  else if (totalPnl < -200) performanceEffect = -12;
+  else if (totalPnl < -50) performanceEffect = -5;
+  
+  // 计算最终情绪水平 (0-100)
+  let emotionalLevel = 50 + winStreakEffect + lossStreakEffect + performanceEffect;
+  
+  // 根据风险遵守度调整
+  if (riskAdherence < 30) emotionalLevel -= 15;
+  else if (riskAdherence < 60) emotionalLevel -= 5;
+  else if (riskAdherence >= 80) emotionalLevel += 5;
+  
+  emotionalLevel = Math.min(95, Math.max(5, emotionalLevel));
+  
+  // 判断情绪状态
+  let state = 'Calm';
+  let stateClass = 'calm';
+  let message = '';
+  let color = '#34d399';
+  
+  if (emotionalLevel >= 75 && winStreakEffect > 10) {
+    state = 'Excited';
+    stateClass = 'excited';
+    message = '⚡ 状态火热！保持专注，避免过度自信';
+    color = '#f472b6';
+  } else if (emotionalLevel >= 65) {
+    state = 'Focused';
+    stateClass = 'focused';
+    message = '🎯 状态良好，保持当前节奏';
+    color = '#fbbf24';
+  } else if (emotionalLevel <= 25) {
+    state = 'Stressed';
+    stateClass = 'stressed';
+    message = '😰 情绪压力较大，建议暂停交易休息';
+    color = '#f87171';
+  } else if (emotionalLevel <= 40) {
+    state = 'Anxious';
+    stateClass = 'stressed';
+    message = '😟 情绪波动较大，控制仓位大小';
+    color = '#f97316';
+  } else if (emotionalLevel <= 55) {
+    state = 'Calm';
+    stateClass = 'calm';
+    message = '🧘 情绪平稳，坚持交易计划';
+    color = '#34d399';
+  } else {
+    state = 'Confident';
+    stateClass = 'focused';
+    message = '💪 信心充足，继续保持纪律';
+    color = '#a78bfa';
+  }
+  
+  // 添加连败警告
+  if (currentLossStreak >= 3) {
+    message = `⚠️ 连续${currentLossStreak}笔亏损，建议暂停复盘`;
+  } else if (currentWinStreak >= 3) {
+    message = `🔥 连续${currentWinStreak}笔盈利，保持谨慎`;
+  }
+  
+  return {
+    state: state,
+    stateClass: stateClass,
+    level: Math.round(emotionalLevel),
+    winStreakEffect: winStreakEffect,
+    lossStreakEffect: lossStreakEffect,
+    riskAdherence: Math.round(riskAdherence),
+    message: message,
+    color: color,
+    currentWinStreak: currentWinStreak,
+    currentLossStreak: currentLossStreak
+  };
+}
+
+// ============== 六维雷达图绘制函数 ==============
 function initRadarChart(statsData, allTradesData) {
   const canvas = document.getElementById('radarChart');
   if (!canvas) return;
@@ -1403,64 +1675,94 @@ function initRadarChart(statsData, allTradesData) {
     try { radarChart.destroy(); } catch(e) {}
   }
   
-  // 1. 胜率得分
-  const winRateScore = statsData.winRate;
+  // 获取交易数据
+  const buySellTrades = allTradesData.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  const totalTrades = buySellTrades.length;
   
-  // 2. 盈利效率
-  let profitEfficiency = 0;
-  if (statsData.maxPnl > 0 && statsData.avgPnl > 0) {
-    profitEfficiency = Math.min(100, (statsData.avgPnl / statsData.maxPnl) * 100);
-  } else if (statsData.avgPnl > 0) {
-    profitEfficiency = 50;
-  }
+  // 1. Win Rate (胜率) - 0-100
+  let winRateScore = statsData.winRate;
   
-  // 3. 风险控制
-  let riskControl = 50;
-  if (statsData.minPnl < 0) {
-    riskControl = Math.max(0, 100 - (Math.abs(statsData.minPnl) / 200) * 100);
-  } else if (statsData.minPnl === 0) {
-    riskControl = 100;
-  }
+  // 2. Profit Factor (盈利因子) - 盈利总额 / 亏损总额，映射到 0-100
+  let profitFactorScore = 0;
+  let totalWinning = 0;
+  let totalLosing = 0;
+  buySellTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (pnl > 0) totalWinning += pnl;
+    else if (pnl < 0) totalLosing += Math.abs(pnl);
+  });
+  const profitFactor = totalLosing > 0 ? totalWinning / totalLosing : (totalWinning > 0 ? 10 : 0);
+  // 盈利因子 1.0 = 50分, 2.0 = 80分, 3.0+ = 100分
+  profitFactorScore = Math.min(100, Math.max(0, (profitFactor - 0.5) / 3.5 * 100));
+  if (profitFactor >= 3) profitFactorScore = 100;
+  if (profitFactor <= 0.5) profitFactorScore = 0;
   
-  // 4. 一致性
-  let consistency = 50;
-  if (allTradesData && allTradesData.length > 0) {
-    const buySellTrades = allTradesData.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
-    if (buySellTrades.length > 0) {
-      const dailyPnL = {};
-      buySellTrades.forEach(trade => {
-        const date = trade.date;
-        const pnl = parseFloat(trade.pnl_amount || 0);
-        if (!dailyPnL[date]) dailyPnL[date] = 0;
-        dailyPnL[date] += pnl;
-      });
-      const dailyValues = Object.values(dailyPnL);
-      if (dailyValues.length > 0) {
-        const mean = dailyValues.reduce((a, b) => a + b, 0) / dailyValues.length;
-        const variance = dailyValues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / dailyValues.length;
-        const stdDev = Math.sqrt(variance);
-        const maxPossibleStdDev = 300;
-        consistency = Math.max(0, Math.min(100, 100 - (stdDev / maxPossibleStdDev) * 100));
-      }
+  // 3. Consistency (一致性) - 基于每日盈亏的稳定性
+  let consistencyScore = 50;
+  if (buySellTrades.length > 0) {
+    const dailyPnL = {};
+    buySellTrades.forEach(trade => {
+      const date = trade.date;
+      const pnl = parseFloat(trade.pnl_amount || 0);
+      if (!dailyPnL[date]) dailyPnL[date] = 0;
+      dailyPnL[date] += pnl;
+    });
+    const dailyValues = Object.values(dailyPnL);
+    if (dailyValues.length > 0) {
+      const mean = dailyValues.reduce((a, b) => a + b, 0) / dailyValues.length;
+      const variance = dailyValues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / dailyValues.length;
+      const stdDev = Math.sqrt(variance);
+      const maxPossibleStdDev = 300;
+      consistencyScore = Math.max(0, Math.min(100, 100 - (stdDev / maxPossibleStdDev) * 100));
     }
   }
   
-  // 5. 活跃度
-  let activity = 0;
-  const tradeCount = statsData.total;
-  if (tradeCount > 0) {
-    activity = Math.min(100, (tradeCount / 50) * 100);
-  }
+  // 4. Max Drawdown (最大回撤) - 计算权益曲线最大回撤，映射到 0-100 (回撤越小分数越高)
+  let maxDrawdownScore = 100;
+  let balance = 0;
+  let peak = 0;
+  let maxDrawdown = 0;
+  const sortedTrades = [...buySellTrades].sort((a, b) => {
+    const dateA = new Date(a.created_at || a.date || 0);
+    const dateB = new Date(b.created_at || b.date || 0);
+    return dateA - dateB;
+  });
+  sortedTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    balance += pnl;
+    if (balance > peak) peak = balance;
+    const drawdown = peak > 0 ? (peak - balance) / peak * 100 : 0;
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+  });
+  // 最大回撤 0% = 100分, 20% = 60分, 40% = 20分, 50%+ = 0分
+  maxDrawdownScore = Math.max(0, Math.min(100, 100 - maxDrawdown * 2));
+  
+  // 5. Recovery Factor (恢复因子) - 总盈利 / 最大回撤金额，映射到 0-100
+  let recoveryFactorScore = 50;
+  const maxDrawdownAmount = maxDrawdown / 100 * peak;
+  const recoveryFactor = maxDrawdownAmount > 0 ? totalWinning / maxDrawdownAmount : (totalWinning > 0 ? 10 : 0);
+  // 恢复因子 1.0 = 50分, 2.0 = 75分, 3.0+ = 100分
+  recoveryFactorScore = Math.min(100, Math.max(0, (recoveryFactor / 3) * 100));
+  if (recoveryFactor >= 3) recoveryFactorScore = 100;
+  
+  // 6. Avg Win/Loss (平均盈亏比) - 平均盈利 / 平均亏损的绝对值
+  let avgWinLossScore = 50;
+  const avgWin = totalTrades > 0 ? totalWinning / buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0).length : 0;
+  const avgLoss = totalTrades > 0 ? totalLosing / buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0).length : 0;
+  const winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? 5 : 0);
+  // 盈亏比 1.0 = 50分, 1.5 = 70分, 2.0 = 85分, 3.0+ = 100分
+  avgWinLossScore = Math.min(100, Math.max(0, (winLossRatio / 3) * 100));
+  if (winLossRatio >= 3) avgWinLossScore = 100;
   
   const radarData = {
-    labels: ['胜率', '盈利效率', '风险控制', '一致性', '活跃度'],
+    labels: ['Win Rate', 'Profit Factor', 'Consistency', 'Max Drawdown', 'Recovery Factor', 'Avg Win/Loss'],
     datasets: [{
-      label: '能力值',
-      data: [winRateScore, profitEfficiency, riskControl, consistency, activity],
+      label: 'Ability Score',
+      data: [winRateScore, profitFactorScore, consistencyScore, maxDrawdownScore, recoveryFactorScore, avgWinLossScore],
       backgroundColor: 'rgba(59, 130, 246, 0.2)',
       borderColor: 'rgba(59, 130, 246, 0.8)',
       borderWidth: 2,
-      pointBackgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+      pointBackgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
       pointBorderColor: '#fff',
       pointHoverBackgroundColor: '#fff',
       pointHoverBorderColor: '#3b82f6',
@@ -1497,8 +1799,8 @@ function initRadarChart(statsData, allTradesData) {
             label: function(ctx) {
               let value = ctx.raw;
               let label = ctx.label;
-              let scoreText = value >= 80 ? '优秀' : (value >= 60 ? '良好' : (value >= 40 ? '一般' : '待提升'));
-              return `${label}: ${value.toFixed(1)}分 (${scoreText})`;
+              let scoreText = value >= 80 ? 'Excellent' : (value >= 60 ? 'Good' : (value >= 40 ? 'Average' : 'Needs Improvement'));
+              return `${label}: ${value.toFixed(1)} pts (${scoreText})`;
             }
           }
         }
@@ -1554,6 +1856,8 @@ async function fetchTrades() {
     updateTopBalance(data);
     addTimeSessionSelector();
     updateSessionStats();
+    updateDisciplineScore(data);
+           updateEmotionalState(data);
   } catch (error) { console.error("获取交易数据异常:", error); }
 }
 
@@ -1960,6 +2264,270 @@ window.updateTradeSession = updateTradeSession;
 window.getTradeSession = getTradeSession;
 window.saveTradeNotes = saveTradeNotes;
 window.getTradeNotes = getTradeNotes;
+
+// ============== 纪律评分计算函数 ==============
+function updateDisciplineScore(trades) {
+  const disciplineScoreEl = document.getElementById('disciplineScore');
+  const disciplineProgressEl = document.getElementById('disciplineProgress');
+  const disciplineDetailsEl = document.getElementById('disciplineDetails');
+  
+  if (!disciplineScoreEl) return;
+  
+  // 只统计真实交易
+  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  
+  if (buySellTrades.length === 0) {
+    if (disciplineScoreEl) disciplineScoreEl.textContent = '0';
+    if (disciplineProgressEl) disciplineProgressEl.style.width = '0%';
+    if (disciplineDetailsEl) disciplineDetailsEl.innerHTML = '<span>📊 暂无交易数据</span>';
+    return;
+  }
+  
+  // 1. 止损使用率 (50分)
+  let tradesWithSL = 0;
+  buySellTrades.forEach(trade => {
+    const sl = parseFloat(trade.sl || 0);
+    if (sl && sl !== 0) tradesWithSL++;
+  });
+  const stopLossScore = (tradesWithSL / buySellTrades.length) * 50;
+  
+  // 2. 交易频率 (30分) - 每日不超过5笔为佳
+  const dailyCount = {};
+  buySellTrades.forEach(trade => {
+    const date = trade.date;
+    if (!dailyCount[date]) dailyCount[date] = 0;
+    dailyCount[date]++;
+  });
+  
+  let frequencyScore = 20;
+  const avgTradesPerDay = buySellTrades.length / Object.keys(dailyCount).length;
+  if (avgTradesPerDay <= 3) frequencyScore = 30;
+  else if (avgTradesPerDay <= 5) frequencyScore = 25;
+  else if (avgTradesPerDay <= 7) frequencyScore = 18;
+  else if (avgTradesPerDay <= 10) frequencyScore = 12;
+  else frequencyScore = 5;
+  
+  // 3. 大额亏损控制 (20分)
+  let largeLossCount = 0;
+  let totalLoss = 0;
+  let lossCount = 0;
+  buySellTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (pnl < 0) {
+      totalLoss += Math.abs(pnl);
+      lossCount++;
+    }
+  });
+  const avgLoss = lossCount > 0 ? totalLoss / lossCount : 0;
+  
+  buySellTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (pnl < 0 && avgLoss > 0 && Math.abs(pnl) > avgLoss * 2) {
+      largeLossCount++;
+    }
+  });
+  
+  let riskScore = 20;
+  if (largeLossCount > 0) {
+    riskScore = Math.max(5, 20 - (largeLossCount * 4));
+  }
+  
+  // 计算总分
+  let totalScore = Math.floor(stopLossScore + frequencyScore + riskScore);
+  totalScore = Math.min(100, Math.max(0, totalScore));
+  
+  // 更新UI
+  disciplineScoreEl.textContent = totalScore;
+  if (disciplineProgressEl) disciplineProgressEl.style.width = `${totalScore}%`;
+  
+    // 更新详情文字
+  let detailsHtml = '';
+  if (tradesWithSL === 0) {
+    detailsHtml = '⚠️ No stop loss set, high risk';
+  } else if (tradesWithSL / buySellTrades.length < 0.5) {
+    detailsHtml = '⚠️ Low stop loss usage, consider using SL on every trade';
+  } else if (largeLossCount > 0) {
+    detailsHtml = `⚠️ ${largeLossCount} large loss(es), watch your position size`;
+  } else if (totalScore >= 80) {
+    detailsHtml = '✅ Excellent discipline! Keep it up!';
+  } else if (totalScore >= 60) {
+    detailsHtml = '📈 Good discipline, can improve stop loss habits';
+  } else {
+    detailsHtml = '📊 Need to improve risk management and stop loss discipline';
+  }
+  
+  if (disciplineDetailsEl) {
+    disciplineDetailsEl.innerHTML = `<span>📊 ${detailsHtml}</span>`;
+  }
+}
+
+// ============== 情绪状态计算函数 ==============
+function updateEmotionalState(trades) {
+  const emotionStatusEl = document.getElementById('emotionStatus');
+  const emotionIndicatorEl = document.getElementById('emotionIndicator');
+  const winStreakEffectEl = document.getElementById('winStreakEffect');
+  const lossStreakEffectEl = document.getElementById('lossStreakEffect');
+  const riskAdherenceEl = document.getElementById('riskAdherence');
+  const emotionMessageEl = document.getElementById('emotionMessage');
+  
+  if (!emotionStatusEl) return;
+  
+  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  
+  if (buySellTrades.length === 0) {
+    emotionStatusEl.textContent = 'Calm';
+    emotionStatusEl.className = 'emotion-status calm';
+    if (emotionIndicatorEl) {
+      const levelDiv = emotionIndicatorEl.querySelector('.emotion-level');
+      if (levelDiv) levelDiv.style.width = '30%';
+    }
+    if (winStreakEffectEl) winStreakEffectEl.textContent = '+0%';
+    if (lossStreakEffectEl) lossStreakEffectEl.textContent = '-0%';
+    if (riskAdherenceEl) riskAdherenceEl.textContent = '0%';
+    if (emotionMessageEl) emotionMessageEl.innerHTML = '📊 开始交易以追踪情绪状态';
+    return;
+  }
+  
+  // 计算连胜/连败
+  let currentWinStreak = 0;
+  let currentLossStreak = 0;
+  
+  // 按时间倒序排列
+  const sorted = [...buySellTrades].sort((a, b) => {
+    const dateA = new Date(a.created_at || a.date || 0);
+    const dateB = new Date(b.created_at || b.date || 0);
+    return dateB - dateA;
+  });
+  
+  let lastWasWin = null;
+  for (const trade of sorted) {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    const isWin = pnl > 0;
+    
+    if (lastWasWin === null) {
+      if (isWin) currentWinStreak = 1;
+      else currentLossStreak = 1;
+      lastWasWin = isWin;
+    } else if (lastWasWin === isWin) {
+      if (isWin) currentWinStreak++;
+      else currentLossStreak++;
+    } else {
+      break;
+    }
+  }
+  
+  // 计算影响系数
+  let winEffect = 0;
+  if (currentWinStreak >= 5) winEffect = 25;
+  else if (currentWinStreak >= 3) winEffect = 15;
+  else if (currentWinStreak >= 2) winEffect = 8;
+  else if (currentWinStreak === 1) winEffect = 3;
+  
+  let lossEffect = 0;
+  if (currentLossStreak >= 5) lossEffect = -30;
+  else if (currentLossStreak >= 3) lossEffect = -20;
+  else if (currentLossStreak >= 2) lossEffect = -10;
+  else if (currentLossStreak === 1) lossEffect = -5;
+  
+  // 计算止损遵守度
+  let tradesWithSL = 0;
+  buySellTrades.forEach(t => {
+    const sl = parseFloat(t.sl || 0);
+    if (sl && sl !== 0) tradesWithSL++;
+  });
+  const riskAdherence = Math.round((tradesWithSL / buySellTrades.length) * 100);
+  
+  // 计算总盈亏影响
+  let totalPnl = 0;
+  buySellTrades.forEach(t => {
+    totalPnl += parseFloat(t.pnl_amount || 0);
+  });
+  
+  let performanceEffect = 0;
+  if (totalPnl > 500) performanceEffect = 15;
+  else if (totalPnl > 200) performanceEffect = 8;
+  else if (totalPnl > 50) performanceEffect = 3;
+  else if (totalPnl < -500) performanceEffect = -20;
+  else if (totalPnl < -200) performanceEffect = -12;
+  else if (totalPnl < -50) performanceEffect = -5;
+  
+  // 计算情绪水平
+  let emotionLevel = 50 + winEffect + lossEffect + performanceEffect;
+  if (riskAdherence < 30) emotionLevel -= 15;
+  else if (riskAdherence < 60) emotionLevel -= 5;
+  else if (riskAdherence >= 80) emotionLevel += 5;
+  emotionLevel = Math.min(95, Math.max(5, emotionLevel));
+  
+    // 判断情绪状态
+  let state = 'Calm';
+  let stateClass = 'calm';
+  let message = '';
+  
+  if (emotionLevel >= 75 && winEffect > 10) {
+    state = 'Excited';
+    stateClass = 'excited';
+    message = '⚡ On fire! Stay focused, avoid overconfidence';
+  } else if (emotionLevel >= 65) {
+    state = 'Focused';
+    stateClass = 'focused';
+    message = '🎯 In good shape, keep the pace';
+  } else if (emotionLevel <= 25) {
+    state = 'Stressed';
+    stateClass = 'stressed';
+    message = '😰 High emotional stress, consider taking a break';
+  } else if (emotionLevel <= 40) {
+    state = 'Anxious';
+    stateClass = 'stressed';
+    message = '😟 Emotional volatility, control your position size';
+  } else {
+    state = 'Calm';
+    stateClass = 'calm';
+    message = '🧘 Stay calm, stick to your trading plan';
+  }
+  
+  // 添加连胜/连败提示
+  if (currentLossStreak >= 3) {
+    message = `⚠️ ${currentLossStreak} consecutive loss(es), consider pausing to review`;
+  } else if (currentWinStreak >= 3) {
+    message = `🔥 ${currentWinStreak} consecutive win(s), stay cautious`;
+  }
+  
+  // 更新UI
+  emotionStatusEl.textContent = state;
+  emotionStatusEl.className = `emotion-status ${stateClass}`;
+  
+  if (emotionIndicatorEl) {
+    const levelDiv = emotionIndicatorEl.querySelector('.emotion-level');
+    if (levelDiv) {
+      levelDiv.style.width = `${emotionLevel}%`;
+      let color = '#34d399';
+      if (state === 'Excited') color = '#f472b6';
+      else if (state === 'Focused') color = '#fbbf24';
+      else if (state === 'Stressed') color = '#f87171';
+      else if (state === 'Anxious') color = '#f97316';
+      levelDiv.style.background = `linear-gradient(90deg, ${color}, ${color}cc)`;
+    }
+  }
+  
+  if (winStreakEffectEl) {
+    winStreakEffectEl.textContent = `${winEffect >= 0 ? '+' : ''}${winEffect}%`;
+    winStreakEffectEl.className = `factor-value ${winEffect >= 0 ? 'positive' : 'negative'}`;
+  }
+  
+  if (lossStreakEffectEl) {
+    lossStreakEffectEl.textContent = `${lossEffect >= 0 ? '+' : ''}${lossEffect}%`;
+    lossStreakEffectEl.className = `factor-value ${lossEffect >= 0 ? 'positive' : 'negative'}`;
+  }
+  
+  if (riskAdherenceEl) {
+    riskAdherenceEl.textContent = `${riskAdherence}%`;
+    riskAdherenceEl.className = `factor-value ${riskAdherence >= 70 ? 'positive' : riskAdherence <= 40 ? 'negative' : ''}`;
+  }
+  
+  if (emotionMessageEl) {
+    emotionMessageEl.innerHTML = message;
+  }
+}
 
 // ---------------- Initial Load ----------------
 async function initApp() {

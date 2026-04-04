@@ -2203,12 +2203,13 @@ th, td {
 }
 
 .stats-card-value {
-  font-size: 1.3rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  font-size: 1.4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.5px;
 }
 
 /* 右侧 Ranking System 美化 */
@@ -2438,4 +2439,358 @@ th, td {
 .light-theme .stats-card-value {
   background: linear-gradient(135deg, #1e293b, #475569);
   -webkit-background-clip: text;
+}
+
+/* ============== 鼠标悬停发光效果 ============== */
+
+/* 六维雷达图卡片悬停效果 */
+.radar-capability-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radar-capability-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.4), 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+/* 6个统计卡片悬停效果 */
+.stats-card-modern {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.stats-card-modern:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* 不同卡片不同发光颜色 */
+.stats-card-modern:nth-child(1):hover {
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+}
+.stats-card-modern:nth-child(2):hover {
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+}
+.stats-card-modern:nth-child(3):hover {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+.stats-card-modern:nth-child(4):hover {
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.5);
+}
+.stats-card-modern:nth-child(5):hover {
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.5);
+}
+.stats-card-modern:nth-child(6):hover {
+  box-shadow: 0 0 20px rgba(251, 146, 60, 0.5);
+}
+
+/* 右侧 Ranking System 卡片悬停效果 */
+.rank-score-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rank-score-card:hover {
+  transform: translateX(5px) translateY(-3px);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.4), 0 10px 25px rgba(0, 0, 0, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.rank-level-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rank-level-card:hover {
+  transform: translateX(5px) translateY(-3px);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+.rank-streak-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rank-streak-card:hover {
+  transform: translateX(5px) translateY(-3px);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.4), 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-color: rgba(245, 158, 11, 0.6);
+}
+
+/* Session 统计卡片悬停效果 */
+.session-stats-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.session-stats-card:hover {
+  transform: translateX(5px);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* 交易表单悬停效果 */
+#formSection {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#formSection:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2), 0 10px 30px rgba(0, 0, 0, 0.3);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+/* 图表区域悬停效果 */
+#chartSection {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#chartSection:hover {
+  box-shadow: 0 0 20px rgba(62, 180, 137, 0.2), 0 8px 25px rgba(0, 0, 0, 0.2);
+  border-color: rgba(62, 180, 137, 0.4);
+}
+
+/* 交易历史表格行悬停效果 */
+.trade-detail-row {
+  transition: all 0.2s ease;
+}
+
+.trade-detail-row:hover {
+  transform: scale(1.01);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+  background: rgba(30, 41, 59, 0.8) !important;
+}
+
+.date-group-header {
+  transition: all 0.3s ease;
+}
+
+.date-group-header:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+}
+
+/* 按钮悬停效果（已有，增强） */
+.balance-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.balance-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 15px currentColor;
+}
+
+/* 表单输入框悬停效果 */
+.form-row input:hover,
+.form-row select:hover {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+}
+
+/* 提交按钮悬停效果 */
+.form-row button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+/* 亮色主题适配 */
+.light-theme .radar-capability-card:hover,
+.light-theme .stats-card-modern:hover,
+.light-theme .rank-score-card:hover,
+.light-theme .rank-level-card:hover,
+.light-theme .rank-streak-card:hover {
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.15), 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ============== 纪律评分卡片样式 ============== */
+.rank-discipline-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  transition: all 0.3s ease;
+}
+
+.rank-discipline-card:hover {
+  transform: translateX(4px);
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.discipline-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.8rem;
+}
+
+.discipline-icon {
+  font-size: 1.3rem;
+}
+
+.discipline-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.discipline-score-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 0.6rem;
+}
+
+.discipline-score {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.discipline-max {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.discipline-progress {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+
+.discipline-progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.discipline-details {
+  font-size: 0.65rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============== 情绪状态追踪卡片样式 ============== */
+.rank-emotion-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  transition: all 0.3s ease;
+}
+
+.rank-emotion-card:hover {
+  transform: translateX(4px);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+.emotion-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.8rem;
+}
+
+.emotion-icon {
+  font-size: 1.3rem;
+}
+
+.emotion-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.emotion-status {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.emotion-status.calm { color: #34d399; background: rgba(52, 211, 153, 0.15); }
+.emotion-status.focused { color: #fbbf24; background: rgba(251, 191, 36, 0.15); }
+.emotion-status.stressed { color: #f87171; background: rgba(248, 113, 113, 0.15); }
+.emotion-status.excited { color: #f472b6; background: rgba(244, 114, 182, 0.15); }
+
+.emotion-indicator {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.8rem;
+}
+
+.emotion-level {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.emotion-factors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.factor-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+}
+
+.factor-name {
+  color: #64748b;
+}
+
+.factor-value {
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.factor-value.positive {
+  color: #34d399;
+}
+
+.factor-value.negative {
+  color: #f87171;
+}
+
+.emotion-message {
+  font-size: 0.7rem;
+  padding: 0.5rem 0;
+  text-align: center;
+  background: rgba(139, 92, 246, 0.08);
+  border-radius: 12px;
+  color: #a78bfa;
+}
+
+/* 亮色主题适配 */
+.light-theme .rank-discipline-card,
+.light-theme .rank-emotion-card {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
 }
