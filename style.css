@@ -1,3 +1,5 @@
+/* style.css - 完整版 */
+
 /* CSS Variables for Theme Support */
 :root {
   /* 背景颜色 */
@@ -81,9 +83,20 @@
   --chart-text: #64748b;
 }
 
-/* Base Styles with CSS Variables */
-body {
+/* Base Styles */
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
   background: #0b0f1a;
   color: #e5e7eb;
   font-family: 'Inter', sans-serif;
@@ -92,82 +105,66 @@ body {
   overflow-x: hidden;
 }
 
-/* 修复粒子容器问题 */
-#floating-particles {
-  position: fixed;
-  top: 0;
-  left: 0;
+/* 页面内容容器 */
+.page-content {
+  margin-left: 250px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+header {
+  padding: 0.8rem 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(11, 15, 26, 0.95));
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* 主内容 */
+main {
+  flex: 1;
+  max-width: 1400px;
   width: 100%;
-  height: 100%;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
+  margin: 0 auto;
+  padding: 1.5rem 2rem;
 }
 
-/* 粒子基础样式 */
-.particle {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: #3b82f6;
-  border-radius: 50%;
-  box-shadow: 
-    0 0 10px #3b82f6,
-    0 0 20px #3b82f6;
-  animation: floatUp 15s linear infinite;
-  opacity: 0.8;
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(11, 15, 26, 0.8));
+  border-top: 1px solid rgba(59, 130, 246, 0.1);
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #64748b;
 }
 
-@keyframes floatUp {
-  0% {
-    transform: translateY(100vh) translateX(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.8;
-  }
-  90% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(-100px) translateX(100px);
-    opacity: 0;
-  }
-}
-
-/* 删除重复的背景效果样式 */
-#background-effects,
-#blue-glow-effects,
-#fairy-mist {
-  display: none !important;
-}
-
-/* 强制隐藏所有多余的背景效果容器 */
-div[id*="background"],
-div[id*="glow"],
-div[id*="fairy"],
-div[id*="mist"] {
-  display: none !important;
-}
-
-/* 确保只有我们需要的粒子容器显示 */
-#floating-particles {
-  display: block !important;
-}
-
-/* Sidebar - 始终显示 */
+/* Sidebar */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   width: 250px;
-  height: 100%;
-  background: var(--bg-sidebar);
+  height: 100vh;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(11, 15, 26, 0.98));
+  backdrop-filter: blur(10px);
   color: var(--text-primary);
-  transition: background 0.3s;
   padding-top: 2rem;
-  z-index: 1000;
+  z-index: 100;
+  border-right: 1px solid rgba(59, 130, 246, 0.15);
+  transition: transform 0.3s ease;
 }
+
 .sidebar ul { 
   list-style: none; 
   padding: 0;
@@ -177,78 +174,107 @@ div[id*="mist"] {
   margin: 0.5rem 0;
 }
 .sidebar ul li a { 
-  color: var(--text-success); 
+  color: #94a3b8; 
   text-decoration: none; 
   font-weight: 600; 
-  padding: 0.75rem 1rem; 
+  padding: 0.75rem 1.5rem; 
   display: block;
   transition: all 0.3s ease;
-  border-radius: 8px;
-  margin: 0 8px;
+  border-radius: 0 12px 12px 0;
+  margin-right: 8px;
   position: relative;
 }
 
-/* 鼠标悬停效果 - 亮蓝色条框 */
 .sidebar ul li a:hover {
   background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
   color: #60a5fa;
   transform: translateX(4px);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
   border-left: 3px solid #3b82f6;
 }
 
-/* 当前激活页面的样式 */
 .sidebar ul li a.active {
   background: linear-gradient(90deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.08));
   color: #60a5fa;
   border-left: 3px solid #3b82f6;
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
 }
 
-/* 隐藏汉堡菜单按钮 */
 #hamburgerBtn {
   display: none;
 }
 
-/* Page content - 为侧边栏留出空间 */
-.page-content {
-  transition: margin-left 0.3s;
-  min-height: 100vh;
-  position: relative;
-  margin-left: 250px;
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 1000;
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .page-content {
+    margin-left: 0;
+  }
+  
+  #hamburgerBtn {
+    display: block;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 1rem;
+  }
+  
+  header {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+  }
+  
+  header h1 {
+    margin: 0;
+    flex: 1;
+    text-align: center;
+  }
 }
-.page-content.shift { margin-left: 250px; }
 
-/* 注释掉原来的显示/隐藏规则 */
-/* .sidebar.show { left: 0; } */
-
-/* Header */
-header {
-  position: relative;
-  text-align: center;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  transition: background 0.3s;
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+
 #topRightActions {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: var(--text-success);
-}
-#topBalance {
-  background: var(--bg-card);
-  padding: 0.3rem 0.7rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-accent);
-  transition: all 0.3s;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
-/* Buttons */
+#topBalance {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(62, 180, 137, 0.3);
+  font-weight: 600;
+  color: #3eb489;
+}
+
+#userEmail {
+  color: #818cf8;
+  font-size: 0.85rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .balance-btn {
   background: var(--btn-primary);
   color: var(--btn-text);
@@ -265,48 +291,47 @@ header {
   background: var(--btn-primary-hover);
 }
 
-/* Footer */
-footer {
-  text-align: center;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  transition: background 0.3s;
-}
-
-/* Main Content */
-main {
-  max-width: 1200px;
-  margin: auto;
-  padding: 1rem;
-  min-height: calc(100vh - 200px);
-}
-
 /* Stats Dashboard */
 .stats-dashboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.8rem;
-  max-width: 900px;
-  margin-bottom: 2.5rem;
+  gap: 1.2rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .stat-card {
   background: rgba(15, 23, 42, 0.85);
   border-radius: 16px;
-  padding: 2rem 1.5rem;
+  padding: 1.2rem 1rem;
   text-align: center;
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(30, 64, 175, 0.15);
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(30, 64, 175, 0.05);
   transition: all 0.4s ease;
   cursor: default;
-  z-index: 1;
 }
 
-/* 蓝色发光背景层 */
+.stat-card span {
+  color: #93c5fd;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.6rem;
+  letter-spacing: 0.5px;
+}
+
+.stat-card strong {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: block;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 50%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .stat-card::before {
   content: '';
   position: absolute;
@@ -327,7 +352,6 @@ main {
   z-index: -1;
 }
 
-/* 优雅的蓝色角标装饰 */
 .stat-card::after {
   content: '';
   position: absolute;
@@ -343,133 +367,37 @@ main {
   z-index: 1;
 }
 
-/* 悬停时的优雅效果 */
 .stat-card:hover {
   background: rgba(15, 23, 42, 0.92);
   transform: translateY(-3px);
-  box-shadow: 
-    0 12px 30px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(59, 130, 246, 0.15),
-    0 0 40px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.15), 0 0 40px rgba(59, 130, 246, 0.2);
   border-color: rgba(59, 130, 246, 0.25);
 }
 
-/* 悬停时显示蓝色发光背景 */
 .stat-card:hover::before {
   opacity: 1;
-  animation: glow-pulse 2s ease-in-out infinite alternate;
 }
 
-/* 发光脉冲动画 */
 @keyframes glow-pulse {
   0% {
-    background: radial-gradient(
-      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      rgba(59, 130, 246, 0.3) 0%,
-      rgba(59, 130, 246, 0.18) 30%,
-      rgba(59, 130, 246, 0.08) 50%,
-      transparent 70%
-    );
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.18) 30%, rgba(59, 130, 246, 0.08) 50%, transparent 70%);
   }
   100% {
-    background: radial-gradient(
-      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      rgba(59, 130, 246, 0.35) 0%,
-      rgba(59, 130, 246, 0.22) 30%,
-      rgba(59, 130, 246, 0.1) 50%,
-      transparent 70%
-    );
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0.22) 30%, rgba(59, 130, 246, 0.1) 50%, transparent 70%);
   }
 }
 
-/* 标题 - 优雅蓝色 */
-.stat-card span {
-  color: #93c5fd;
-  font-size: 1rem;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 1.2rem;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  opacity: 0.85;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 2;
-}
-
-/* 数字 - 精致蓝色渐变 */
-.stat-card strong {
-  font-size: 2.2rem;
-  font-weight: 700;
-  display: block;
-  line-height: 1.3;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
-  /* 精致的蓝色渐变 */
-  background: linear-gradient(135deg, 
-    #93c5fd 0%,
-    #3b82f6 50%,
-    #1d4ed8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  
-  position: relative;
-  transition: all 0.3s ease;
-  z-index: 2;
-}
-
-/* 数字下方的微装饰线 */
-.stat-card strong::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 25%;
-  width: 50%;
-  height: 2px;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(59, 130, 246, 0.5), 
-    transparent);
-  opacity: 0.6;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover strong {
-  font-size: 2.3rem;
-  background: linear-gradient(135deg, 
-    #bfdbfe 0%,
-    #60a5fa 50%, 
-    #3b82f6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stat-card:hover strong::after {
-  width: 60%;
-  opacity: 0.8;
-  background: linear-gradient(90deg, 
-    transparent, 
-    #3b82f6, 
-    transparent);
-}
-
-/* 表单容器 - 改为左右两列布局 */
+/* 表单容器 */
 #formSection {
   background: linear-gradient(145deg, #0a0e17, #070a10);
   border: 1px solid rgba(59, 130, 246, 0.12);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border-radius: 18px;
   padding: 2rem;
   margin-top: 2rem;
 }
 
-/* 新的表单布局 - 左右两列 */
 #tradeForm.vertical-form {
   display: flex;
   flex-direction: row;
@@ -479,7 +407,6 @@ main {
   margin: 0 auto;
 }
 
-/* 左侧列 - 竖直排列 */
 .form-left-column {
   flex: 1;
   display: flex;
@@ -487,12 +414,10 @@ main {
   gap: 1rem;
 }
 
-/* 每个输入框行 */
 .form-row {
   width: 100%;
 }
 
-/* 统一输入框样式 */
 .form-row input,
 .form-row select,
 .form-row button {
@@ -539,7 +464,6 @@ main {
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
-/* SL 输入框特殊样式 */
 #sl {
   background: rgba(239, 68, 68, 0.1) !important;
   border-color: rgba(239, 68, 68, 0.3) !important;
@@ -550,9 +474,7 @@ main {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
-/* ============== Session 统计图表样式 ============== */
-
-/* 右侧统计容器 */
+/* Session 统计图表样式 */
 .form-right-column {
   flex: 1;
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
@@ -560,10 +482,6 @@ main {
   padding: 1.2rem;
   border: 1px solid rgba(59, 130, 246, 0.2);
   min-height: 450px;
-}
-
-.form-right-column::before {
-  display: none;
 }
 
 .stats-container {
@@ -583,7 +501,6 @@ main {
   letter-spacing: 1px;
 }
 
-/* 每个 Session 卡片 */
 .session-stats-card {
   background: rgba(0, 0, 0, 0.25);
   border-radius: 14px;
@@ -598,7 +515,6 @@ main {
   background: rgba(0, 0, 0, 0.35);
 }
 
-/* Session 头部 */
 .session-header {
   display: flex;
   justify-content: space-between;
@@ -620,7 +536,6 @@ main {
   border-radius: 12px;
 }
 
-/* 统计条容器 */
 .stats-bars {
   display: flex;
   gap: 1rem;
@@ -663,13 +578,11 @@ main {
   color: white;
 }
 
-/* 盈利条 - 亮蓝色 */
 .stats-bar-fill.win {
   background: linear-gradient(90deg, #3b82f6, #60a5fa);
   box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
 }
 
-/* 亏损条 - 亮红色 */
 .stats-bar-fill.loss {
   background: linear-gradient(90deg, #ef4444, #f87171);
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
@@ -682,7 +595,6 @@ main {
   text-align: right;
 }
 
-/* 胜率显示 */
 .session-winrate {
   font-size: 0.7rem;
   text-align: center;
@@ -691,7 +603,6 @@ main {
   color: #94a3b8;
 }
 
-/* 响应式调整 */
 @media (max-width: 768px) {
   #tradeForm.vertical-form {
     flex-direction: column;
@@ -788,7 +699,7 @@ th, td {
   height: 350px !important; 
 }
 
-/* ============== 编辑/删除按钮样式 ============== */
+/* 编辑/删除按钮样式 */
 .edit-btn, .delete-btn {
   padding: 0.4rem 0.8rem;
   border: none;
@@ -825,12 +736,10 @@ th, td {
   box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
 }
 
-/* 表格中的按钮容器 */
 td:last-child {
   white-space: nowrap;
 }
 
-/* 移动端按钮调整 */
 @media (max-width: 768px) {
   .edit-btn, .delete-btn {
     padding: 0.3rem 0.6rem;
@@ -845,14 +754,12 @@ td:last-child {
   }
 }
 
-/* Additional Utility Classes */
 .text-accent { color: var(--text-accent); }
 .text-success { color: var(--text-success); }
 .text-error { color: var(--text-error); }
 .bg-card { background: var(--bg-card); }
 .bg-input { background: var(--bg-input); }
 
-/* Theme Transition */
 * {
   transition: background-color 0.3s ease, 
               color 0.3s ease, 
@@ -860,227 +767,7 @@ td:last-child {
               box-shadow 0.3s ease;
 }
 
-/* Settings Page Specific (if needed) */
-.settings-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-}
-
-.settings-card {
-  background: var(--bg-card);
-  border-radius: 18px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .stats-dashboard {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  #tradeForm {
-    grid-template-columns: 1fr;
-  }
-  
-  .row2 {
-    grid-template-columns: 1fr;
-  }
-  
-  #chartTopInfo {
-    flex-direction: column;
-    gap: 1rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-dashboard {
-    grid-template-columns: 1fr;
-  }
-  
-  #topRightActions {
-    position: static;
-    justify-content: center;
-    margin-top: 1rem;
-  }
-}
-
-/* ============== 交易记录动态动画 ============== */
-
-/* 表格容器动画 */
-#tradeSection table {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-/* 行动画效果 */
-#tradeList tr {
-  opacity: 1;
-  transform: translateY(0);
-  transition: all 0.3s ease;
-}
-
-/* 新行添加时的动画 */
-#tradeList tr.new-row {
-  opacity: 0;
-  transform: translateY(-20px);
-  animation: slideInDown 0.5s ease forwards;
-}
-
-/* 行删除时的动画 */
-#tradeList tr.removing {
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: all 0.3s ease;
-}
-
-/* 表格行悬停效果增强 */
-#tradeList tr:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  transition: all 0.2s ease;
-}
-
-/* 动画关键帧 */
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* 折叠/展开按钮动画 */
-#toggleTrades {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-#toggleTrades::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.4s, height 0.4s;
-}
-
-#toggleTrades:active::after {
-  width: 100px;
-  height: 100px;
-}
-
-/* 表格行交错动画延迟 */
-#tradeList tr:nth-child(1) { animation-delay: 0.05s; }
-#tradeList tr:nth-child(2) { animation-delay: 0.1s; }
-#tradeList tr:nth-child(3) { animation-delay: 0.15s; }
-#tradeList tr:nth-child(4) { animation-delay: 0.2s; }
-#tradeList tr:nth-child(5) { animation-delay: 0.25s; }
-#tradeList tr:nth-child(6) { animation-delay: 0.3s; }
-#tradeList tr:nth-child(7) { animation-delay: 0.35s; }
-#tradeList tr:nth-child(8) { animation-delay: 0.4s; }
-
-/* 编辑/删除按钮动画 */
-.edit-btn, .delete-btn {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.edit-btn::before, .delete-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s;
-}
-
-.edit-btn:hover::before, .delete-btn:hover::before {
-  width: 100%;
-  height: 100%;
-}
-
-/* 表格加载时的骨架屏效果 */
-#tradeList.skeleton tr {
-  position: relative;
-  overflow: hidden;
-}
-
-#tradeList.skeleton tr::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.1), 
-    transparent);
-  animation: skeletonLoading 1.5s infinite;
-}
-
-@keyframes skeletonLoading {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  #tradeList tr {
-    transition: all 0.2s ease;
-  }
-  
-  #tradeList tr:hover {
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-/* ============== 存款/取款模态框样式 ============== */
-
-/* 模态框遮罩层 */
+/* 模态框样式 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1101,16 +788,13 @@ td:last-child {
   to { opacity: 1; }
 }
 
-/* 模态框容器 */
 .modal-container {
   background: linear-gradient(145deg, #0f172a, #1e293b);
   border-radius: 20px;
   width: 90%;
   max-width: 480px;
   border: 1px solid rgba(59, 130, 246, 0.2);
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
   overflow: hidden;
   animation: slideUp 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
@@ -1126,7 +810,6 @@ td:last-child {
   }
 }
 
-/* 模态框头部 */
 .modal-header {
   padding: 1.8rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1167,7 +850,6 @@ td:last-child {
   transform: rotate(90deg);
 }
 
-/* 模态框主体 */
 .modal-body {
   padding: 2rem;
 }
@@ -1202,9 +884,7 @@ td:last-child {
   outline: none;
   border-color: #3b82f6;
   background: rgba(30, 41, 59, 1);
-  box-shadow: 
-    0 0 0 3px rgba(59, 130, 246, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .modal-input::placeholder {
@@ -1231,12 +911,9 @@ td:last-child {
   outline: none;
   border-color: #3b82f6;
   background: rgba(30, 41, 59, 1);
-  box-shadow: 
-    0 0 0 3px rgba(59, 130, 246, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 模态框底部 */
 .modal-footer {
   padding: 1.5rem 2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -1285,7 +962,6 @@ td:last-child {
   transform: translateY(0);
 }
 
-/* 模态框类型样式 */
 .deposit-modal .modal-header h2 {
   background: linear-gradient(135deg, #10b981, #3eb489);
   -webkit-background-clip: text;
@@ -1308,7 +984,6 @@ td:last-child {
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
   .modal-container {
     width: 95%;
@@ -1330,18 +1005,6 @@ td:last-child {
   }
 }
 
-/* 交易历史中的存款/取款样式 */
-.deposit-trade {
-  color: #10b981;
-  font-weight: 600;
-}
-
-.withdrawal-trade {
-  color: #ef4444;
-  font-weight: 600;
-}
-
-/* 增强存款/取款在表格中的显示 */
 .balance-transaction {
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
@@ -1362,9 +1025,7 @@ td:last-child {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* ============== 日期分组表格样式 ============== */
-
-/* 日期行样式 */
+/* 日期分组表格样式 */
 .date-group-header {
   background: linear-gradient(90deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8)) !important;
   border-top: 2px solid rgba(59, 130, 246, 0.3);
@@ -1393,7 +1054,6 @@ td:last-child {
   letter-spacing: 0.5px;
 }
 
-/* 展开/收缩按钮 */
 .expand-btn {
   background: rgba(59, 130, 246, 0.1) !important;
   border: 1px solid rgba(59, 130, 246, 0.3) !important;
@@ -1417,7 +1077,6 @@ td:last-child {
   transform: scale(1.1) !important;
 }
 
-/* 交易数量徽章 */
 .trade-count-badge {
   background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
   color: white !important;
@@ -1430,14 +1089,12 @@ td:last-child {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 分组摘要信息 */
 .group-summary {
   color: #94a3b8 !important;
   font-size: 0.95rem !important;
   font-weight: 500 !important;
 }
 
-/* 详细交易行样式 */
 .trade-detail-row {
   background: rgba(15, 23, 42, 0.4) !important;
   border-left: 3px solid rgba(59, 130, 246, 0.2);
@@ -1459,12 +1116,6 @@ td:last-child {
   font-size: 0.85rem;
 }
 
-/* 单笔交易特殊样式 */
-.trade-detail-row:only-child {
-  border-left: 3px solid rgba(62, 180, 137, 0.3);
-}
-
-/* 响应式调整 */
 @media (max-width: 768px) {
   .date-header {
     flex-direction: column;
@@ -1485,7 +1136,6 @@ td:last-child {
   }
 }
 
-/* 表格标题样式 */
 #tradeSection thead tr {
   background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
 }
@@ -1497,7 +1147,6 @@ td:last-child {
   border-bottom: 2px solid rgba(59, 130, 246, 0.3);
 }
 
-/* 日期分组行的不同状态 */
 .date-group-header.collapsed td {
   padding: 0.8rem 0.7rem !important;
   vertical-align: middle;
@@ -1510,7 +1159,6 @@ td:last-child {
   background: rgba(15, 23, 42, 0.95);
 }
 
-/* 展开状态的列对齐 */
 .trade-detail-row td {
   padding: 0.7rem 0.5rem !important;
   text-align: center;
@@ -1521,89 +1169,7 @@ td:last-child {
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* D/W 统一灰色样式 */
-.dw-positive, .dw-negative {
-  color: #94a3b8 !important;
-  font-weight: 600;
-}
-
-/* 确保存款和取款都使用相同颜色 */
-.deposit-amount, .withdrawal-amount {
-  color: #94a3b8 !important;
-}
-
-/* D/W列样式 */
-td:nth-child(7) {
-  color: #94a3b8;
-  font-weight: 500;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .solid-progress-container {
-    height: 16px;
-  }
-  
-  .progress-text {
-    font-size: 0.6rem;
-  }
-  
-  .date-header {
-    flex-direction: column;
-    align-items: flex-start !important;
-    gap: 5px !important;
-  }
-  
-  .expand-btn {
-    margin-right: 0 !important;
-  }
-  
-  .trade-detail-row td:first-child {
-    padding-left: 30px !important;
-  }
-  
-  .group-summary {
-    font-size: 0.85rem !important;
-  }
-}
-
-/* 表格标题样式 */
-#tradeSection thead tr {
-  background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
-}
-
-#tradeSection thead th {
-  padding: 1rem 0.7rem;
-  font-weight: 700;
-  color: #3b82f6;
-  border-bottom: 2px solid rgba(59, 130, 246, 0.3);
-}
-
-/* 日期分组行的不同状态 */
-.date-group-header.collapsed td {
-  padding: 0.8rem 0.7rem !important;
-  vertical-align: middle;
-}
-
-.date-group-header.expanded td {
-  padding: 1rem 0.7rem !important;
-  font-weight: 700;
-  color: #94a3b8;
-  background: rgba(15, 23, 42, 0.95);
-}
-
-/* 展开状态的列对齐 */
-.trade-detail-row td {
-  padding: 0.7rem 0.5rem !important;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.trade-detail-row:hover td {
-  background: rgba(59, 130, 246, 0.05);
-}
-
-/* ============== 通知样式 ============== */
+/* 通知样式 */
 .notification-toast {
   position: fixed;
   top: 20px;
@@ -1671,286 +1237,7 @@ td:nth-child(7) {
   color: #e2e8f0;
 }
 
-/* ============== 强制所有进度条圆润 ============== */
-
-/* 强制所有进度条容器圆角 */
-.solid-progress-container,
-#tradeList .solid-progress-container,
-.group-summary .solid-progress-container,
-.date-group-header .solid-progress-container,
-#tradeList td .solid-progress-container,
-table td .solid-progress-container {
-  border-radius: 10px !important;
-  height: 20px !important;
-}
-
-/* 强制所有进度条本身圆角 */
-.solid-progress-bar,
-#tradeList .solid-progress-bar,
-.group-summary .solid-progress-bar,
-.date-group-header .solid-progress-bar,
-#tradeList td .solid-progress-bar,
-table td .solid-progress-bar {
-  border-radius: 10px !important;
-  height: 100% !important;
-}
-
-/* 覆盖所有内联样式中的border-radius */
-[style*="border-radius"],
-[style*="borderRadius"] {
-  border-radius: 10px !important;
-}
-
-/* 特别针对performance列（第5列） */
-#tradeList td:nth-child(5) .solid-progress-container,
-.group-summary td:nth-child(5) .solid-progress-container,
-.date-group-header td:nth-child(5) .solid-progress-container {
-  border-radius: 10px !important;
-}
-
-#tradeList td:nth-child(5) .solid-progress-bar,
-.group-summary td:nth-child(5) .solid-progress-bar,
-.date-group-header td:nth-child(5) .solid-progress-bar {
-  border-radius: 10px !important;
-}
-
-/* === 紧急修复：强制P/L颜色 === */
-/* 放在文件最末尾以确保优先级 */
-
-/* 所有表格中的P/L单元格 */
-#tradeList td[class*="pnl-"],
-table td[class*="pnl-"] {
-  color: inherit !important;
-}
-
-/* 内联样式的P/L颜色 */
-td[style*="color: #06b6d4"] {
-  color: #0ee7ff !important;
-}
-
-/* 1. 所有.pnl-positive元素 - 改为亮青色 */
-.pnl-positive,
-#avgPnl,
-#maxPnl,
-.stats-dashboard .stat-card strong,
-.stat-card strong {
-  color: #0ee7ff !important;
-}
-
-/* 2. 所有.pnl-negative元素 - 保持红色 */
-.pnl-negative,
-#minPnl {
-  color: #ef4444 !important;
-}
-
-/* 3. 但保留统计卡片的渐变背景 */
-.stats-dashboard .stat-card strong {
-  background: linear-gradient(135deg, 
-    #93c5fd 0%,
-    #3b82f6 50%,
-    #1d4ed8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* 4. 覆盖统计卡片中需要特殊颜色的数字 */
-#avgPnl.pnl-positive,
-#maxPnl.pnl-positive,
-#minPnl.pnl-negative {
-  -webkit-text-fill-color: initial !important;
-  background: none !important;
-}
-
-/* ============== R:R 风险回报比样式 (红渐变青) ============== */
-
-/* R:R 基础样式 */
-#tradeList td .rr-value,
-#tradeSection table td .rr-value,
-.trade-detail-row td .rr-value,
-table tbody tr td .rr-value {
-  font-weight: 700 !important;
-  padding: 4px 10px !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(59, 130, 246, 0.3) !important;
-  box-shadow: 
-    0 0 8px rgba(59, 130, 246, 0.2),
-    0 0 16px rgba(59, 130, 246, 0.1) !important;
-  display: inline-block !important;
-  min-width: 70px !important;
-  text-align: center !important;
-  transition: all 0.3s ease !important;
-  margin: 2px 0 !important;
-  background: linear-gradient(135deg, #ef4444, #06b6d4) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* 亏损交易：固定红色 */
-.rr-loss {
-  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-  border-color: rgba(239, 68, 68, 0.5) !important;
-  box-shadow: 
-    0 0 10px rgba(239, 68, 68, 0.4),
-    0 0 20px rgba(239, 68, 68, 0.2) !important;
-}
-
-/* 根据R:R数值设置渐变颜色 */
-.rr-value[data-rr="0"] {
-  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-}
-
-.rr-value[data-rr="0.5"] {
-  background: linear-gradient(135deg, #f97316, #ea580c) !important;
-}
-
-.rr-value[data-rr="1"] {
-  background: linear-gradient(135deg, #eab308, #ca8a04) !important;
-}
-
-.rr-value[data-rr="1.5"] {
-  background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-}
-
-.rr-value[data-rr="2"] {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
-}
-
-.rr-value[data-rr="3"] {
-  background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
-}
-
-.rr-value[data-rr="5"] {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
-}
-
-.rr-value[data-rr="10"] {
-  background: linear-gradient(135deg, #ec4899, #db2777) !important;
-}
-
-/* N/A 状态 */
-#tradeList td .rr-na,
-#tradeSection table td .rr-na,
-.trade-detail-row td .rr-na,
-table tbody tr td .rr-na {
-  color: #94a3b8 !important;
-  border-color: rgba(148, 163, 184, 0.3) !important;
-  box-shadow: 
-    0 0 4px rgba(148, 163, 184, 0.2),
-    inset 0 1px 2px rgba(255, 255, 255, 0.05) !important;
-  background: rgba(148, 163, 184, 0.05) !important;
-  -webkit-text-fill-color: #94a3b8 !important;
-}
-
-/* 悬停效果 */
-#tradeList td .rr-value:hover,
-#tradeSection table td .rr-value:hover,
-.trade-detail-row td .rr-value:hover,
-table tbody tr td .rr-value:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 
-    0 0 12px currentColor,
-    0 0 24px rgba(59, 130, 246, 0.2) !important;
-}
-
-/* R:R 列的额外样式 */
-td:nth-child(8) {
-  text-align: center;
-  font-weight: 600;
-  min-width: 90px;
-}
-
-/* 悬停效果 */
-#tradeList td .rr-value:hover,
-#tradeSection table td .rr-value:hover,
-.trade-detail-row td .rr-value:hover,
-table tbody tr td .rr-value:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 
-    0 0 16px rgba(251, 191, 36, 0.6),
-    0 0 32px rgba(251, 191, 36, 0.3) !important;
-}
-
-#tradeList td .rr-excellent:hover,
-#tradeSection table td .rr-excellent:hover,
-.trade-detail-row td .rr-excellent:hover,
-table tbody tr td .rr-excellent:hover {
-  box-shadow: 
-    0 0 20px rgba(251, 191, 36, 0.8),
-    0 0 40px rgba(251, 191, 36, 0.4) !important;
-}
-
-#tradeList td .rr-good:hover,
-#tradeSection table td .rr-good:hover,
-.trade-detail-row td .rr-good:hover,
-table tbody tr td .rr-good:hover {
-  box-shadow: 
-    0 0 16px rgba(245, 158, 11, 0.7),
-    0 0 32px rgba(245, 158, 11, 0.35) !important;
-}
-
-#tradeList td .rr-poor:hover,
-#tradeSection table td .rr-poor:hover,
-.trade-detail-row td .rr-poor:hover,
-table tbody tr td .rr-poor:hover {
-  box-shadow: 
-    0 0 12px rgba(217, 119, 6, 0.6),
-    0 0 24px rgba(217, 119, 6, 0.3) !important;
-}
-
-/* ============== 响应式调整 ============== */
-
-@media (max-width: 768px) {
-  td:nth-child(8) {
-    min-width: 70px;
-    font-size: 0.9rem;
-  }
-  
-  #tradeList td .rr-value,
-  #tradeSection table td .rr-value,
-  .trade-detail-row td .rr-value,
-  table tbody tr td .rr-value {
-    padding: 3px 8px !important;
-    font-size: 0.85rem;
-    min-width: 60px;
-    border-radius: 6px !important;
-  }
-}
-
-/* 强制修复：确保所有R:R元素都有样式 */
-.rr-value {
-  display: inline-block !important;
-  min-width: 70px !important;
-  text-align: center !important;
-}
-
-/* 亏损交易的R:R样式 */
-.rr-loss {
-  color: #ef4444 !important;
-  border-color: rgba(239, 68, 68, 0.5) !important;
-  box-shadow: 
-    0 0 8px rgba(239, 68, 68, 0.4),
-    0 0 16px rgba(239, 68, 68, 0.2) !important;
-  background: rgba(239, 68, 68, 0.1) !important;
-}
-
-/* 在R:R基础样式中添加亏损交易的支持 */
-#tradeList td .rr-loss,
-#tradeSection table td .rr-loss,
-.trade-detail-row td .rr-loss,
-table tbody tr td .rr-loss {
-  color: #ef4444 !important;
-  border-color: rgba(239, 68, 68, 0.5) !important;
-  box-shadow: 
-    0 0 8px rgba(239, 68, 68, 0.4),
-    0 0 16px rgba(239, 68, 68, 0.2) !important;
-  background: rgba(239, 68, 68, 0.1) !important;
-}
-
-/* ============== 操作按钮图标样式 ============== */
-
+/* 操作按钮图标样式 */
 .action-buttons-cell {
   white-space: nowrap;
   text-align: center;
@@ -1971,7 +1258,6 @@ table tbody tr td .rr-loss {
   justify-content: center;
 }
 
-/* 图片按钮 */
 .image-btn {
   background: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
@@ -1987,7 +1273,6 @@ table tbody tr td .rr-loss {
   transform: scale(1.05);
 }
 
-/* 编辑按钮 */
 .edit-btn-icon {
   background: rgba(62, 180, 137, 0.15);
   color: #3eb489;
@@ -1998,7 +1283,6 @@ table tbody tr td .rr-loss {
   transform: scale(1.05);
 }
 
-/* 删除按钮 */
 .delete-btn-icon {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
@@ -2009,7 +1293,6 @@ table tbody tr td .rr-loss {
   transform: scale(1.05);
 }
 
-/* 移动端调整 */
 @media (max-width: 768px) {
   .action-buttons-cell {
     min-width: 90px;
@@ -2021,13 +1304,11 @@ table tbody tr td .rr-loss {
   }
 }
 
-/* 移除旧的编辑/删除按钮样式 */
 .edit-btn, .delete-btn {
   display: none;
 }
 
-/* ============== 交易统计徽章样式 - 简洁版 ============== */
-
+/* 交易统计徽章样式 */
 .trade-stats-badge {
   display: inline-flex;
   align-items: center;
@@ -2083,7 +1364,6 @@ table tbody tr td .rr-loss {
   padding: 1px 5px;
 }
 
-/* 移动端响应式调整 */
 @media (max-width: 768px) {
   .trade-stats-badge {
     font-size: 0.65rem;
@@ -2096,8 +1376,7 @@ table tbody tr td .rr-loss {
   }
 }
 
-/* ============== Session 下拉框样式 ============== */
-
+/* Session 下拉框样式 */
 .session-select {
   background: rgba(30, 41, 59, 0.8);
   border: 1px solid rgba(59, 130, 246, 0.3);
@@ -2127,86 +1406,7 @@ table tbody tr td .rr-loss {
   color: #e2e8f0;
 }
 
-/* 确保日期行占满整行 */
-.date-group-header td {
-  width: 100%;
-}
-
-#tradeSection table {
-  width: 100%;
-  table-layout: fixed;
-}
-
-#tradeSection td,
-#tradeSection th {
-  border-collapse: collapse;
-}
-
-/* 让日期行的背景覆盖整行 */
-.date-group-header {
-  display: table-row;
-  width: 100%;
-}
-
-/* ============== 交易统计徽章样式 ============== */
-
-.trade-stats-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  font-size: 0.7rem;
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.trade-stats-badge .stats-total {
-  color: #93c5fd;
-  font-weight: 600;
-  background: rgba(59, 130, 246, 0.2);
-  padding: 1px 6px;
-  border-radius: 12px;
-  margin-right: 2px;
-}
-
-.trade-stats-badge .stats-win {
-  color: #34d399;
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-}
-
-.trade-stats-badge .stats-loss {
-  color: #f87171;
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-}
-
-.trade-stats-badge .stats-be {
-  color: #fbbf24;
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-}
-
-.trade-stats-badge.balance-only {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-color: rgba(148, 163, 184, 0.3);
-}
-
-.trade-stats-badge.balance-only .stats-total {
-  color: #94a3b8;
-  background: rgba(148, 163, 184, 0.15);
-  font-size: 0.8rem;
-  padding: 1px 5px;
-}
-
-/* ============== 表格列宽优化 ============== */
-
+/* 表格列宽优化 */
 #tradeSection table {
   width: 100%;
   table-layout: fixed;
@@ -2219,68 +1419,17 @@ table tbody tr td .rr-loss {
   vertical-align: middle;
 }
 
-/* 各列宽度分配 */
-#tradeSection th:nth-child(1),
-#tradeSection td:nth-child(1) {
-  width: 12%;
-  min-width: 80px;
-}
+#tradeSection th:nth-child(1), #tradeSection td:nth-child(1) { width: 12%; min-width: 80px; }
+#tradeSection th:nth-child(2), #tradeSection td:nth-child(2) { width: 10%; min-width: 70px; }
+#tradeSection th:nth-child(3), #tradeSection td:nth-child(3) { width: 8%; min-width: 60px; }
+#tradeSection th:nth-child(4), #tradeSection td:nth-child(4) { width: 6%; min-width: 50px; }
+#tradeSection th:nth-child(5), #tradeSection td:nth-child(5) { width: 8%; min-width: 60px; }
+#tradeSection th:nth-child(6), #tradeSection td:nth-child(6) { width: 8%; min-width: 60px; }
+#tradeSection th:nth-child(7), #tradeSection td:nth-child(7) { width: 8%; min-width: 60px; }
+#tradeSection th:nth-child(8), #tradeSection td:nth-child(8) { width: 8%; min-width: 70px; }
+#tradeSection th:nth-child(9), #tradeSection td:nth-child(9) { width: 10%; min-width: 80px; }
+#tradeSection th:nth-child(10), #tradeSection td:nth-child(10) { width: 14%; min-width: 100px; }
 
-#tradeSection th:nth-child(2),
-#tradeSection td:nth-child(2) {
-  width: 10%;
-  min-width: 70px;
-}
-
-#tradeSection th:nth-child(3),
-#tradeSection td:nth-child(3) {
-  width: 8%;
-  min-width: 60px;
-}
-
-#tradeSection th:nth-child(4),
-#tradeSection td:nth-child(4) {
-  width: 6%;
-  min-width: 50px;
-}
-
-#tradeSection th:nth-child(5),
-#tradeSection td:nth-child(5) {
-  width: 8%;
-  min-width: 60px;
-}
-
-#tradeSection th:nth-child(6),
-#tradeSection td:nth-child(6) {
-  width: 8%;
-  min-width: 60px;
-}
-
-#tradeSection th:nth-child(7),
-#tradeSection td:nth-child(7) {
-  width: 8%;
-  min-width: 60px;
-}
-
-#tradeSection th:nth-child(8),
-#tradeSection td:nth-child(8) {
-  width: 8%;
-  min-width: 70px;
-}
-
-#tradeSection th:nth-child(9),
-#tradeSection td:nth-child(9) {
-  width: 10%;
-  min-width: 80px;
-}
-
-#tradeSection th:nth-child(10),
-#tradeSection td:nth-child(10) {
-  width: 14%;
-  min-width: 100px;
-}
-
-/* Session 文本显示样式 */
 .session-text {
   display: inline-block;
   padding: 4px 12px;
@@ -2292,89 +1441,6 @@ table tbody tr td .rr-loss {
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-/* Session 下拉框样式优化 */
-.session-select {
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 16px;
-  padding: 4px 8px;
-  color: #e2e8f0;
-  font-size: 0.7rem;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  width: 85px;
-  text-align: center;
-}
-
-.session-select:hover {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.15);
-}
-
-/* 操作按钮容器 */
-.action-buttons-cell {
-  white-space: nowrap;
-  text-align: center;
-}
-
-.action-btn {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 4px 6px;
-  margin: 0 2px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 图片按钮 */
-.image-btn {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-}
-
-.image-btn.has-image {
-  background: rgba(16, 185, 129, 0.2);
-  color: #10b981;
-}
-
-/* 编辑按钮 */
-.edit-btn-icon {
-  background: rgba(62, 180, 137, 0.15);
-  color: #3eb489;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-}
-
-/* 删除按钮 */
-.delete-btn-icon {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  font-size: 0.9rem;
-  padding: 4px 8px;
-}
-
-.action-btn:hover {
-  transform: scale(1.05);
-}
-
-/* R:R 值样式优化 */
-.rr-value {
-  display: inline-block !important;
-  min-width: 55px !important;
-  padding: 2px 6px !important;
-  font-size: 0.7rem !important;
-  text-align: center !important;
-}
-
-/* P/L 数字样式 */
 .pnl-positive {
   color: #0ee7ff !important;
   font-weight: 600;
@@ -2385,41 +1451,29 @@ table tbody tr td .rr-loss {
   font-weight: 600;
 }
 
-/* 响应式 - 小屏幕时允许水平滚动 */
-@media (max-width: 1000px) {
-  #tradeSection {
-    overflow-x: auto;
-  }
-  
-  #tradeSection table {
-    min-width: 900px;
-  }
+/* R:R 风险回报比样式 */
+.rr-value {
+  display: inline-block !important;
+  min-width: 70px !important;
+  text-align: center !important;
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2) !important;
+  background: linear-gradient(135deg, #ef4444, #06b6d4) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
 }
 
-/* 响应式 - 移动端 */
-@media (max-width: 768px) {
-  #tradeSection {
-    overflow-x: auto;
-  }
-  
-  #tradeSection table {
-    min-width: 850px;
-  }
-  
-  .session-select {
-    width: 70px;
-    font-size: 0.65rem;
-    padding: 3px 5px;
-  }
-  
-  .action-btn {
-    font-size: 0.85rem;
-    padding: 3px 5px;
-  }
+.rr-na {
+  color: #94a3b8 !important;
+  background: rgba(148, 163, 184, 0.05) !important;
+  -webkit-text-fill-color: #94a3b8 !important;
 }
 
-/* ============== Daily Quest 状态徽章 ============== */
-
+/* Daily Quest 状态徽章 */
 .quest-status-badge {
   display: inline-flex;
   align-items: center;
@@ -2443,68 +1497,89 @@ table tbody tr td .rr-loss {
   font-size: 0.7rem;
 }
 
-/* Passed 状态 */
 .quest-status-badge.passed {
   border-color: rgba(16, 185, 129, 0.5);
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 95, 70, 0.2));
 }
+.quest-status-badge.passed .quest-value { color: #34d399; }
 
-.quest-status-badge.passed .quest-value {
-  color: #34d399;
-}
-
-/* Failed 状态 */
 .quest-status-badge.failed {
   border-color: rgba(239, 68, 68, 0.5);
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(153, 27, 27, 0.2));
 }
+.quest-status-badge.failed .quest-value { color: #f87171; }
 
-.quest-status-badge.failed .quest-value {
-  color: #f87171;
-}
-
-/* No Trades 状态 */
 .quest-status-badge.no-trades {
   border-color: rgba(148, 163, 184, 0.3);
   background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(71, 85, 105, 0.15));
 }
+.quest-status-badge.no-trades .quest-value { color: #cbd5e1; }
 
-.quest-status-badge.no-trades .quest-value {
-  color: #cbd5e1;
-}
-
-/* Pending 状态 */
-.quest-status-badge.pending {
-  border-color: rgba(245, 158, 11, 0.5);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(180, 83, 9, 0.2));
-}
-
-.quest-status-badge.pending .quest-value {
-  color: #fbbf24;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .quest-status-badge {
-    padding: 2px 8px;
-    gap: 4px;
-  }
-  
-  .quest-label {
-    font-size: 0.6rem;
-  }
-  
-  .quest-value {
-    font-size: 0.65rem;
-  }
-}
-
-/* Patience 状态（未达标） */
 .quest-status-badge.patience {
   border-color: rgba(245, 158, 11, 0.5);
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(180, 83, 9, 0.2));
 }
+.quest-status-badge.patience .quest-value { color: #fbbf24; }
 
-.quest-status-badge.patience .quest-value {
-  color: #fbbf24;
+/* 粒子容器 - 简单样式 */
+#global-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .stats-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  main {
+    padding: 1rem;
+  }
+  
+  .stats-dashboard {
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1.2rem 1rem;
+  }
+  
+  .stat-card strong {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  main {
+    padding: 0.8rem;
+  }
+  
+  header {
+    padding: 0.8rem 1rem;
+  }
+  
+  #topRightActions {
+    gap: 0.5rem;
+  }
+  
+  .balance-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  #topBalance {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+  }
 }

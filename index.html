@@ -9,6 +9,9 @@
 </head>
 <body>
 
+  <!-- 全局动态漂浮粒子效果 -->
+  <div id="global-particles"></div>
+
   <!-- Sidebar -->
   <nav id="sidebar" class="sidebar">
     <ul>
@@ -21,13 +24,13 @@
   <!-- Page Content -->
   <div id="pageContent" class="page-content">
 
-    <!-- Header -->
+        <!-- Header -->
     <header>
       <button id="hamburgerBtn">☰</button>
       <h1 data-i18n="trading_journal">Trading Journal</h1>
       <div id="topRightActions">
         <span id="topBalance">$0.00</span>
-        <span id="userEmail" style="color: #818cf8; margin-right: 10px; font-size: 0.9rem;"></span>
+        <span id="userEmail"></span>
         <button class="balance-btn" data-type="Deposit" data-i18n="deposit">Deposit</button>
         <button class="balance-btn" data-type="Withdrawal" data-i18n="withdrawal">Withdrawal</button>
         <button id="logoutBtn" class="balance-btn" style="background: linear-gradient(145deg, #ff4d4d, #cc0000); color: white;" data-i18n="logout">Logout</button>
@@ -35,7 +38,6 @@
     </header>
 
     <main>
-
       <!-- Stats Dashboard -->
       <section id="statsSection" class="stats-dashboard">
         <div class="stat-card">
