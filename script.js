@@ -50,6 +50,7 @@ const notes = document.getElementById("notes");
 
 let showAll = true;
 let chart;
+let radarChart;
 let currentTransactionType = null;
 let chartTradeDetails = [];
 let dateGroups = {};
@@ -1009,7 +1010,6 @@ function updateTableHeaders() {
   if (!collapsedHeader || !expandedHeader) return;
   collapsedHeader.style.display = 'none';
   expandedHeader.style.display = 'table-row';
-  if (window.initLanguage) setTimeout(() => window.initLanguage(), 10);
 }
 
 function renderTable(groups) {
@@ -1283,6 +1283,259 @@ function updateSessionCard(prefix, data) {
   }
 }
 
+// ============== 综合评分计算函数 ==============
+function calculateOverallScore(statsData) {
+  let score = 0;
+  
+  let winRateScore = (statsData.winRate / 100) * 35;
+  score += winRateScore;
+  
+  let avgPnlScore = Math.min(20, (Math.abs(statsData.avgPnl) / 200) * 20);
+  if (statsData.avgPnl < 0) avgPnlScore = avgPnlScore * 0.3;
+  score += avgPnlScore;
+  
+  let maxPnlScore = Math.min(15, (statsData.maxPnl / 500) * 15);
+  score += maxPnlScore;
+  
+  let minPnlScore = 0;
+  if (statsData.minPnl < 0) {
+    minPnlScore = Math.max(0, 15 - (Math.abs(statsData.minPnl) / 100) * 15);
+  } else {
+    minPnlScore = 15;
+  }
+  score += minPnlScore;
+  
+  let totalTradesScore = Math.min(10, (statsData.total / 20) * 10);
+  score += totalTradesScore;
+  
+  let winCountScore = (statsData.winCount / Math.max(1, statsData.total)) * 5;
+  score += winCountScore;
+  
+  return Math.min(100, Math.max(0, Math.floor(score)));
+}
+
+// ============== 等级判定函数 ==============
+function getRankByScore(score) {
+  if (score <= 20) return { name: '见习生', icon: '🌱', nextNeeded: 21 - score };
+  if (score <= 40) return { name: '学徒', icon: '📘', nextNeeded: 41 - score };
+  if (score <= 60) return { name: '交易员', icon: '📈', nextNeeded: 61 - score };
+  if (score <= 75) return { name: '狙击手', icon: '🎯', nextNeeded: 76 - score };
+  if (score <= 88) return { name: '精英交易员', icon: '💎', nextNeeded: 89 - score };
+  return { name: '市场巫师', icon: '👑', nextNeeded: 0 };
+}
+
+// ============== 连胜天数计算函数 ==============
+function calculateWinningStreak(trades) {
+  if (!trades || trades.length === 0) return 0;
+  
+  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  if (buySellTrades.length === 0) return 0;
+  
+  const dailyPnL = {};
+  buySellTrades.forEach(trade => {
+    const date = trade.date;
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (!dailyPnL[date]) dailyPnL[date] = 0;
+    dailyPnL[date] += pnl;
+  });
+  
+  const datesWithTrades = Object.keys(dailyPnL).sort().reverse();
+  if (datesWithTrades.length === 0) return 0;
+  
+  let streak = 0;
+  for (const date of datesWithTrades) {
+    if (dailyPnL[date] > 0) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  
+  return streak;
+}
+
+// ============== 更新Ranking System UI ==============
+function updateRankingSystem(statsData, allTrades) {
+  const overallScore = calculateOverallScore(statsData);
+  const scorePercent = (overallScore / 100) * 100;
+  
+  const overallScoreEl = document.getElementById('overallScore');
+  const scoreProgressEl = document.getElementById('scoreProgress');
+  const scoreStatusEl = document.getElementById('scoreStatus');
+  
+  if (overallScoreEl) overallScoreEl.textContent = overallScore;
+  if (scoreProgressEl) scoreProgressEl.style.width = `${scorePercent}%`;
+  
+  if (scoreStatusEl) {
+    if (overallScore >= 85) scoreStatusEl.textContent = '🏆 卓越';
+    else if (overallScore >= 70) scoreStatusEl.textContent = '✨ 优秀';
+    else if (overallScore >= 55) scoreStatusEl.textContent = '📈 良好';
+    else if (overallScore >= 40) scoreStatusEl.textContent = '🌱 进阶中';
+    else scoreStatusEl.textContent = '💪 继续努力';
+  }
+  
+  const rank = getRankByScore(overallScore);
+  const levelIconEl = document.getElementById('levelIcon');
+  const currentLevelEl = document.getElementById('currentLevel');
+  const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
+  
+  if (levelIconEl) levelIconEl.textContent = rank.icon;
+  if (currentLevelEl) currentLevelEl.textContent = rank.name;
+  if (nextLevelNeededEl) {
+    if (rank.nextNeeded > 0) {
+      nextLevelNeededEl.textContent = `${rank.nextNeeded}分`;
+    } else {
+      nextLevelNeededEl.textContent = '已达最高';
+    }
+  }
+  
+  const winningStreak = calculateWinningStreak(allTrades);
+  const streakValueEl = document.getElementById('winningStreak');
+  if (streakValueEl) streakValueEl.textContent = winningStreak;
+}
+
+// ============== 五维雷达图绘制函数 ==============
+function initRadarChart(statsData, allTradesData) {
+  const canvas = document.getElementById('radarChart');
+  if (!canvas) return;
+  
+  if (radarChart) {
+    try { radarChart.destroy(); } catch(e) {}
+  }
+  
+  // 1. 胜率得分
+  const winRateScore = statsData.winRate;
+  
+  // 2. 盈利效率
+  let profitEfficiency = 0;
+  if (statsData.maxPnl > 0 && statsData.avgPnl > 0) {
+    profitEfficiency = Math.min(100, (statsData.avgPnl / statsData.maxPnl) * 100);
+  } else if (statsData.avgPnl > 0) {
+    profitEfficiency = 50;
+  }
+  
+  // 3. 风险控制
+  let riskControl = 50;
+  if (statsData.minPnl < 0) {
+    riskControl = Math.max(0, 100 - (Math.abs(statsData.minPnl) / 200) * 100);
+  } else if (statsData.minPnl === 0) {
+    riskControl = 100;
+  }
+  
+  // 4. 一致性
+  let consistency = 50;
+  if (allTradesData && allTradesData.length > 0) {
+    const buySellTrades = allTradesData.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+    if (buySellTrades.length > 0) {
+      const dailyPnL = {};
+      buySellTrades.forEach(trade => {
+        const date = trade.date;
+        const pnl = parseFloat(trade.pnl_amount || 0);
+        if (!dailyPnL[date]) dailyPnL[date] = 0;
+        dailyPnL[date] += pnl;
+      });
+      const dailyValues = Object.values(dailyPnL);
+      if (dailyValues.length > 0) {
+        const mean = dailyValues.reduce((a, b) => a + b, 0) / dailyValues.length;
+        const variance = dailyValues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / dailyValues.length;
+        const stdDev = Math.sqrt(variance);
+        const maxPossibleStdDev = 300;
+        consistency = Math.max(0, Math.min(100, 100 - (stdDev / maxPossibleStdDev) * 100));
+      }
+    }
+  }
+  
+  // 5. 活跃度
+  let activity = 0;
+  const tradeCount = statsData.total;
+  if (tradeCount > 0) {
+    activity = Math.min(100, (tradeCount / 50) * 100);
+  }
+  
+  const radarData = {
+    labels: ['胜率', '盈利效率', '风险控制', '一致性', '活跃度'],
+    datasets: [{
+      label: '能力值',
+      data: [winRateScore, profitEfficiency, riskControl, consistency, activity],
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: 'rgba(59, 130, 246, 0.8)',
+      borderWidth: 2,
+      pointBackgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: '#3b82f6',
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }]
+  };
+  
+  const radarConfig = {
+    type: 'radar',
+    data: radarData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { stepSize: 20, color: '#64748b', backdropColor: 'transparent' },
+          grid: { color: 'rgba(100, 116, 139, 0.25)', circular: true },
+          angleLines: { color: 'rgba(100, 116, 139, 0.15)' },
+          pointLabels: { color: '#94a3b8', font: { size: 10, weight: '500' } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleColor: '#e2e8f0',
+          bodyColor: '#94a3b8',
+          borderColor: 'rgba(59, 130, 246, 0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: function(ctx) {
+              let value = ctx.raw;
+              let label = ctx.label;
+              let scoreText = value >= 80 ? '优秀' : (value >= 60 ? '良好' : (value >= 40 ? '一般' : '待提升'));
+              return `${label}: ${value.toFixed(1)}分 (${scoreText})`;
+            }
+          }
+        }
+      }
+    }
+  };
+  
+  try {
+    radarChart = new Chart(canvas, radarConfig);
+  } catch(e) {
+    console.error('创建雷达图失败:', e);
+  }
+}
+
+// ============== 更新雷达图 ==============
+function updateRadarChart() {
+  const totalTradesEl = document.getElementById('totalTrades');
+  const winningTradesEl = document.getElementById('winningTrades');
+  const winRateEl = document.getElementById('winRate');
+  const avgPnlEl = document.getElementById('avgPnl');
+  const maxPnlEl = document.getElementById('maxPnl');
+  const minPnlEl = document.getElementById('minPnl');
+  
+  if (!totalTradesEl) return;
+  
+  const statsData = {
+    total: parseInt(totalTradesEl.textContent) || 0,
+    winCount: parseInt(winningTradesEl.textContent) || 0,
+    winRate: parseFloat(winRateEl.textContent) || 0,
+    avgPnl: parseFloat(avgPnlEl.textContent) || 0,
+    maxPnl: parseFloat(maxPnlEl.textContent) || 0,
+    minPnl: parseFloat(minPnlEl.textContent) || 0
+  };
+  
+  initRadarChart(statsData, window.allTradesData);
+}
+
 // ---------------- Fetch Trades ----------------
 async function fetchTrades() {
   const session = await checkAuth();
@@ -1296,7 +1549,7 @@ async function fetchTrades() {
     window.allTradesData = data || [];
     const groupedData = groupTradesByDate(data);
     renderTable(groupedData);
-    updateStats(groupedData.flatMap(g => g.trades));
+    updateStats(data);
     updateChart(data);
     updateTopBalance(data);
     addTimeSessionSelector();
@@ -1308,15 +1561,13 @@ async function fetchTrades() {
 async function deleteTrade(tradeId) {
   const session = await checkAuth();
   if (!session) return;
-  const lang = localStorage.getItem('language') || 'en';
-  const confirmMsg = lang === 'zh' ? '确定要删除这笔交易吗？' : 'Are you sure you want to delete this trade?';
+  const confirmMsg = '确定要删除这笔交易吗？';
   if (!confirm(confirmMsg)) return;
   
   try {
     const { error } = await client.from("trades").delete().eq("id", tradeId).eq("user_id", session.user.id);
     if (error) throw error;
-    const successMsg = lang === 'zh' ? '交易删除成功' : 'Trade deleted successfully';
-    showNotification(successMsg, 'success');
+    showNotification('交易删除成功', 'success');
     fetchTrades();
   } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
 }
@@ -1334,12 +1585,26 @@ function updateStats(data) {
     if (pnl < 0 && (min === null || pnl < min)) min = pnl;
   });
   
-  animateStat(stats.total, total, 0);
-  animateStat(stats.win, wins, 0);
-  stats.rate.textContent = total ? ((wins/total)*100).toFixed(2)+'%' : "0%";
-  animateStat(stats.avg, total ? sum/total : 0);
-  animateStat(stats.max, max !== null ? max : 0);
-  animateStat(stats.min, min !== null ? min : 0);
+  if (stats.total) stats.total.textContent = total;
+  if (stats.win) stats.win.textContent = wins;
+  if (stats.rate) stats.rate.textContent = total ? ((wins/total)*100).toFixed(2)+'%' : "0%";
+  if (stats.avg) stats.avg.textContent = total ? (sum/total).toFixed(2) : "0.00";
+  if (stats.max) stats.max.textContent = (max !== null ? max.toFixed(2) : "0.00");
+  if (stats.min) stats.min.textContent = (min !== null ? min.toFixed(2) : "0.00");
+  
+  const statsDataForRanking = {
+    total: total,
+    winCount: wins,
+    winRate: total ? (wins/total)*100 : 0,
+    avgPnl: total ? sum/total : 0,
+    maxPnl: max !== null ? max : 0,
+    minPnl: min !== null ? min : 0
+  };
+  
+  setTimeout(() => {
+    updateRadarChart();
+    updateRankingSystem(statsDataForRanking, data);
+  }, 200);
 }
 
 // ---------------- Update Chart ----------------
@@ -1449,8 +1714,7 @@ function showBalanceModal(type) {
   const modalDate = document.getElementById('modalDate');
   if (!modal || !modalTitle) return;
   currentTransactionType = type;
-  const lang = localStorage.getItem('language') || 'en';
-  modalTitle.textContent = lang === 'zh' ? (type === 'Deposit' ? '入金' : '出金') : type;
+  modalTitle.textContent = type === 'Deposit' ? 'Deposit' : 'Withdrawal';
   if (modalDate) modalDate.value = new Date().toISOString().split('T')[0];
   modal.className = 'modal-overlay ' + type.toLowerCase() + '-modal';
   modal.style.display = 'flex';
@@ -1483,9 +1747,7 @@ async function handleBalanceTransaction() {
     modalDate.value = '';
     modalAmount.value = '';
     if (modalNotes) modalNotes.value = '';
-    const lang = localStorage.getItem('language') || 'en';
-    const successMsg = lang === 'zh' ? `${currentTransactionType === 'Deposit' ? '入金' : '出金'}成功！` : `${currentTransactionType} successful!`;
-    showNotification(successMsg, 'success');
+    showNotification(`${currentTransactionType} successful!`, 'success');
     fetchTrades();
     currentTransactionType = null;
   } catch (error) { console.error("Error adding transaction:", error); alert("Failed to add transaction: " + error.message); }
@@ -1577,9 +1839,7 @@ if (editTradeForm) {
     try {
       const { error } = await client.from('trades').update(payload).eq('id', tradeId).eq('user_id', session.user.id);
       if (error) throw error;
-      const lang = localStorage.getItem('language') || 'en';
-      const successMsg = lang === 'zh' ? '交易更新成功' : 'Trade updated successfully';
-      showNotification(successMsg, 'success');
+      showNotification('交易更新成功', 'success');
       hideEditForm();
       fetchTrades();
     } catch (error) { console.error('更新失败:', error); alert('更新失败: ' + error.message); }
@@ -1592,8 +1852,7 @@ if (deleteTradeBtn) {
     const editId = document.getElementById('editId');
     if (!editId) return;
     const tradeId = editId.value;
-    const lang = localStorage.getItem('language') || 'en';
-    const confirmMsg = lang === 'zh' ? '确定要删除这笔交易吗？' : 'Are you sure you want to delete this trade?';
+    const confirmMsg = '确定要删除这笔交易吗？';
     if (!confirm(confirmMsg)) return;
     const session = await checkAuth();
     if (!session) return;
@@ -1601,8 +1860,7 @@ if (deleteTradeBtn) {
     try {
       const { error } = await client.from('trades').delete().eq('id', tradeId).eq('user_id', session.user.id);
       if (error) throw error;
-      const successMsg = lang === 'zh' ? '交易删除成功' : 'Trade deleted successfully';
-      showNotification(successMsg, 'success');
+      showNotification('交易删除成功', 'success');
       hideEditForm();
       fetchTrades();
     } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
@@ -1616,8 +1874,7 @@ if (cancelEditBtn) cancelEditBtn.addEventListener('click', hideEditForm);
 if (toggleBtn) {
   toggleBtn.onclick = () => {
     showAll = !showAll;
-    const lang = localStorage.getItem('language') || 'en';
-    toggleBtn.textContent = showAll ? (lang === 'zh' ? '隐藏' : 'Hide') : (lang === 'zh' ? '显示全部' : 'Show All');
+    toggleBtn.textContent = showAll ? 'Hide' : 'Show All';
     fetchTrades();
   };
 }
@@ -1630,7 +1887,7 @@ function showNotification(message, type = 'info') {
   if (existingNotification) existingNotification.remove();
   const notification = document.createElement('div');
   notification.className = `notification-toast notification-${type}`;
-  notification.innerHTML = `<div class="notification-content"><i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i><span>${message}</span></div><button class="notification-close">&times;</button>`;
+  notification.innerHTML = `<div class="notification-content"><span>${message}</span></div><button class="notification-close">&times;</button>`;
   document.body.appendChild(notification);
   setTimeout(() => notification.classList.add('show'), 10);
   setTimeout(() => { notification.classList.remove('show'); setTimeout(() => notification.remove(), 300); }, 3000);
@@ -1717,6 +1974,7 @@ async function initApp() {
     initBalanceModal();
     updateBalanceButtons();
     if (window.initLanguage) window.initLanguage();
+    setTimeout(() => { updateRadarChart(); }, 500);
   }
 }
 

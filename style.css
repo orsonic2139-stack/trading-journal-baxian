@@ -2,14 +2,12 @@
 
 /* CSS Variables for Theme Support */
 :root {
-  /* 背景颜色 */
   --bg-primary: #0e1117;
   --bg-secondary: #0b0f1a;
   --bg-card: #0f172a;
   --bg-input: #020617;
   --bg-sidebar: #0b0f1a;
   
-  /* 文本颜色 */
   --text-primary: #e5e7eb;
   --text-secondary: #9ca3af;
   --text-accent: #818cf8;
@@ -17,35 +15,29 @@
   --text-error: #ff4d4d;
   --text-light: #e6fff6;
   
-  /* 边框颜色 */
   --border-color: #1e293b;
   --border-accent: #3eb489;
   
-  /* 按钮颜色 */
   --btn-primary: #3eb489;
   --btn-primary-hover: #2d9c6f;
   --btn-text: #020617;
   --btn-secondary: #818cf8;
   
-  /* 阴影和渐变 */
   --shadow-color: rgba(62, 180, 137, 0.15);
   --shadow-hover: rgba(0, 255, 255, 0.5);
   --gradient-card: linear-gradient(145deg, #1f2937, #0f172a);
   --gradient-bg: radial-gradient(circle at top, #1b1f2a, #0e1117);
   
-  /* 状态颜色 */
   --color-buy: #3eb489;
   --color-sell: #ff4d4d;
   --color-positive: #3eb489;
   --color-negative: #ff4d4d;
   
-  /* 图表颜色 */
   --chart-color: #3eb489;
   --chart-grid: #6ee7b7;
   --chart-text: #aaa;
 }
 
-/* Light Theme Variables */
 .light-theme {
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
@@ -83,7 +75,6 @@
   --chart-text: #64748b;
 }
 
-/* Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -105,7 +96,6 @@ body {
   overflow-x: hidden;
 }
 
-/* 页面内容容器 */
 .page-content {
   margin-left: 250px;
   min-height: 100vh;
@@ -115,7 +105,6 @@ body {
   z-index: 1;
 }
 
-/* Header */
 header {
   padding: 0.8rem 2rem;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(11, 15, 26, 0.95));
@@ -129,7 +118,6 @@ header {
   flex-shrink: 0;
 }
 
-/* 主内容 */
 main {
   flex: 1;
   max-width: 1400px;
@@ -138,7 +126,6 @@ main {
   padding: 1.5rem 2rem;
 }
 
-/* Footer */
 footer {
   text-align: center;
   padding: 1rem;
@@ -149,7 +136,6 @@ footer {
   color: #64748b;
 }
 
-/* Sidebar */
 .sidebar {
   position: fixed;
   top: 0;
@@ -291,99 +277,288 @@ header h1 {
   background: var(--btn-primary-hover);
 }
 
-/* Stats Dashboard */
-.stats-dashboard {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.2rem;
-  margin-bottom: 1.5rem;
-  width: 100%;
+/* Stats + Ranking 左右分栏布局 */
+.stats-ranking-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+  border-radius: 24px;
+  padding: 1.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
-.stat-card {
-  background: rgba(15, 23, 42, 0.85);
-  border-radius: 16px;
-  padding: 1.2rem 1rem;
+.radar-chart-container {
+  flex: 1.2;
+  min-width: 280px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 1rem;
   text-align: center;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(30, 64, 175, 0.15);
-  transition: all 0.4s ease;
-  cursor: default;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  transition: all 0.3s ease;
 }
 
-.stat-card span {
-  color: #93c5fd;
-  font-size: 0.85rem;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 0.6rem;
-  letter-spacing: 0.5px;
+.radar-chart-container:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
 }
 
-.stat-card strong {
-  font-size: 1.8rem;
+.radar-header {
+  margin-bottom: 1rem;
+}
+
+.radar-title {
+  font-size: 1.1rem;
   font-weight: 700;
-  display: block;
-  line-height: 1.2;
-  background: linear-gradient(135deg, #93c5fd 0%, #3b82f6 50%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: block;
 }
 
-.stat-card::before {
+.radar-subtitle {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.ranking-system-container {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rank-score-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1.2rem 1.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.rank-score-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  border-radius: 16px;
-  background: radial-gradient(
-    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(59, 130, 246, 0.25) 0%,
-    rgba(59, 130, 246, 0.15) 30%,
-    rgba(59, 130, 246, 0.05) 50%,
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: -1;
+  height: 3px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6, #0ee7ff);
 }
 
-.stat-card::after {
-  content: '';
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  transition: all 0.4s ease;
-  bottom: -2px;
-  right: -2px;
-  border-left: 0;
-  border-top: 0;
-  border-radius: 0 0 16px 0;
-  z-index: 1;
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.8rem;
 }
 
-.stat-card:hover {
-  background: rgba(15, 23, 42, 0.92);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.15), 0 0 40px rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.25);
+.score-icon {
+  font-size: 1.5rem;
 }
 
-.stat-card:hover::before {
-  opacity: 1;
+.score-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-@keyframes glow-pulse {
-  0% {
-    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.18) 30%, rgba(59, 130, 246, 0.08) 50%, transparent 70%);
+.score-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3eb489, #3b82f6, #0ee7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  line-height: 1;
+}
+
+.score-max {
+  display: inline-block;
+  font-size: 1rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.score-status {
+  font-size: 0.75rem;
+  color: #3eb489;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.rank-score-card .progress-bar-wrapper {
+  margin-top: 12px;
+  height: 8px;
+}
+
+.rank-score-card .progress-bar-bg {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.rank-score-card .progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6);
+  width: 0%;
+  transition: width 0.6s ease;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.rank-level-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.2s;
+}
+
+.rank-level-card:hover {
+  transform: translateX(4px);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.level-icon {
+  font-size: 2.2rem;
+  background: rgba(59, 130, 246, 0.15);
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.level-info {
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.level-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.level-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.next-level-info {
+  text-align: right;
+}
+
+.next-label {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.next-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #3eb489;
+}
+
+.rank-streak-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.streak-icon {
+  font-size: 2rem;
+  background: rgba(245, 158, 11, 0.15);
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.streak-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f59e0b;
+  display: inline-block;
+  line-height: 1;
+}
+
+.streak-unit {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+  .stats-ranking-container {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
   }
-  100% {
-    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(59, 130, 246, 0.35) 0%, rgba(59, 130, 246, 0.22) 30%, rgba(59, 130, 246, 0.1) 50%, transparent 70%);
+  
+  .radar-chart-container {
+    min-width: auto;
+  }
+  
+  .ranking-system-container {
+    min-width: auto;
+  }
+  
+  .rank-level-card {
+    padding: 0.8rem 1.2rem;
+  }
+  
+  .level-icon, .streak-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.6rem;
+  }
+  
+  .level-name {
+    font-size: 1rem;
+  }
+  
+  .streak-value {
+    font-size: 1.5rem;
+  }
+  
+  .score-value {
+    font-size: 2rem;
   }
 }
 
@@ -474,7 +649,6 @@ header h1 {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
-/* Session 统计图表样式 */
 .form-right-column {
   flex: 1;
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
@@ -627,7 +801,6 @@ header h1 {
   }
 }
 
-/* Trades */
 .trade-header { 
   display: flex; 
   justify-content: space-between; 
@@ -670,7 +843,6 @@ th, td {
   transition: all 0.3s;
 }
 
-/* Chart */
 #chartSection { 
   margin-top: 2rem; 
   background: var(--bg-card); 
@@ -699,75 +871,6 @@ th, td {
   height: 350px !important; 
 }
 
-/* 编辑/删除按钮样式 */
-.edit-btn, .delete-btn {
-  padding: 0.4rem 0.8rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  margin: 0 0.2rem;
-  transition: all 0.2s;
-  min-width: 60px;
-}
-
-.edit-btn {
-  background: linear-gradient(145deg, #3eb489, #2d9c6f);
-  color: white;
-  border: 1px solid #2d9c6f;
-}
-
-.edit-btn:hover {
-  background: linear-gradient(145deg, #2d9c6f, #1e7a54);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(62, 180, 137, 0.3);
-}
-
-.delete-btn {
-  background: linear-gradient(145deg, #ff4d4d, #cc0000);
-  color: white;
-  border: 1px solid #cc0000;
-}
-
-.delete-btn:hover {
-  background: linear-gradient(145deg, #cc0000, #990000);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
-}
-
-td:last-child {
-  white-space: nowrap;
-}
-
-@media (max-width: 768px) {
-  .edit-btn, .delete-btn {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.8rem;
-    margin: 0.1rem;
-    display: inline-block;
-    min-width: 50px;
-  }
-  
-  td:last-child {
-    white-space: normal;
-  }
-}
-
-.text-accent { color: var(--text-accent); }
-.text-success { color: var(--text-success); }
-.text-error { color: var(--text-error); }
-.bg-card { background: var(--bg-card); }
-.bg-input { background: var(--bg-input); }
-
-* {
-  transition: background-color 0.3s ease, 
-              color 0.3s ease, 
-              border-color 0.3s ease, 
-              box-shadow 0.3s ease;
-}
-
-/* 模态框样式 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1025,7 +1128,6 @@ td:last-child {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* 日期分组表格样式 */
 .date-group-header {
   background: linear-gradient(90deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8)) !important;
   border-top: 2px solid rgba(59, 130, 246, 0.3);
@@ -1169,7 +1271,6 @@ td:last-child {
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* 通知样式 */
 .notification-toast {
   position: fixed;
   top: 20px;
@@ -1237,7 +1338,6 @@ td:last-child {
   color: #e2e8f0;
 }
 
-/* 操作按钮图标样式 */
 .action-buttons-cell {
   white-space: nowrap;
   text-align: center;
@@ -1304,11 +1404,6 @@ td:last-child {
   }
 }
 
-.edit-btn, .delete-btn {
-  display: none;
-}
-
-/* 交易统计徽章样式 */
 .trade-stats-badge {
   display: inline-flex;
   align-items: center;
@@ -1376,7 +1471,6 @@ td:last-child {
   }
 }
 
-/* Session 下拉框样式 */
 .session-select {
   background: rgba(30, 41, 59, 0.8);
   border: 1px solid rgba(59, 130, 246, 0.3);
@@ -1406,7 +1500,6 @@ td:last-child {
   color: #e2e8f0;
 }
 
-/* 表格列宽优化 */
 #tradeSection table {
   width: 100%;
   table-layout: fixed;
@@ -1451,7 +1544,6 @@ td:last-child {
   font-weight: 600;
 }
 
-/* R:R 风险回报比样式 */
 .rr-value {
   display: inline-block !important;
   min-width: 70px !important;
@@ -1473,7 +1565,6 @@ td:last-child {
   -webkit-text-fill-color: #94a3b8 !important;
 }
 
-/* Daily Quest 状态徽章 */
 .quest-status-badge {
   display: inline-flex;
   align-items: center;
@@ -1521,7 +1612,6 @@ td:last-child {
 }
 .quest-status-badge.patience .quest-value { color: #fbbf24; }
 
-/* 粒子容器 - 简单样式 */
 #global-particles {
   position: fixed;
   top: 0;
@@ -1533,34 +1623,13 @@ td:last-child {
   overflow: hidden;
 }
 
-/* 响应式 */
 @media (max-width: 768px) {
-  .stats-dashboard {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
   main {
     padding: 1rem;
-  }
-  
-  .stats-dashboard {
-    gap: 1rem;
-  }
-  
-  .stat-card {
-    padding: 1.2rem 1rem;
-  }
-  
-  .stat-card strong {
-    font-size: 1.6rem;
   }
 }
 
 @media (max-width: 480px) {
-  .stats-dashboard {
-    grid-template-columns: 1fr;
-  }
-  
   main {
     padding: 0.8rem;
   }
@@ -1582,4 +1651,791 @@ td:last-child {
     font-size: 0.85rem;
     padding: 0.3rem 0.8rem;
   }
+}
+
+.light-theme .stats-ranking-container {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(241, 245, 249, 0.9));
+}
+
+.light-theme .rank-score-card,
+.light-theme .rank-level-card,
+.light-theme .rank-streak-card,
+.light-theme .radar-chart-container {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+.light-theme .level-name {
+  color: #1e293b;
+}
+
+.light-theme .score-status {
+  color: #059669;
+}
+
+/* ============== 五维能力雷达图样式 ============== */
+.radar-capability-section {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+  border-radius: 24px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  text-align: center;
+}
+
+.radar-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.3rem;
+}
+
+.radar-header p {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.radar-chart-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+  .radar-legend {
+    gap: 0.8rem;
+  }
+  .legend-item {
+    font-size: 0.65rem;
+  }
+}
+
+.light-theme .radar-capability-section {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(241, 245, 249, 0.9));
+}
+
+/* ============== 左右分栏布局 ============== */
+.dashboard-two-columns {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-left {
+  flex: 2;
+  min-width: 280px;
+}
+
+.dashboard-right {
+  flex: 1;
+  min-width: 260px;
+}
+
+/* 左侧6卡片保持原有样式，只调整网格 */
+.dashboard-left .stats-dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 五维能力雷达图样式 */
+.radar-capability-section {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+  border-radius: 20px;
+  padding: 1.2rem;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  text-align: center;
+}
+
+.radar-header {
+  margin-bottom: 1rem;
+}
+
+.radar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+}
+
+.radar-subtitle {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.radar-chart-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* 右侧 Ranking System 卡片样式 */
+.rank-score-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1.2rem 1.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.rank-score-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6, #0ee7ff);
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.8rem;
+}
+
+.score-icon {
+  font-size: 1.3rem;
+}
+
+.score-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3eb489, #3b82f6, #0ee7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+  line-height: 1;
+}
+
+.score-max {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.score-status {
+  font-size: 0.7rem;
+  color: #3eb489;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.rank-score-card .progress-bar-wrapper {
+  margin-top: 10px;
+  height: 6px;
+}
+
+.rank-score-card .progress-bar-bg {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.rank-score-card .progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6);
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.rank-level-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.level-icon {
+  font-size: 2rem;
+  background: rgba(59, 130, 246, 0.15);
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.level-info {
+  flex: 1;
+  margin-left: 0.8rem;
+}
+
+.level-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+
+.level-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.next-level-info {
+  text-align: right;
+}
+
+.next-label {
+  font-size: 0.6rem;
+  color: #64748b;
+}
+
+.next-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3eb489;
+}
+
+.rank-streak-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.streak-icon {
+  font-size: 1.8rem;
+  background: rgba(245, 158, 11, 0.15);
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-label {
+  font-size: 0.65rem;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+
+.streak-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #f59e0b;
+  display: inline-block;
+  line-height: 1;
+}
+
+.streak-unit {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .dashboard-two-columns {
+    flex-direction: column;
+  }
+  
+  .dashboard-left .stats-dashboard {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-left .stats-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 亮色主题适配 */
+.light-theme .radar-capability-section,
+.light-theme .rank-score-card,
+.light-theme .rank-level-card,
+.light-theme .rank-streak-card {
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+.light-theme .level-name {
+  color: #1e293b;
+}
+
+.light-theme .score-status {
+  color: #059669;
+}
+
+/* ============== 美化版6卡片 + 五维图 ============== */
+
+/* 五维图卡片 */
+.radar-capability-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 24px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.radar-capability-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.card-header-glow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.card-title-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-icon {
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.card-badge {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(62, 180, 137, 0.2));
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.radar-chart-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* 6卡片美化版 */
+.stats-cards-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.3));
+  border-radius: 20px;
+  padding: 1.2rem;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.stats-card-modern {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #3eb489, #3b82f6);
+}
+
+.stats-card-modern:hover {
+  transform: translateY(-3px);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stats-card-icon {
+  font-size: 1.8rem;
+  background: rgba(59, 130, 246, 0.15);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.stats-card-info {
+  flex: 1;
+}
+
+.stats-card-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  display: block;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stats-card-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 右侧 Ranking System 美化 */
+.dashboard-right {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.4));
+  border-radius: 24px;
+  padding: 1.2rem;
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.rank-score-card,
+.rank-level-card,
+.rank-streak-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.3s;
+}
+
+.rank-score-card:hover,
+.rank-level-card:hover,
+.rank-streak-card:hover {
+  transform: translateX(4px);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.rank-score-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.rank-score-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6, #0ee7ff);
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.6rem;
+}
+
+.score-icon {
+  font-size: 1.3rem;
+}
+
+.score-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  line-height: 1;
+}
+
+.score-max {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.score-status {
+  font-size: 0.7rem;
+  color: #3eb489;
+  margin-top: 6px;
+}
+
+.rank-score-card .progress-bar-wrapper {
+  margin-top: 10px;
+  height: 6px;
+}
+
+.rank-score-card .progress-bar-bg {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.rank-score-card .progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6);
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.rank-level-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.level-icon {
+  font-size: 1.8rem;
+  background: rgba(59, 130, 246, 0.15);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.level-info {
+  flex: 1;
+  margin-left: 0.8rem;
+}
+
+.level-label {
+  font-size: 0.6rem;
+  color: #64748b;
+  letter-spacing: 1px;
+}
+
+.level-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.next-level-info {
+  text-align: right;
+}
+
+.next-label {
+  font-size: 0.55rem;
+  color: #64748b;
+}
+
+.next-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3eb489;
+}
+
+.rank-streak-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.streak-icon {
+  font-size: 1.6rem;
+  background: rgba(245, 158, 11, 0.15);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.streak-info {
+  flex: 1;
+}
+
+.streak-label {
+  font-size: 0.6rem;
+  color: #64748b;
+  letter-spacing: 1px;
+}
+
+.streak-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f59e0b;
+  display: inline-block;
+  line-height: 1;
+}
+
+.streak-unit {
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .dashboard-two-columns {
+    flex-direction: column;
+  }
+  .stats-cards-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .stats-cards-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 亮色主题 */
+.light-theme .radar-capability-card,
+.light-theme .stats-card-modern,
+.light-theme .dashboard-right,
+.light-theme .rank-score-card,
+.light-theme .rank-level-card,
+.light-theme .rank-streak-card {
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  border-color: rgba(100, 116, 139, 0.2);
+}
+
+.light-theme .card-title,
+.light-theme .level-name {
+  color: #1e293b;
+}
+
+.light-theme .stats-card-value {
+  background: linear-gradient(135deg, #1e293b, #475569);
+  -webkit-background-clip: text;
 }
