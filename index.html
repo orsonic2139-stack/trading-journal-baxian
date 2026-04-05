@@ -111,89 +111,157 @@
           </div>
         </div>
 
-        <!-- 右侧：Ranking System -->
         <div class="dashboard-right">
-          <div class="rank-score-card">
-            <div class="score-header">
-              <span class="score-icon">🏆</span>
-              <span class="score-label">Overall Score</span>
-            </div>
-            <div class="score-value" id="overallScore">0</div>
-            <div class="score-max">/ 100</div>
-            <div class="progress-bar-wrapper">
-              <div class="progress-bar-bg">
-                <div class="progress-bar-fill score-progress" id="scoreProgress" style="width: 0%;"></div>
-              </div>
-            </div>
-            <div class="score-status" id="scoreStatus">--</div>
+  <!-- 等级徽章卡片 - 移到第一位 -->
+  <div class="rank-level-card" id="rankLevelCard">
+    <div class="level-icon" id="levelIcon3d" data-rank="apprentice">
+      <div class="game-badge-3d">
+        <div class="badge-shadow"></div>
+        <div class="badge-3d">
+          <div class="badge-icon-3d">
+            <svg class="rank-svg-3d" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" id="rankSvg">
+              <path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+              <circle cx="32" cy="32" r="6" fill="none" stroke="#ffd700" stroke-width="2"/>
+              <path d="M32 26L35 32L32 38L29 32Z" fill="#ffd700" opacity="0.8"/>
+            </svg>
           </div>
-          
-          <div class="rank-level-card">
-            <div class="level-icon" id="levelIcon">🌱</div>
-            <div class="level-info">
-              <div class="level-label">Current Level</div>
-              <div class="level-name" id="currentLevel">Apprentice</div>
-            </div>
-            <div class="next-level-info">
-              <div class="next-label">Next Level</div>
-              <div class="next-value" id="nextLevelNeeded">--</div>
-            </div>
-          </div>
-          
-          <div class="rank-streak-card">
-            <div class="streak-icon">🔥</div>
-            <div class="streak-info">
-              <div class="streak-label">Winning Streak</div>
-              <div class="streak-value" id="winningStreak">0</div>
-              <div class="streak-unit">days</div>
-            </div>
-          </div>
-
-<div class="rank-discipline-card">
-  <div class="discipline-header">
-    <span class="discipline-icon">📋</span>
-    <span class="discipline-label">Discipline Score</span>
-  </div>
-  <div class="discipline-score-wrapper">
-    <div class="discipline-score" id="disciplineScore">0</div>
-    <div class="discipline-max">/ 100</div>
-  </div>
-  <div class="discipline-progress">
-    <div class="discipline-progress-fill" id="disciplineProgress" style="width: 0%;"></div>
-  </div>
-  <div class="discipline-details" id="disciplineDetails">
-    <span>📊 Based on stop loss & consistency</span>
-  </div>
-</div>
-
-<div class="rank-emotion-card">
-  <div class="emotion-header">
-    <span class="emotion-icon">🧠</span>
-    <span class="emotion-label">Emotional State</span>
-    <span class="emotion-status" id="emotionStatus">Calm</span>
-  </div>
-  <div class="emotion-indicator" id="emotionIndicator">
-    <div class="emotion-level" style="width: 60%;"></div>
-  </div>
-  <div class="emotion-factors">
-    <div class="factor-item">
-      <span class="factor-name">Win Streak Effect</span>
-      <span class="factor-value positive" id="winStreakEffect">+0%</span>
-    </div>
-    <div class="factor-item">
-      <span class="factor-name">Loss Streak Effect</span>
-      <span class="factor-value negative" id="lossStreakEffect">-0%</span>
-    </div>
-    <div class="factor-item">
-      <span class="factor-name">Risk Adherence</span>
-      <span class="factor-value" id="riskAdherence">0%</span>
-    </div>
-  </div>
-  <div class="emotion-message" id="emotionMessage">
-    🧘 Keep up the good discipline!
-  </div>
-</div>
         </div>
+      </div>
+    </div>
+    <div class="level-info">
+  <div class="level-label">
+    Current Level
+    <span class="level-info-icon" id="levelInfoIcon">ⓘ</span>
+    <div class="level-tooltip" id="levelTooltip">
+  <div class="tooltip-title">📊 Trading Ranks</div>
+  <div class="tooltip-list">
+    <div class="tooltip-rank" data-rank="apprentice">
+      <div class="tooltip-badge">
+        <div class="tooltip-badge-3d apprentice-tooltip"></div>
+      </div>
+      <span class="rank-name-text">Apprentice</span>
+      <span class="rank-score-range">0-20 pts</span>
+    </div>
+    <div class="tooltip-rank" data-rank="learner">
+      <div class="tooltip-badge">
+        <div class="tooltip-badge-3d learner-tooltip"></div>
+      </div>
+      <span class="rank-name-text">Learner</span>
+      <span class="rank-score-range">21-40 pts</span>
+    </div>
+    <div class="tooltip-rank" data-rank="trader">
+      <div class="tooltip-badge">
+        <div class="tooltip-badge-3d trader-tooltip"></div>
+      </div>
+      <span class="rank-name-text">Trader</span>
+      <span class="rank-score-range">41-60 pts</span>
+    </div>
+    <div class="tooltip-rank" data-rank="sniper">
+      <div class="tooltip-badge">
+        <div class="tooltip-badge-3d sniper-tooltip"></div>
+      </div>
+      <span class="rank-name-text">Sniper</span>
+      <span class="rank-score-range">61-75 pts</span>
+    </div>
+    <div class="tooltip-rank" data-rank="elite">
+      <div class="tooltip-badge">
+        <div class="tooltip-badge-3d elite-tooltip"></div>
+      </div>
+      <span class="rank-name-text">Elite Trader</span>
+      <span class="rank-score-range">76-88 pts</span>
+    </div>
+    <div class="tooltip-rank" data-rank="wizard">
+      <div class="tooltip-badge">
+        <div class="tooltip-badge-3d wizard-tooltip"></div>
+      </div>
+      <span class="rank-name-text">Market Wizard</span>
+      <span class="rank-score-range">89-100 pts</span>
+    </div>
+  </div>
+  <div class="tooltip-footer">✨ 分数越高，等级越高 ✨</div>
+</div>
+  </div>
+  <div class="rank-name" id="currentLevel">Apprentice</div>
+</div>
+    <div class="next-level-info">
+      <div class="next-label">Next Level</div>
+      <div class="next-value" id="nextLevelNeeded">--</div>
+    </div>
+  </div>
+
+  <!-- Overall Score 卡片 - 移到第二位 -->
+  <div class="rank-score-card">
+    <div class="score-header">
+      <span class="score-icon">🏆</span>
+      <span class="score-label">Overall Score</span>
+    </div>
+    <div class="score-value" id="overallScore">0</div>
+    <div class="score-max">/ 100</div>
+    <div class="progress-bar-wrapper">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill score-progress" id="scoreProgress" style="width: 0%;"></div>
+      </div>
+    </div>
+    <div class="score-status" id="scoreStatus">--</div>
+  </div>
+
+  <!-- Winning Streak 卡片 -->
+  <div class="rank-streak-card">
+    <div class="streak-icon">🔥</div>
+    <div class="streak-info">
+      <div class="streak-label">Winning Streak</div>
+      <div class="streak-value" id="winningStreak">0</div>
+      <div class="streak-unit">days</div>
+    </div>
+  </div>
+
+  <!-- Discipline Score 卡片 -->
+  <div class="rank-discipline-card">
+    <div class="discipline-header">
+      <span class="discipline-icon">📋</span>
+      <span class="discipline-label">Discipline Score</span>
+    </div>
+    <div class="discipline-score-wrapper">
+      <div class="discipline-score" id="disciplineScore">0</div>
+      <div class="discipline-max">/ 100</div>
+    </div>
+    <div class="discipline-progress">
+      <div class="discipline-progress-fill" id="disciplineProgress" style="width: 0%;"></div>
+    </div>
+    <div class="discipline-details" id="disciplineDetails">
+      <span>📊 Based on stop loss & consistency</span>
+    </div>
+  </div>
+
+  <!-- Emotional State 卡片 -->
+  <div class="rank-emotion-card">
+    <div class="emotion-header">
+      <span class="emotion-icon">🧠</span>
+      <span class="emotion-label">Emotional State</span>
+      <span class="emotion-status" id="emotionStatus">Calm</span>
+    </div>
+    <div class="emotion-indicator" id="emotionIndicator">
+      <div class="emotion-level" style="width: 60%;"></div>
+    </div>
+    <div class="emotion-factors">
+      <div class="factor-item">
+        <span class="factor-name">Win Streak Effect</span>
+        <span class="factor-value positive" id="winStreakEffect">+0%</span>
+      </div>
+      <div class="factor-item">
+        <span class="factor-name">Loss Streak Effect</span>
+        <span class="factor-value negative" id="lossStreakEffect">-0%</span>
+      </div>
+      <div class="factor-item">
+        <span class="factor-name">Risk Adherence</span>
+        <span class="factor-value" id="riskAdherence">0%</span>
+      </div>
+    </div>
+    <div class="emotion-message" id="emotionMessage">
+      🧘 Keep up the good discipline!
+    </div>
+  </div>
+</div>
       </div>
 
       <!-- Trade Form -->

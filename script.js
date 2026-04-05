@@ -1375,19 +1375,41 @@ function updateRankingSystem(statsData, allTrades) {
   }
   
   const rank = getRankByScore(overallScore);
-  const levelIconEl = document.getElementById('levelIcon');
-  const currentLevelEl = document.getElementById('currentLevel');
-  const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
-  
-  if (levelIconEl) levelIconEl.textContent = rank.icon;
-  if (currentLevelEl) currentLevelEl.textContent = rank.name;
-  if (nextLevelNeededEl) {
-    if (rank.nextNeeded > 0) {
-      nextLevelNeededEl.textContent = `${rank.nextNeeded} pts`;
-    } else {
-      nextLevelNeededEl.textContent = 'Max Level';
-    }
+const levelIcon3d = document.getElementById('levelIcon3d');
+const currentLevelEl = document.getElementById('currentLevel');
+const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
+const rankSvg = document.getElementById('rankSvg');
+
+// 更新等级名称
+if (currentLevelEl) currentLevelEl.textContent = rank.name;
+
+// 更新下一级所需分数
+if (nextLevelNeededEl) {
+  if (rank.nextNeeded > 0) {
+    nextLevelNeededEl.textContent = `${rank.nextNeeded} pts`;
+  } else {
+    nextLevelNeededEl.textContent = 'Max Level';
   }
+}
+
+// 更新3D徽章样式和SVG
+if (levelIcon3d) {
+  // 获取等级对应的data-rank值
+  let rankKey = 'apprentice';
+  if (rank.name === 'Apprentice') rankKey = 'apprentice';
+  else if (rank.name === 'Learner') rankKey = 'learner';
+  else if (rank.name === 'Trader') rankKey = 'trader';
+  else if (rank.name === 'Sniper') rankKey = 'sniper';
+  else if (rank.name === 'Elite Trader') rankKey = 'elite';
+  else if (rank.name === 'Market Wizard') rankKey = 'wizard';
+  
+  levelIcon3d.setAttribute('data-rank', rankKey);
+  
+  // 根据等级更新SVG图标
+  if (rankSvg) {
+    updateRankSvg(rankSvg, rankKey);
+  }
+}
   
   const winningStreak = calculateWinningStreak(allTrades);
   const streakValueEl = document.getElementById('winningStreak');
@@ -2528,6 +2550,50 @@ function updateEmotionalState(trades) {
     emotionMessageEl.innerHTML = message;
   }
 }
+
+// ============== 3D等级徽章 SVG 更新辅助函数 ==============
+function updateRankSvg(svgElement, rankKey) {
+  const svgs = {
+    apprentice: `<path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+                 <circle cx="32" cy="32" r="6" fill="none" stroke="#ffd700" stroke-width="2"/>
+                 <path d="M32 26L35 32L32 38L29 32Z" fill="#ffd700" opacity="0.8"/>`,
+    
+    learner: `<path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+              <rect x="26" y="28" width="12" height="8" rx="1" fill="#ffd700" opacity="0.6"/>
+              <path d="M26 32L30 36L34 32" stroke="#ffd700" stroke-width="1.5" fill="none"/>`,
+    
+    trader: `<path d="M32 10L16 22V44L32 54L48 44V22L32 10Z" fill="currentColor" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+             <path d="M16 22L6 18M48 22L58 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+             <path d="M32 28L36 34L32 40L28 34Z" fill="none" stroke="#fff" stroke-width="2"/>`,
+    
+    sniper: `<path d="M32 8L14 22V46L32 56L50 46V22L32 8Z" fill="currentColor" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+             <path d="M14 22L2 16M50 22L62 16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+             <path d="M14 26L4 24M50 26L60 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+             <circle cx="32" cy="34" r="8" fill="none" stroke="#fff" stroke-width="2.5"/>
+             <circle cx="32" cy="34" r="3" fill="#fff"/>`,
+    
+    elite: `<path d="M32 6L12 22V48L32 58L52 48V22L32 6Z" fill="currentColor" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+            <path d="M12 22L-2 14M52 22L66 14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M12 28L0 24M52 28L64 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M14 34L4 32M50 34L60 32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M26 20L32 12L38 20L44 16L40 26L24 26L20 16L26 20Z" fill="none" stroke="#ffd700" stroke-width="2"/>`,
+    
+    wizard: `<defs><linearGradient id="wizardGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6b6b"/><stop offset="50%" stop-color="#ff9ff3"/><stop offset="100%" stop-color="#feca57"/></linearGradient></defs>
+             <path d="M32 4L10 22V50L32 60L54 50V22L32 4Z" fill="currentColor" stroke="url(#wizardGrad)" stroke-width="2"/>
+             <path d="M10 22L-8 10M54 22L72 10" stroke="url(#wizardGrad)" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+             <path d="M10 28L-6 20M54 28L70 20" stroke="url(#wizardGrad)" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+             <path d="M12 34L-4 28M52 34L68 28" stroke="url(#wizardGrad)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+             <circle cx="32" cy="34" r="10" fill="none" stroke="#ffeaa7" stroke-width="1.5" stroke-dasharray="4 4"/>
+             <circle cx="32" cy="34" r="5" fill="none" stroke="#ffeaa7" stroke-width="1.5"/>
+             <path d="M32 24L32 44M22 34L42 34" stroke="#ffeaa7" stroke-width="1" opacity="0.6"/>
+             <path d="M32 30L34 34L32 38L30 34Z" fill="#fff"/>`
+  };
+  
+  const svgContent = svgs[rankKey] || svgs.apprentice;
+  svgElement.innerHTML = svgContent;
+}
+
+window.updateRankSvg = updateRankSvg;
 
 // ---------------- Initial Load ----------------
 async function initApp() {
