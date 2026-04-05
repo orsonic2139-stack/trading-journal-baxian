@@ -1,4 +1,4 @@
-// script.js - 完整版
+// script.js - 完整修复版
 
 // ---------------- Hamburger Menu ----------------
 const sidebar = document.getElementById("sidebar");
@@ -1314,14 +1314,233 @@ function calculateOverallScore(statsData) {
   return Math.min(100, Math.max(0, Math.floor(score)));
 }
 
-// ============== 等级判定函数 ==============
+// ============== 等级判定函数 (7级系统) ==============
 function getRankByScore(score) {
-  if (score <= 20) return { name: 'Apprentice', icon: '🌱', nextNeeded: 21 - score };
-  if (score <= 40) return { name: 'Learner', icon: '📘', nextNeeded: 41 - score };
-  if (score <= 60) return { name: 'Trader', icon: '📈', nextNeeded: 61 - score };
-  if (score <= 75) return { name: 'Sniper', icon: '🎯', nextNeeded: 76 - score };
-  if (score <= 88) return { name: 'Elite Trader', icon: '💎', nextNeeded: 89 - score };
-  return { name: 'Market Wizard', icon: '👑', nextNeeded: 0 };
+  var rankTiers = [
+    { main: 'Rookie', minScore: 0, maxScore: 14 },
+    { main: 'Apprentice', minScore: 15, maxScore: 28 },
+    { main: 'Trader', minScore: 29, maxScore: 42 },
+    { main: 'Sniper', minScore: 43, maxScore: 56 },
+    { main: 'Elite Trader', minScore: 57, maxScore: 70 },
+    { main: 'Master', minScore: 71, maxScore: 84 },
+    { main: 'Market Wizard', minScore: 85, maxScore: 100 }
+  ];
+  
+  var currentRank = rankTiers[0];
+  var rankIndex = 0;
+  for (var i = 0; i < rankTiers.length; i++) {
+    if (score >= rankTiers[i].minScore) {
+      currentRank = rankTiers[i];
+      rankIndex = i;
+    } else {
+      break;
+    }
+  }
+  
+  var nextNeeded = 0;
+  var isMaxLevel = false;
+  if (rankIndex < rankTiers.length - 1) {
+    nextNeeded = rankTiers[rankIndex + 1].minScore - score;
+    if (nextNeeded < 0) nextNeeded = 0;
+  } else {
+    isMaxLevel = true;
+    nextNeeded = 0;
+  }
+  
+  var rankKey = currentRank.main.toLowerCase().replace(/ /g, '_');
+  if (rankKey === 'elite_trader') rankKey = 'elite';
+  if (rankKey === 'market_wizard') rankKey = 'wizard';
+  
+  return {
+    name: currentRank.main,
+    mainRank: currentRank.main,
+    subRank: null,
+    rankKey: rankKey,
+    rankIndex: rankIndex,
+    nextNeeded: nextNeeded,
+    totalPercent: Math.floor((score / 100) * 100),
+    isMaxLevel: isMaxLevel
+  };
+}
+
+// 在 script.js 中找到 updateRankSvg 函数，完全替换为以下内容
+
+// ============== 星光粒子效果函数 ==============
+function addStarDustEffect(container, config) {
+    if (!container) return;
+    
+    var oldContainer = container.querySelector('.star-dust');
+    if (oldContainer) oldContainer.remove();
+    
+    var particleCount = getParticleCountByRank(config.rankKey);
+    var dustContainer = document.createElement('div');
+    dustContainer.className = 'star-dust';
+    
+    for (var i = 0; i < particleCount; i++) {
+        var particle = document.createElement('div');
+        particle.className = 'dust';
+        
+        var size = 2 + Math.random() * 4;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.color = config.particleColor;
+        particle.style.background = 'radial-gradient(circle, ' + config.particleColor + ', transparent)';
+        particle.style.boxShadow = '0 0 12px ' + config.particleGlow + ', 0 0 20px rgba(255,255,255,0.3)';
+        
+        // 缩小粒子分布半径 - 紧贴徽章周围
+        var angle = Math.random() * Math.PI * 2;
+        var radius = 35 + Math.random() * 25;  // 从 65-100 改为 35-60
+        var startX = 50 + Math.cos(angle) * (radius / 1.2);
+        var startY = 50 + Math.sin(angle) * (radius / 1.2);
+        
+        particle.style.left = startX + '%';
+        particle.style.top = startY + '%';
+        
+        // 缩小飘移距离
+        var tx = -15 + Math.random() * 30;
+        var ty = -20 + Math.random() * 20;
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.setProperty('--ty', ty + 'px');
+        
+        var tx2 = -25 + Math.random() * 50;
+        var ty2 = -30 + Math.random() * 25;
+        particle.style.setProperty('--tx2', tx2 + 'px');
+        particle.style.setProperty('--ty2', ty2 + 'px');
+        
+        var duration = 1.5 + Math.random() * 1.5;
+        var delay = Math.random() * 3;
+        particle.style.animationDuration = duration + 's';
+        particle.style.animationDelay = delay + 's';
+        
+        dustContainer.appendChild(particle);
+    }
+    
+    container.appendChild(dustContainer);
+}
+
+function getParticleCountByRank(rankKey) {
+    switch(rankKey) {
+        case 'rookie': return 16;
+        case 'apprentice': return 20;
+        case 'trader': return 24;
+        case 'sniper': return 28;
+        case 'elite': return 32;
+        case 'master': return 36;
+        case 'wizard': return 42;
+        default: return 20;
+    }
+}
+
+// ============== 3D等级徽章 SVG 更新函数（带星光粒子） ==============
+function updateRankSvg(svgElement, rankKey, subRank) {
+    if (!svgElement) return;
+    
+    var rankConfig = {
+        rookie: {
+            bgGrad1: '#F0C674', bgGrad2: '#CD7F32', bgGrad3: '#8B5A2B', bgGrad4: '#3E2723',
+            edgeGrad1: '#FFF8DC', edgeGrad2: '#CD7F32',
+            centerIcon: '🌱',
+            particleColor: '#CD7F32',
+            particleGlow: '#F0C674'
+        },
+        apprentice: {
+            bgGrad1: '#E8E8E8', bgGrad2: '#C0C0C0', bgGrad3: '#A0A0A0', bgGrad4: '#707070',
+            edgeGrad1: '#FFFFFF', edgeGrad2: '#A0A0A0',
+            centerIcon: '📚',
+            particleColor: '#C0C0C0',
+            particleGlow: '#FFFFFF'
+        },
+        trader: {
+            bgGrad1: '#FFD700', bgGrad2: '#DAA520', bgGrad3: '#B8860B', bgGrad4: '#8B6914',
+            edgeGrad1: '#FFF8DC', edgeGrad2: '#DAA520',
+            centerIcon: '📈',
+            particleColor: '#FFD700',
+            particleGlow: '#FFF8DC'
+        },
+        sniper: {
+            bgGrad1: '#E5E4E2', bgGrad2: '#B8B8B8', bgGrad3: '#8C8C8C', bgGrad4: '#5C5C5C',
+            edgeGrad1: '#FFFFFF', edgeGrad2: '#B8B8B8',
+            centerIcon: '🎯',
+            particleColor: '#E5E4E2',
+            particleGlow: '#FFFFFF'
+        },
+        elite: {
+            bgGrad1: '#4169E1', bgGrad2: '#2E4AB5', bgGrad3: '#1E3A8A', bgGrad4: '#0F2350',
+            edgeGrad1: '#87CEEB', edgeGrad2: '#2E4AB5',
+            centerIcon: '💎',
+            particleColor: '#4169E1',
+            particleGlow: '#87CEEB'
+        },
+        master: {
+            bgGrad1: '#9B59B6', bgGrad2: '#7D3C98', bgGrad3: '#5B2C6F', bgGrad4: '#3B1E4A',
+            edgeGrad1: '#D7BDE2', edgeGrad2: '#7D3C98',
+            centerIcon: '👑',
+            particleColor: '#9B59B6',
+            particleGlow: '#D7BDE2'
+        },
+        wizard: {
+            bgGrad1: '#FF4444', bgGrad2: '#CC0000', bgGrad3: '#990000', bgGrad4: '#660000',
+            edgeGrad1: '#FFB3B3', edgeGrad2: '#CC0000',
+            centerIcon: '⚡',
+            particleColor: '#FF4444',
+            particleGlow: '#FFB3B3'
+        }
+    };
+    
+    var config = rankConfig[rankKey] || rankConfig.trader;
+    
+    var svgContent = '<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="rank-badge-svg">' +
+        '<defs>' +
+            '<linearGradient id="mainBg" x1="0%" y1="0%" x2="100%" y2="100%">' +
+                '<stop offset="0%" stop-color="' + config.bgGrad1 + '"/>' +
+                '<stop offset="30%" stop-color="' + config.bgGrad2 + '"/>' +
+                '<stop offset="70%" stop-color="' + config.bgGrad3 + '"/>' +
+                '<stop offset="100%" stop-color="' + config.bgGrad4 + '"/>' +
+            '</linearGradient>' +
+            '<linearGradient id="edgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">' +
+                '<stop offset="0%" stop-color="' + config.edgeGrad1 + '"/>' +
+                '<stop offset="100%" stop-color="' + config.edgeGrad2 + '"/>' +
+            '</linearGradient>' +
+            '<radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">' +
+                '<stop offset="0%" stop-color="' + config.edgeGrad1 + '" stop-opacity="0.3"/>' +
+                '<stop offset="100%" stop-color="' + config.edgeGrad1 + '" stop-opacity="0"/>' +
+            '</radialGradient>' +
+            '<filter id="mainGlow">' +
+                '<feGaussianBlur stdDeviation="2.5" result="blur"/>' +
+                '<feMerge>' +
+                    '<feMergeNode in="blur"/>' +
+                    '<feMergeNode in="SourceGraphic"/>' +
+                '</feMerge>' +
+            '</filter>' +
+            '<filter id="innerGlow">' +
+                '<feGaussianBlur stdDeviation="1.5" result="blur"/>' +
+                '<feMerge>' +
+                    '<feMergeNode in="blur"/>' +
+                    '<feMergeNode in="SourceGraphic"/>' +
+                '</feMerge>' +
+            '</filter>' +
+        '</defs>' +
+        '<circle cx="40" cy="40" r="35" fill="url(#centerGlow)"/>' +
+        '<path d="M40 6 L72 22 L72 54 Q72 72 40 82 Q8 72 8 54 L8 22 Z" fill="url(#mainBg)" stroke="url(#edgeGrad)" stroke-width="3" filter="url(#mainGlow)"/>' +
+        '<path d="M40 13 L64 26 L64 52 Q64 67 40 76 Q16 67 16 52 L16 26 Z" fill="none" stroke="' + config.edgeGrad1 + '" stroke-width="1.5" opacity="0.5"/>' +
+        '<path d="M30 16 L36 8 L40 14 L44 8 L50 16" fill="none" stroke="' + config.edgeGrad1 + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#innerGlow)"/>' +
+        '<circle cx="40" cy="44" r="18" fill="rgba(0,0,0,0.25)" stroke="' + config.edgeGrad1 + '" stroke-width="1.2" opacity="0.6"/>' +
+        '<circle cx="40" cy="44" r="14" fill="rgba(0,0,0,0.15)" stroke="' + config.edgeGrad1 + '" stroke-width="0.8" opacity="0.4"/>' +
+        '<text x="40" y="52" text-anchor="middle" fill="' + config.edgeGrad1 + '" font-size="28" font-weight="bold" filter="url(#innerGlow)">' + config.centerIcon + '</text>' +
+        '<path d="M28 70 L40 65 L52 70" fill="none" stroke="' + config.edgeGrad1 + '" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
+        '</svg>';
+    
+    svgElement.innerHTML = svgContent;
+    
+    // 添加星光粒子效果（删除旧的 orbit 效果，使用新的 star-dust）
+    var levelIcon = svgElement.closest('.level-icon');
+    if (levelIcon) {
+        var oldOrbit = levelIcon.querySelector('.stardust-orbit');
+        if (oldOrbit) oldOrbit.remove();
+        
+        // 添加星光粒子
+        addStarDustEffect(levelIcon, config);
+    }
 }
 
 // ============== 连胜天数计算函数 ==============
@@ -1375,41 +1594,31 @@ function updateRankingSystem(statsData, allTrades) {
   }
   
   const rank = getRankByScore(overallScore);
-const levelIcon3d = document.getElementById('levelIcon3d');
-const currentLevelEl = document.getElementById('currentLevel');
-const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
-const rankSvg = document.getElementById('rankSvg');
+  const levelIcon3d = document.getElementById('levelIcon3d');
+  const currentLevelEl = document.getElementById('currentLevel');
+  const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
+  const rankSvg = document.getElementById('rankSvg');
 
-// 更新等级名称
-if (currentLevelEl) currentLevelEl.textContent = rank.name;
-
-// 更新下一级所需分数
-if (nextLevelNeededEl) {
-  if (rank.nextNeeded > 0) {
-    nextLevelNeededEl.textContent = `${rank.nextNeeded} pts`;
-  } else {
-    nextLevelNeededEl.textContent = 'Max Level';
-  }
-}
-
-// 更新3D徽章样式和SVG
-if (levelIcon3d) {
-  // 获取等级对应的data-rank值
-  let rankKey = 'apprentice';
-  if (rank.name === 'Apprentice') rankKey = 'apprentice';
-  else if (rank.name === 'Learner') rankKey = 'learner';
-  else if (rank.name === 'Trader') rankKey = 'trader';
-  else if (rank.name === 'Sniper') rankKey = 'sniper';
-  else if (rank.name === 'Elite Trader') rankKey = 'elite';
-  else if (rank.name === 'Market Wizard') rankKey = 'wizard';
+  if (currentLevelEl) currentLevelEl.textContent = rank.name;
   
-  levelIcon3d.setAttribute('data-rank', rankKey);
-  
-  // 根据等级更新SVG图标
-  if (rankSvg) {
-    updateRankSvg(rankSvg, rankKey);
+  if (nextLevelNeededEl) {
+    if (rank.nextNeeded > 0) {
+      nextLevelNeededEl.textContent = `${rank.nextNeeded} pts`;
+    } else {
+      nextLevelNeededEl.textContent = 'Max Level';
+    }
   }
-}
+  
+  if (levelIcon3d) {
+    var rankKey = rank.rankKey;
+    levelIcon3d.setAttribute('data-rank', rankKey);
+    levelIcon3d.setAttribute('data-sub-rank', rank.subRank);
+    levelIcon3d.setAttribute('data-rank-index', rank.rankIndex);
+    
+    if (rankSvg) {
+      updateRankSvg(rankSvg, rankKey, rank.subRank);
+    }
+  }
   
   const winningStreak = calculateWinningStreak(allTrades);
   const streakValueEl = document.getElementById('winningStreak');
@@ -1418,14 +1627,12 @@ if (levelIcon3d) {
 
 // ============== 纪律评分计算函数 ==============
 function calculateDisciplineScore(trades) {
-  // 只统计真实交易（Buy/Sell）
   const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
   
   if (buySellTrades.length === 0) {
     return { score: 0, details: { stopLossUsage: 0, consistency: 0, riskManagement: 0, tradeFrequency: 0 } };
   }
   
-  // 1. 止损使用率 (40分) - 是否设置了止损
   let stopLossUsage = 0;
   let tradesWithSL = 0;
   buySellTrades.forEach(trade => {
@@ -1436,7 +1643,6 @@ function calculateDisciplineScore(trades) {
   });
   stopLossUsage = (tradesWithSL / buySellTrades.length) * 40;
   
-  // 2. 交易一致性 (25分) - 每日交易次数是否稳定，避免过度交易
   let consistencyScore = 25;
   const dailyTradeCount = {};
   buySellTrades.forEach(trade => {
@@ -1450,16 +1656,14 @@ function calculateDisciplineScore(trades) {
     const avgTrades = dailyCounts.reduce((a, b) => a + b, 0) / dailyCounts.length;
     const variance = dailyCounts.reduce((acc, val) => acc + Math.pow(val - avgTrades, 2), 0) / dailyCounts.length;
     const stdDev = Math.sqrt(variance);
-    // 标准差越小，一致性越高
     const consistencyFactor = Math.max(0, Math.min(1, 1 - (stdDev / avgTrades)));
-    consistencyScore = 15 + (consistencyFactor * 10); // 15-25分
+    consistencyScore = 15 + (consistencyFactor * 10);
   }
   
-  // 3. 风险管理 (20分) - 单笔亏损是否控制在合理范围
   let riskScore = 20;
   let totalLosses = 0;
   let lossCount = 0;
-  let largeLosses = 0; // 亏损超过平均亏损2倍的交易
+  let largeLosses = 0;
   
   buySellTrades.forEach(trade => {
     const pnl = parseFloat(trade.pnl_amount || 0);
@@ -1484,7 +1688,6 @@ function calculateDisciplineScore(trades) {
     riskScore = Math.max(5, 20 - (largeLosses * 5));
   }
   
-  // 4. 交易频率 (15分) - 每日交易不超过5笔为佳
   let frequencyScore = 15;
   const tradingDays = Object.keys(dailyTradeCount).length;
   if (tradingDays > 0) {
@@ -1502,7 +1705,6 @@ function calculateDisciplineScore(trades) {
   
   const totalScore = Math.min(100, Math.max(0, Math.floor(stopLossUsage + consistencyScore + riskScore + frequencyScore)));
   
-  // 生成纪律详情文本
   let detailsText = '';
   if (stopLossUsage >= 35) {
     detailsText = '✅ 止损纪律优秀';
@@ -1545,12 +1747,10 @@ function calculateEmotionalState(trades, winningStreak = null) {
     };
   }
   
-  // 计算当前连胜/连败
   let currentWinStreak = 0;
   let currentLossStreak = 0;
   let lastResult = null;
   
-  // 按日期排序，从最近开始
   const sortedTrades = [...buySellTrades].sort((a, b) => {
     const dateA = new Date(a.created_at || a.date || 0);
     const dateB = new Date(b.created_at || b.date || 0);
@@ -1573,7 +1773,6 @@ function calculateEmotionalState(trades, winningStreak = null) {
     }
   }
   
-  // 计算连胜/连败影响系数
   let winStreakEffect = 0;
   let lossStreakEffect = 0;
   
@@ -1597,7 +1796,6 @@ function calculateEmotionalState(trades, winningStreak = null) {
     lossStreakEffect = -5;
   }
   
-  // 计算风险遵守度（基于止损设置）
   let tradesWithSL = 0;
   buySellTrades.forEach(trade => {
     const sl = parseFloat(trade.sl || 0);
@@ -1605,7 +1803,6 @@ function calculateEmotionalState(trades, winningStreak = null) {
   });
   const riskAdherence = buySellTrades.length > 0 ? (tradesWithSL / buySellTrades.length) * 100 : 100;
   
-  // 计算整体盈利表现对情绪的影响
   let totalPnl = 0;
   buySellTrades.forEach(trade => {
     totalPnl += parseFloat(trade.pnl_amount || 0);
@@ -1619,17 +1816,14 @@ function calculateEmotionalState(trades, winningStreak = null) {
   else if (totalPnl < -200) performanceEffect = -12;
   else if (totalPnl < -50) performanceEffect = -5;
   
-  // 计算最终情绪水平 (0-100)
   let emotionalLevel = 50 + winStreakEffect + lossStreakEffect + performanceEffect;
   
-  // 根据风险遵守度调整
   if (riskAdherence < 30) emotionalLevel -= 15;
   else if (riskAdherence < 60) emotionalLevel -= 5;
   else if (riskAdherence >= 80) emotionalLevel += 5;
   
   emotionalLevel = Math.min(95, Math.max(5, emotionalLevel));
   
-  // 判断情绪状态
   let state = 'Calm';
   let stateClass = 'calm';
   let message = '';
@@ -1667,7 +1861,6 @@ function calculateEmotionalState(trades, winningStreak = null) {
     color = '#a78bfa';
   }
   
-  // 添加连败警告
   if (currentLossStreak >= 3) {
     message = `⚠️ 连续${currentLossStreak}笔亏损，建议暂停复盘`;
   } else if (currentWinStreak >= 3) {
@@ -1697,14 +1890,11 @@ function initRadarChart(statsData, allTradesData) {
     try { radarChart.destroy(); } catch(e) {}
   }
   
-  // 获取交易数据
   const buySellTrades = allTradesData.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
   const totalTrades = buySellTrades.length;
   
-  // 1. Win Rate (胜率) - 0-100
   let winRateScore = statsData.winRate;
   
-  // 2. Profit Factor (盈利因子) - 盈利总额 / 亏损总额，映射到 0-100
   let profitFactorScore = 0;
   let totalWinning = 0;
   let totalLosing = 0;
@@ -1714,12 +1904,10 @@ function initRadarChart(statsData, allTradesData) {
     else if (pnl < 0) totalLosing += Math.abs(pnl);
   });
   const profitFactor = totalLosing > 0 ? totalWinning / totalLosing : (totalWinning > 0 ? 10 : 0);
-  // 盈利因子 1.0 = 50分, 2.0 = 80分, 3.0+ = 100分
   profitFactorScore = Math.min(100, Math.max(0, (profitFactor - 0.5) / 3.5 * 100));
   if (profitFactor >= 3) profitFactorScore = 100;
   if (profitFactor <= 0.5) profitFactorScore = 0;
   
-  // 3. Consistency (一致性) - 基于每日盈亏的稳定性
   let consistencyScore = 50;
   if (buySellTrades.length > 0) {
     const dailyPnL = {};
@@ -1739,7 +1927,6 @@ function initRadarChart(statsData, allTradesData) {
     }
   }
   
-  // 4. Max Drawdown (最大回撤) - 计算权益曲线最大回撤，映射到 0-100 (回撤越小分数越高)
   let maxDrawdownScore = 100;
   let balance = 0;
   let peak = 0;
@@ -1756,23 +1943,20 @@ function initRadarChart(statsData, allTradesData) {
     const drawdown = peak > 0 ? (peak - balance) / peak * 100 : 0;
     if (drawdown > maxDrawdown) maxDrawdown = drawdown;
   });
-  // 最大回撤 0% = 100分, 20% = 60分, 40% = 20分, 50%+ = 0分
   maxDrawdownScore = Math.max(0, Math.min(100, 100 - maxDrawdown * 2));
   
-  // 5. Recovery Factor (恢复因子) - 总盈利 / 最大回撤金额，映射到 0-100
   let recoveryFactorScore = 50;
   const maxDrawdownAmount = maxDrawdown / 100 * peak;
   const recoveryFactor = maxDrawdownAmount > 0 ? totalWinning / maxDrawdownAmount : (totalWinning > 0 ? 10 : 0);
-  // 恢复因子 1.0 = 50分, 2.0 = 75分, 3.0+ = 100分
   recoveryFactorScore = Math.min(100, Math.max(0, (recoveryFactor / 3) * 100));
   if (recoveryFactor >= 3) recoveryFactorScore = 100;
   
-  // 6. Avg Win/Loss (平均盈亏比) - 平均盈利 / 平均亏损的绝对值
   let avgWinLossScore = 50;
-  const avgWin = totalTrades > 0 ? totalWinning / buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0).length : 0;
-  const avgLoss = totalTrades > 0 ? totalLosing / buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0).length : 0;
+  const winTrades = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0);
+  const lossTrades = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0);
+  const avgWin = winTrades.length > 0 ? totalWinning / winTrades.length : 0;
+  const avgLoss = lossTrades.length > 0 ? totalLosing / lossTrades.length : 0;
   const winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? 5 : 0);
-  // 盈亏比 1.0 = 50分, 1.5 = 70分, 2.0 = 85分, 3.0+ = 100分
   avgWinLossScore = Math.min(100, Math.max(0, (winLossRatio / 3) * 100));
   if (winLossRatio >= 3) avgWinLossScore = 100;
   
@@ -1879,7 +2063,7 @@ async function fetchTrades() {
     addTimeSessionSelector();
     updateSessionStats();
     updateDisciplineScore(data);
-           updateEmotionalState(data);
+    updateEmotionalState(data);
   } catch (error) { console.error("获取交易数据异常:", error); }
 }
 
@@ -2286,6 +2470,7 @@ window.updateTradeSession = updateTradeSession;
 window.getTradeSession = getTradeSession;
 window.saveTradeNotes = saveTradeNotes;
 window.getTradeNotes = getTradeNotes;
+window.updateRankSvg = updateRankSvg;
 
 // ============== 纪律评分计算函数 ==============
 function updateDisciplineScore(trades) {
@@ -2295,7 +2480,6 @@ function updateDisciplineScore(trades) {
   
   if (!disciplineScoreEl) return;
   
-  // 只统计真实交易
   const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
   
   if (buySellTrades.length === 0) {
@@ -2305,7 +2489,6 @@ function updateDisciplineScore(trades) {
     return;
   }
   
-  // 1. 止损使用率 (50分)
   let tradesWithSL = 0;
   buySellTrades.forEach(trade => {
     const sl = parseFloat(trade.sl || 0);
@@ -2313,7 +2496,6 @@ function updateDisciplineScore(trades) {
   });
   const stopLossScore = (tradesWithSL / buySellTrades.length) * 50;
   
-  // 2. 交易频率 (30分) - 每日不超过5笔为佳
   const dailyCount = {};
   buySellTrades.forEach(trade => {
     const date = trade.date;
@@ -2329,7 +2511,6 @@ function updateDisciplineScore(trades) {
   else if (avgTradesPerDay <= 10) frequencyScore = 12;
   else frequencyScore = 5;
   
-  // 3. 大额亏损控制 (20分)
   let largeLossCount = 0;
   let totalLoss = 0;
   let lossCount = 0;
@@ -2354,15 +2535,12 @@ function updateDisciplineScore(trades) {
     riskScore = Math.max(5, 20 - (largeLossCount * 4));
   }
   
-  // 计算总分
   let totalScore = Math.floor(stopLossScore + frequencyScore + riskScore);
   totalScore = Math.min(100, Math.max(0, totalScore));
   
-  // 更新UI
   disciplineScoreEl.textContent = totalScore;
   if (disciplineProgressEl) disciplineProgressEl.style.width = `${totalScore}%`;
   
-    // 更新详情文字
   let detailsHtml = '';
   if (tradesWithSL === 0) {
     detailsHtml = '⚠️ No stop loss set, high risk';
@@ -2410,11 +2588,9 @@ function updateEmotionalState(trades) {
     return;
   }
   
-  // 计算连胜/连败
   let currentWinStreak = 0;
   let currentLossStreak = 0;
   
-  // 按时间倒序排列
   const sorted = [...buySellTrades].sort((a, b) => {
     const dateA = new Date(a.created_at || a.date || 0);
     const dateB = new Date(b.created_at || b.date || 0);
@@ -2438,7 +2614,6 @@ function updateEmotionalState(trades) {
     }
   }
   
-  // 计算影响系数
   let winEffect = 0;
   if (currentWinStreak >= 5) winEffect = 25;
   else if (currentWinStreak >= 3) winEffect = 15;
@@ -2451,7 +2626,6 @@ function updateEmotionalState(trades) {
   else if (currentLossStreak >= 2) lossEffect = -10;
   else if (currentLossStreak === 1) lossEffect = -5;
   
-  // 计算止损遵守度
   let tradesWithSL = 0;
   buySellTrades.forEach(t => {
     const sl = parseFloat(t.sl || 0);
@@ -2459,7 +2633,6 @@ function updateEmotionalState(trades) {
   });
   const riskAdherence = Math.round((tradesWithSL / buySellTrades.length) * 100);
   
-  // 计算总盈亏影响
   let totalPnl = 0;
   buySellTrades.forEach(t => {
     totalPnl += parseFloat(t.pnl_amount || 0);
@@ -2473,14 +2646,12 @@ function updateEmotionalState(trades) {
   else if (totalPnl < -200) performanceEffect = -12;
   else if (totalPnl < -50) performanceEffect = -5;
   
-  // 计算情绪水平
   let emotionLevel = 50 + winEffect + lossEffect + performanceEffect;
   if (riskAdherence < 30) emotionLevel -= 15;
   else if (riskAdherence < 60) emotionLevel -= 5;
   else if (riskAdherence >= 80) emotionLevel += 5;
   emotionLevel = Math.min(95, Math.max(5, emotionLevel));
   
-    // 判断情绪状态
   let state = 'Calm';
   let stateClass = 'calm';
   let message = '';
@@ -2507,14 +2678,12 @@ function updateEmotionalState(trades) {
     message = '🧘 Stay calm, stick to your trading plan';
   }
   
-  // 添加连胜/连败提示
   if (currentLossStreak >= 3) {
     message = `⚠️ ${currentLossStreak} consecutive loss(es), consider pausing to review`;
   } else if (currentWinStreak >= 3) {
     message = `🔥 ${currentWinStreak} consecutive win(s), stay cautious`;
   }
   
-  // 更新UI
   emotionStatusEl.textContent = state;
   emotionStatusEl.className = `emotion-status ${stateClass}`;
   
@@ -2550,50 +2719,6 @@ function updateEmotionalState(trades) {
     emotionMessageEl.innerHTML = message;
   }
 }
-
-// ============== 3D等级徽章 SVG 更新辅助函数 ==============
-function updateRankSvg(svgElement, rankKey) {
-  const svgs = {
-    apprentice: `<path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
-                 <circle cx="32" cy="32" r="6" fill="none" stroke="#ffd700" stroke-width="2"/>
-                 <path d="M32 26L35 32L32 38L29 32Z" fill="#ffd700" opacity="0.8"/>`,
-    
-    learner: `<path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
-              <rect x="26" y="28" width="12" height="8" rx="1" fill="#ffd700" opacity="0.6"/>
-              <path d="M26 32L30 36L34 32" stroke="#ffd700" stroke-width="1.5" fill="none"/>`,
-    
-    trader: `<path d="M32 10L16 22V44L32 54L48 44V22L32 10Z" fill="currentColor" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-             <path d="M16 22L6 18M48 22L58 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-             <path d="M32 28L36 34L32 40L28 34Z" fill="none" stroke="#fff" stroke-width="2"/>`,
-    
-    sniper: `<path d="M32 8L14 22V46L32 56L50 46V22L32 8Z" fill="currentColor" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-             <path d="M14 22L2 16M50 22L62 16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-             <path d="M14 26L4 24M50 26L60 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-             <circle cx="32" cy="34" r="8" fill="none" stroke="#fff" stroke-width="2.5"/>
-             <circle cx="32" cy="34" r="3" fill="#fff"/>`,
-    
-    elite: `<path d="M32 6L12 22V48L32 58L52 48V22L32 6Z" fill="currentColor" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-            <path d="M12 22L-2 14M52 22L66 14" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
-            <path d="M12 28L0 24M52 28L64 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            <path d="M14 34L4 32M50 34L60 32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M26 20L32 12L38 20L44 16L40 26L24 26L20 16L26 20Z" fill="none" stroke="#ffd700" stroke-width="2"/>`,
-    
-    wizard: `<defs><linearGradient id="wizardGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6b6b"/><stop offset="50%" stop-color="#ff9ff3"/><stop offset="100%" stop-color="#feca57"/></linearGradient></defs>
-             <path d="M32 4L10 22V50L32 60L54 50V22L32 4Z" fill="currentColor" stroke="url(#wizardGrad)" stroke-width="2"/>
-             <path d="M10 22L-8 10M54 22L72 10" stroke="url(#wizardGrad)" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
-             <path d="M10 28L-6 20M54 28L70 20" stroke="url(#wizardGrad)" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
-             <path d="M12 34L-4 28M52 34L68 28" stroke="url(#wizardGrad)" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
-             <circle cx="32" cy="34" r="10" fill="none" stroke="#ffeaa7" stroke-width="1.5" stroke-dasharray="4 4"/>
-             <circle cx="32" cy="34" r="5" fill="none" stroke="#ffeaa7" stroke-width="1.5"/>
-             <path d="M32 24L32 44M22 34L42 34" stroke="#ffeaa7" stroke-width="1" opacity="0.6"/>
-             <path d="M32 30L34 34L32 38L30 34Z" fill="#fff"/>`
-  };
-  
-  const svgContent = svgs[rankKey] || svgs.apprentice;
-  svgElement.innerHTML = svgContent;
-}
-
-window.updateRankSvg = updateRankSvg;
 
 // ---------------- Initial Load ----------------
 async function initApp() {

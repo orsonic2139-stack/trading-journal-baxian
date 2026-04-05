@@ -115,70 +115,272 @@
   <!-- 等级徽章卡片 - 移到第一位 -->
   <div class="rank-level-card" id="rankLevelCard">
     <div class="level-icon" id="levelIcon3d" data-rank="apprentice">
-      <div class="game-badge-3d">
-        <div class="badge-shadow"></div>
-        <div class="badge-3d">
-          <div class="badge-icon-3d">
-            <svg class="rank-svg-3d" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" id="rankSvg">
-              <path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
-              <circle cx="32" cy="32" r="6" fill="none" stroke="#ffd700" stroke-width="2"/>
-              <path d="M32 26L35 32L32 38L29 32Z" fill="#ffd700" opacity="0.8"/>
-            </svg>
-          </div>
-        </div>
+  <div class="game-badge-3d">
+    <div class="badge-shadow"></div>
+    <div class="badge-3d">
+      <div class="badge-icon-3d">
+        <svg class="rank-svg-3d" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" id="rankSvg">
+          <path d="M32 12L18 22V42L32 52L46 42V22L32 12Z" fill="currentColor" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+          <circle cx="32" cy="32" r="6" fill="none" stroke="#ffd700" stroke-width="2"/>
+          <path d="M32 26L35 32L32 38L29 32Z" fill="#ffd700" opacity="0.8"/>
+        </svg>
       </div>
     </div>
+  </div>
+</div>
     <div class="level-info">
   <div class="level-label">
     Current Level
     <span class="level-info-icon" id="levelInfoIcon">ⓘ</span>
     <div class="level-tooltip" id="levelTooltip">
-  <div class="tooltip-title">📊 Trading Ranks</div>
+  <div class="tooltip-title">✨ Trading Ranks ✨</div>
   <div class="tooltip-list">
+    
+    <!-- Rookie - 青铜新秀徽章 -->
+    <div class="tooltip-rank" data-rank="rookie">
+      <div class="tooltip-badge">
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="rookieBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#CD7F32"/>
+              <stop offset="30%" stop-color="#8B5A2B"/>
+              <stop offset="70%" stop-color="#654321"/>
+              <stop offset="100%" stop-color="#3E2723"/>
+            </linearGradient>
+            <linearGradient id="rookieEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#F0C674"/>
+              <stop offset="100%" stop-color="#8B5A2B"/>
+            </linearGradient>
+            <filter id="rookieGlow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- 主盾牌 -->
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#rookieBg)" stroke="url(#rookieEdge)" stroke-width="2.5"/>
+          <!-- 内层装饰边框 -->
+          <path d="M40 14 L62 25.5 L62 49 Q62 62 40 70 Q18 62 18 49 L18 25.5 Z" fill="none" stroke="#F0C674" stroke-width="1" opacity="0.5"/>
+          <!-- 顶部皇冠装饰 -->
+          <path d="M30 18 L35 10 L40 16 L45 10 L50 18" fill="none" stroke="#F0C674" stroke-width="2" stroke-linecap="round"/>
+          <!-- 中心图案 - 幼苗/新芽 -->
+          <path d="M40 34 Q34 30 32 36 Q36 38 40 44 Q44 38 48 36 Q46 30 40 34Z" fill="#F0C674" opacity="0.9"/>
+          <path d="M38 44 L40 52 L42 44" fill="none" stroke="#F0C674" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- 底部飘带 -->
+          <path d="M30 62 L40 58 L50 62" fill="none" stroke="#F0C674" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="rank-name-text">Rookie</span>
+      <span class="rank-score-range">0-14 pts</span>
+    </div>
+
+    <!-- Apprentice - 白银学徒徽章 -->
     <div class="tooltip-rank" data-rank="apprentice">
       <div class="tooltip-badge">
-        <div class="tooltip-badge-3d apprentice-tooltip"></div>
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="apprenticeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#E8E8E8"/>
+              <stop offset="30%" stop-color="#C0C0C0"/>
+              <stop offset="70%" stop-color="#A0A0A0"/>
+              <stop offset="100%" stop-color="#707070"/>
+            </linearGradient>
+            <linearGradient id="apprenticeEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFFFFF"/>
+              <stop offset="100%" stop-color="#A0A0A0"/>
+            </linearGradient>
+            <filter id="apprenticeGlow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#apprenticeBg)" stroke="url(#apprenticeEdge)" stroke-width="2.5"/>
+          <path d="M40 14 L62 25.5 L62 49 Q62 62 40 70 Q18 62 18 49 L18 25.5 Z" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.5"/>
+          <!-- 书本/学习符号 -->
+          <rect x="32" y="34" width="16" height="20" rx="2" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+          <line x1="36" y1="40" x2="44" y2="40" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="36" y1="44" x2="42" y2="44" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="40" y1="34" x2="40" y2="54" stroke="#FFFFFF" stroke-width="1" opacity="0.5"/>
+        </svg>
       </div>
       <span class="rank-name-text">Apprentice</span>
-      <span class="rank-score-range">0-20 pts</span>
+      <span class="rank-score-range">15-28 pts</span>
     </div>
-    <div class="tooltip-rank" data-rank="learner">
-      <div class="tooltip-badge">
-        <div class="tooltip-badge-3d learner-tooltip"></div>
-      </div>
-      <span class="rank-name-text">Learner</span>
-      <span class="rank-score-range">21-40 pts</span>
-    </div>
+
+    <!-- Trader - 黄金交易者徽章 -->
     <div class="tooltip-rank" data-rank="trader">
       <div class="tooltip-badge">
-        <div class="tooltip-badge-3d trader-tooltip"></div>
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="traderBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFD700"/>
+              <stop offset="30%" stop-color="#DAA520"/>
+              <stop offset="70%" stop-color="#B8860B"/>
+              <stop offset="100%" stop-color="#8B6914"/>
+            </linearGradient>
+            <linearGradient id="traderEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFF8DC"/>
+              <stop offset="100%" stop-color="#DAA520"/>
+            </linearGradient>
+            <filter id="traderGlow">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#traderBg)" stroke="url(#traderEdge)" stroke-width="2.5"/>
+          <path d="M40 14 L62 25.5 L62 49 Q62 62 40 70 Q18 62 18 49 L18 25.5 Z" fill="none" stroke="#FFF8DC" stroke-width="1" opacity="0.5"/>
+          <!-- 上升图表/利润符号 -->
+          <path d="M28 52 L36 42 L44 46 L52 36" fill="none" stroke="#FFF8DC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polygon points="52,36 48,36 52,32" fill="#FFF8DC"/>
+          <!-- 金币点装饰 -->
+          <circle cx="36" cy="56" r="2" fill="#FFF8DC" opacity="0.6"/>
+          <circle cx="44" cy="58" r="1.5" fill="#FFF8DC" opacity="0.4"/>
+        </svg>
       </div>
       <span class="rank-name-text">Trader</span>
-      <span class="rank-score-range">41-60 pts</span>
+      <span class="rank-score-range">29-42 pts</span>
     </div>
+
+    <!-- Sniper - 铂金狙击手徽章 -->
     <div class="tooltip-rank" data-rank="sniper">
       <div class="tooltip-badge">
-        <div class="tooltip-badge-3d sniper-tooltip"></div>
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sniperBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#E5E4E2"/>
+              <stop offset="30%" stop-color="#B8B8B8"/>
+              <stop offset="70%" stop-color="#8C8C8C"/>
+              <stop offset="100%" stop-color="#5C5C5C"/>
+            </linearGradient>
+            <linearGradient id="sniperEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFFFFF"/>
+              <stop offset="100%" stop-color="#B8B8B8"/>
+            </linearGradient>
+            <filter id="sniperGlow">
+              <feGaussianBlur stdDeviation="2.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#sniperBg)" stroke="url(#sniperEdge)" stroke-width="2.5"/>
+          <!-- 准星/靶心图案 -->
+          <circle cx="40" cy="40" r="12" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+          <circle cx="40" cy="40" r="4" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="40" cy="40" r="1.5" fill="#FFFFFF"/>
+          <line x1="40" y1="24" x2="40" y2="32" stroke="#FFFFFF" stroke-width="1.5"/>
+          <line x1="40" y1="48" x2="40" y2="56" stroke="#FFFFFF" stroke-width="1.5"/>
+          <line x1="24" y1="40" x2="32" y2="40" stroke="#FFFFFF" stroke-width="1.5"/>
+          <line x1="48" y1="40" x2="56" y2="40" stroke="#FFFFFF" stroke-width="1.5"/>
+          <!-- 钻石点缀 -->
+          <path d="M28 20 L32 16 L36 20 L32 24 Z" fill="#FFFFFF" opacity="0.5"/>
+          <path d="M44 20 L48 16 L52 20 L48 24 Z" fill="#FFFFFF" opacity="0.5"/>
+        </svg>
       </div>
       <span class="rank-name-text">Sniper</span>
-      <span class="rank-score-range">61-75 pts</span>
+      <span class="rank-score-range">43-56 pts</span>
     </div>
+
+    <!-- Elite Trader - 蓝宝石精英徽章 -->
     <div class="tooltip-rank" data-rank="elite">
       <div class="tooltip-badge">
-        <div class="tooltip-badge-3d elite-tooltip"></div>
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="eliteBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4169E1"/>
+              <stop offset="30%" stop-color="#2E4AB5"/>
+              <stop offset="70%" stop-color="#1E3A8A"/>
+              <stop offset="100%" stop-color="#0F2350"/>
+            </linearGradient>
+            <linearGradient id="eliteEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#87CEEB"/>
+              <stop offset="100%" stop-color="#2E4AB5"/>
+            </linearGradient>
+            <filter id="eliteGlow">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#eliteBg)" stroke="url(#eliteEdge)" stroke-width="2.5"/>
+          <!-- 钻石/宝石图案 -->
+          <path d="M40 28 L30 40 L40 52 L50 40 Z" fill="none" stroke="#87CEEB" stroke-width="2"/>
+          <path d="M40 32 L34 40 L40 48 L46 40 Z" fill="#87CEEB" opacity="0.4"/>
+          <path d="M40 36 L37 40 L40 44 L43 40 Z" fill="#87CEEB" opacity="0.8"/>
+          <!-- 左右翅膀装饰 -->
+          <path d="M24 36 Q18 32 20 40 Q18 48 24 44" fill="none" stroke="#87CEEB" stroke-width="1.5" opacity="0.6"/>
+          <path d="M56 36 Q62 32 60 40 Q62 48 56 44" fill="none" stroke="#87CEEB" stroke-width="1.5" opacity="0.6"/>
+        </svg>
       </div>
       <span class="rank-name-text">Elite Trader</span>
-      <span class="rank-score-range">76-88 pts</span>
+      <span class="rank-score-range">57-70 pts</span>
     </div>
+
+    <!-- Master - 紫水晶大师徽章 -->
+    <div class="tooltip-rank" data-rank="master">
+      <div class="tooltip-badge">
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="masterBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#9B59B6"/>
+              <stop offset="30%" stop-color="#7D3C98"/>
+              <stop offset="70%" stop-color="#5B2C6F"/>
+              <stop offset="100%" stop-color="#3B1E4A"/>
+            </linearGradient>
+            <linearGradient id="masterEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#D7BDE2"/>
+              <stop offset="100%" stop-color="#7D3C98"/>
+            </linearGradient>
+            <filter id="masterGlow">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#masterBg)" stroke="url(#masterEdge)" stroke-width="2.5"/>
+          <!-- 皇冠图案 -->
+          <path d="M30 42 L33 30 L37 36 L40 28 L43 36 L47 30 L50 42" fill="none" stroke="#D7BDE2" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M32 42 L35 48 L40 52 L45 48 L48 42" fill="none" stroke="#D7BDE2" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- 魔法星星 -->
+          <path d="M28 28 L29 31 L32 32 L29 33 L28 36 L27 33 L24 32 L27 31 Z" fill="#D7BDE2" opacity="0.6"/>
+          <path d="M52 28 L53 31 L56 32 L53 33 L52 36 L51 33 L48 32 L51 31 Z" fill="#D7BDE2" opacity="0.6"/>
+        </svg>
+      </div>
+      <span class="rank-name-text">Master</span>
+      <span class="rank-score-range">71-84 pts</span>
+    </div>
+
+    <!-- Market Wizard - 红宝石传奇徽章 -->
     <div class="tooltip-rank" data-rank="wizard">
       <div class="tooltip-badge">
-        <div class="tooltip-badge-3d wizard-tooltip"></div>
+        <svg class="tooltip-rank-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="wizardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FF4444"/>
+              <stop offset="30%" stop-color="#CC0000"/>
+              <stop offset="70%" stop-color="#990000"/>
+              <stop offset="100%" stop-color="#660000"/>
+            </linearGradient>
+            <linearGradient id="wizardEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FFB3B3"/>
+              <stop offset="100%" stop-color="#CC0000"/>
+            </linearGradient>
+            <filter id="wizardGlow">
+              <feGaussianBlur stdDeviation="3.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <path d="M40 8 L68 22 L68 50 Q68 66 40 76 Q12 66 12 50 L12 22 Z" fill="url(#wizardBg)" stroke="url(#wizardEdge)" stroke-width="2.5"/>
+          <!-- 魔法杖/闪电符号 -->
+          <path d="M40 28 L36 40 L42 44 L38 56" fill="none" stroke="#FFB3B3" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 星爆效果 -->
+          <path d="M26 34 L28 37 L31 38 L28 39 L26 42 L24 39 L21 38 L24 37 Z" fill="#FFB3B3" opacity="0.7"/>
+          <path d="M54 34 L56 37 L59 38 L56 39 L54 42 L52 39 L49 38 L52 37 Z" fill="#FFB3B3" opacity="0.7"/>
+          <path d="M40 22 L41 25 L44 26 L41 27 L40 30 L39 27 L36 26 L39 25 Z" fill="#FFB3B3" opacity="0.5"/>
+          <path d="M40 58 L41 61 L44 62 L41 63 L40 66 L39 63 L36 62 L39 61 Z" fill="#FFB3B3" opacity="0.5"/>
+        </svg>
       </div>
       <span class="rank-name-text">Market Wizard</span>
-      <span class="rank-score-range">89-100 pts</span>
+      <span class="rank-score-range">85-100 pts</span>
     </div>
+
   </div>
-  <div class="tooltip-footer">✨ 分数越高，等级越高 ✨</div>
+  <div class="tooltip-footer">⚡ 分数越高，等级越高 ⚡</div>
 </div>
   </div>
   <div class="rank-name" id="currentLevel">Apprentice</div>

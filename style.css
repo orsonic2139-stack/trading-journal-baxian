@@ -1,4 +1,4 @@
-/* style.css - 精简版 */
+/* style.css - 完整版 */
 
 /* CSS Variables for Theme Support */
 :root {
@@ -270,36 +270,169 @@ header h1 {
 .next-label { font-size: 0.55rem; color: #64748b; }
 .next-value { font-size: 0.8rem; font-weight: 600; color: #3eb489; }
 
-/* 3D Badge Styles */
-.level-icon { width: 120px; height: 120px; margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
-.game-badge-3d { position: relative; width: 110px; height: 110px; transform-style: preserve-3d; animation: badgeFloat 3s ease-in-out infinite; }
-@keyframes badgeFloat { 0%, 100% { transform: translateY(0px) rotateX(0deg); } 50% { transform: translateY(-5px) rotateX(4deg); } }
-.badge-3d { position: relative; width: 100%; height: 100%; border-radius: 24px; display: flex; align-items: center; justify-content: center; }
-.badge-3d::before { content: ''; position: absolute; inset: 0; border-radius: 24px; background: linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.15) 100%); z-index: 2; pointer-events: none; }
-.badge-shadow { position: absolute; bottom: -10px; left: 15%; width: 70%; height: 14px; background: rgba(0,0,0,0.5); border-radius: 50%; filter: blur(8px); z-index: -1; transition: all 0.3s ease; }
-.level-icon:hover .badge-shadow { bottom: -15px; width: 85%; left: 7.5%; filter: blur(12px); }
-.badge-icon-3d { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 3; }
-.rank-svg-3d { width: 55px; height: 55px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); transition: all 0.2s ease; }
-.level-icon:hover .rank-svg-3d { filter: drop-shadow(0 0 10px currentColor); transform: scale(1.05); }
-.dashboard-right .rank-level-card .game-badge-3d { width: 75px; height: 75px; }
-.dashboard-right .rank-level-card .rank-svg-3d { width: 38px; height: 38px; }
-.dashboard-right .rank-level-card .badge-3d { border-radius: 18px; }
+/* 3D 金属质感徽章样式 - 带星光粒子效果 */
+.level-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110%;
+  height: 110%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 5;
+  animation: glowPulse 3s ease-in-out infinite;
+}
 
-/* Rank Colors */
-.level-icon[data-rank="apprentice"] .badge-3d { background: radial-gradient(ellipse at 30% 35%, #cd7f32, #7a4515); }
-.level-icon[data-rank="learner"] .badge-3d { background: radial-gradient(ellipse at 30% 35%, #b87333, #8b5a2b); }
-.level-icon[data-rank="trader"] .badge-3d { background: radial-gradient(ellipse at 30% 35%, #e8e8e8, #a0a0a0); }
-.level-icon[data-rank="sniper"] .badge-3d { background: radial-gradient(ellipse at 30% 35%, #ffea00, #d4af37); }
-.level-icon[data-rank="elite"] .badge-3d { background: radial-gradient(ellipse at 30% 35%, #f5f5f5, #b8b8b8); }
-.level-icon[data-rank="wizard"] .badge-3d { background: radial-gradient(ellipse at 30% 35%, #ff6b6b, #c0392b); animation: wizardPulse 2s ease-in-out infinite; }
-@keyframes wizardPulse { 0%, 100% { box-shadow: 0 8px 35px rgba(255,107,107,0.5); } 50% { box-shadow: 0 8px 45px rgba(255,107,107,0.9); } }
-.level-icon[data-rank="apprentice"] .rank-svg-3d, .level-icon[data-rank="learner"] .rank-svg-3d { color: #ffd700; }
-.level-icon[data-rank="trader"] .rank-svg-3d { color: #ffffff; }
-.level-icon[data-rank="sniper"] .rank-svg-3d { color: #fff8dc; }
-.level-icon[data-rank="elite"] .rank-svg-3d { color: #ffd700; }
-.level-icon[data-rank="wizard"] .rank-svg-3d { color: #ffeaa7; }
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 0.4;
+    width: 100%;
+    height: 100%;
+  }
+  50% {
+    opacity: 0.8;
+    width: 115%;
+    height: 115%;
+  }
+}
 
-/* Tooltip Styles - 修复遮挡问题 */
+/* 星光粒子容器 */
+.star-dust {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  pointer-events: none;
+}
+
+.dust {
+  position: absolute;
+  background: radial-gradient(circle, currentColor, transparent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px currentColor, 0 0 20px rgba(255, 255, 255, 0.4);
+  animation: dustFloat 2.5s ease-in-out infinite;
+  color: inherit;
+  opacity: 0.9;
+}
+
+@keyframes dustFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  35% {
+    opacity: 1;
+    transform: translate(var(--tx, 10px), var(--ty, -15px)) scale(1.3);
+  }
+  65% {
+    opacity: 0.9;
+    transform: translate(var(--tx2, 30px), var(--ty2, -40px)) scale(1);
+  }
+  100% {
+    transform: translate(var(--tx2, 30px), var(--ty2, -40px)) scale(0.3);
+    opacity: 0;
+  }
+}
+
+.game-badge-3d {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  transform-style: preserve-3d;
+  animation: badgeFloat 3s ease-in-out infinite;
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0px) rotateX(0deg); }
+  50% { transform: translateY(-5px) rotateX(4deg); }
+}
+
+.badge-3d {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.badge-shadow {
+  position: absolute;
+  bottom: -10px;
+  left: 15%;
+  width: 70%;
+  height: 14px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  filter: blur(8px);
+  z-index: -1;
+  transition: all 0.3s ease;
+}
+
+.level-icon:hover .badge-shadow {
+  bottom: -15px;
+  width: 85%;
+  left: 7.5%;
+  filter: blur(12px);
+}
+
+.badge-icon-3d {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.rank-svg-3d {
+  position: relative;
+  z-index: 10;
+  width: 70px;
+  height: 70px;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+  transition: all 0.2s ease;
+}
+
+.level-icon:hover .rank-svg-3d {
+  filter: drop-shadow(0 0 12px currentColor);
+  transform: scale(1.08);
+}
+
+/* 各等级悬浮光晕效果 - 增强亮度 */
+.level-icon[data-rank="rookie"]:hover .rank-svg-3d { filter: drop-shadow(0 0 18px #F0C674) drop-shadow(0 0 8px rgba(240, 198, 116, 0.8)); }
+.level-icon[data-rank="apprentice"]:hover .rank-svg-3d { filter: drop-shadow(0 0 18px #E8E8E8) drop-shadow(0 0 8px rgba(232, 232, 232, 0.8)); }
+.level-icon[data-rank="trader"]:hover .rank-svg-3d { filter: drop-shadow(0 0 25px #FFD700) drop-shadow(0 0 12px rgba(255, 215, 0, 0.9)); }
+.level-icon[data-rank="sniper"]:hover .rank-svg-3d { filter: drop-shadow(0 0 25px #FFFFFF) drop-shadow(0 0 12px rgba(255, 255, 255, 0.9)); }
+.level-icon[data-rank="elite"]:hover .rank-svg-3d { filter: drop-shadow(0 0 30px #60A5FA) drop-shadow(0 0 15px rgba(96, 165, 250, 0.8)); }
+.level-icon[data-rank="master"]:hover .rank-svg-3d { filter: drop-shadow(0 0 35px #C084FC) drop-shadow(0 0 15px rgba(192, 132, 252, 0.8)); }
+.level-icon[data-rank="wizard"]:hover .rank-svg-3d { 
+  filter: drop-shadow(0 0 40px #FF6666) drop-shadow(0 0 20px rgba(255, 102, 102, 0.9));
+  animation: wizardPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes wizardPulse {
+  0%, 100% { transform: scale(1.08); }
+  50% { transform: scale(1.12); }
+}
+
+/* Tooltip Styles */
 .level-label {
   display: flex;
   align-items: center;
@@ -416,7 +549,6 @@ header h1 {
   margin-bottom: 0.75rem;
 }
 
-/* 纯图形徽章样式 - 无 emoji */
 .tooltip-rank {
   display: flex;
   align-items: center;
@@ -433,94 +565,31 @@ header h1 {
 }
 
 .tooltip-badge {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   position: relative;
   flex-shrink: 0;
 }
 
-.tooltip-badge-3d {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.tooltip-rank-svg {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.2s ease;
 }
 
-/* SVG 图形 - 完全无 emoji */
-.tooltip-badge-3d::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 16px;
-  height: 16px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+.tooltip-rank:hover .tooltip-rank-svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 6px currentColor);
 }
 
-/* Apprentice - 青铜 / 星星 */
-.tooltip-badge-3d.apprentice-tooltip {
-  background: radial-gradient(ellipse at 30% 35%, #cd7f32, #7a4515);
-  box-shadow: 0 2px 8px rgba(205, 127, 50, 0.3);
-}
-.tooltip-rank[data-rank="apprentice"] .tooltip-badge-3d::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpolygon points='12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9'/%3E%3C/svg%3E");
-}
-
-/* Learner - 青铜过渡 / 书本 */
-.tooltip-badge-3d.learner-tooltip {
-  background: radial-gradient(ellipse at 30% 35%, #b87333, #8b5a2b);
-  box-shadow: 0 2px 8px rgba(184, 115, 51, 0.3);
-}
-.tooltip-rank[data-rank="learner"] .tooltip-badge-3d::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M4 6L12 3L20 6L12 9L4 6Z'/%3E%3Cpath d='M4 10L12 13L20 10'/%3E%3C/svg%3E");
-}
-
-/* Trader - 白银 / 箭头上升 */
-.tooltip-badge-3d.trader-tooltip {
-  background: radial-gradient(ellipse at 30% 35%, #e8e8e8, #a0a0a0);
-  box-shadow: 0 2px 8px rgba(192,192,192,0.4);
-}
-.tooltip-rank[data-rank="trader"] .tooltip-badge-3d::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpath d='M3 12L7 8L11 12L18 5'/%3E%3C/svg%3E");
-}
-
-/* Sniper - 黄金 / 靶心 */
-.tooltip-badge-3d.sniper-tooltip {
-  background: radial-gradient(ellipse at 30% 35%, #ffea00, #d4af37);
-  box-shadow: 0 2px 8px rgba(255,215,0,0.5);
-}
-.tooltip-rank[data-rank="sniper"] .tooltip-badge-3d::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Ccircle cx='12' cy='12' r='3' fill='white'/%3E%3C/svg%3E");
-}
-
-/* Elite Trader - 铂金 / 皇冠 */
-.tooltip-badge-3d.elite-tooltip {
-  background: radial-gradient(ellipse at 30% 35%, #f5f5f5, #b8b8b8);
-  box-shadow: 0 2px 8px rgba(229,228,226,0.6);
-}
-.tooltip-rank[data-rank="elite"] .tooltip-badge-3d::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2L15 9H22L16 14L18 21L12 17L6 21L8 14L2 9H9L12 2Z'/%3E%3C/svg%3E");
-}
-
-/* Market Wizard - 传奇 / 魔法阵 + 星星 */
-.tooltip-badge-3d.wizard-tooltip {
-  background: radial-gradient(ellipse at 30% 35%, #ff6b6b, #c0392b);
-  box-shadow: 0 2px 8px rgba(255,107,107,0.5);
-  animation: tooltipWizardPulse 1.5s ease-in-out infinite;
-}
-@keyframes tooltipWizardPulse {
-  0%, 100% { box-shadow: 0 2px 8px rgba(255,107,107,0.5); }
-  50% { box-shadow: 0 2px 12px rgba(255,107,107,0.9); }
-}
-.tooltip-rank[data-rank="wizard"] .tooltip-badge-3d::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='1.5'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3Ccircle cx='12' cy='12' r='3' fill='white'/%3E%3Cpath d='M12 4L12 8M12 16L12 20M4 12L8 12M16 12L20 12'/%3E%3C/svg%3E");
-}
+.tooltip-rank[data-rank="rookie"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 6px #8B7355); }
+.tooltip-rank[data-rank="apprentice"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 6px #cd7f32); }
+.tooltip-rank[data-rank="trader"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 6px #c0c0c0); }
+.tooltip-rank[data-rank="sniper"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 8px #FFD700); }
+.tooltip-rank[data-rank="elite"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 8px #e8e8e8); }
+.tooltip-rank[data-rank="master"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 10px #a855f7); }
+.tooltip-rank[data-rank="wizard"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 12px #ef4444); }
 
 .rank-name-text {
   flex: 1;
@@ -535,53 +604,11 @@ header h1 {
 }
 
 .tooltip-footer {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   text-align: center;
-  padding-top: 0.6rem;
-  margin-top: 0.6rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
   color: #94a3b8;
-}
-
-/* 亮色主题适配 */
-.light-theme .level-tooltip {
-  background: linear-gradient(145deg, #ffffff, #f8fafc);
-  border-color: rgba(59, 130, 246, 0.2);
-  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
-}
-
-.light-theme .level-tooltip::after {
-  border-color: transparent transparent #ffffff transparent;
-}
-
-.light-theme .rank-name-text {
-  color: #1e293b;
-}
-
-.light-theme .tooltip-rank:hover {
-  background: rgba(59, 130, 246, 0.08);
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .level-tooltip {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    width: 90%;
-    max-width: 320px;
-    margin: 0 !important;
-  }
-  
-  .level-tooltip::before,
-  .level-tooltip::after {
-    display: none;
-  }
-  
-  .level-label:hover .level-tooltip {
-    transform: translate(-50%, -50%) !important;
-  }
 }
 
 /* Streak Card */
@@ -732,9 +759,7 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
 .light-theme .level-tooltip::after { border-color: transparent transparent #ffffff transparent; }
 .light-theme .rank-name-text { color: #1e293b; }
 
-/* ============== Operation History 表格样式修复 ============== */
-
-/* 表格整体样式 */
+/* Operation History 表格样式 */
 #tradeSection table {
   width: 100%;
   border-collapse: collapse;
@@ -765,7 +790,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   transition: all 0.3s;
 }
 
-/* 日期分组表头 */
 .date-group-header {
   background: linear-gradient(90deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8)) !important;
   border-top: 2px solid rgba(59, 130, 246, 0.3);
@@ -801,7 +825,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   font-size: 0.85rem;
 }
 
-/* 交易详情行 */
 .trade-detail-row {
   background: rgba(15, 23, 42, 0.4) !important;
   border-left: 3px solid rgba(59, 130, 246, 0.2);
@@ -835,7 +858,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   background: rgba(59, 130, 246, 0.05);
 }
 
-/* 交易统计徽章 */
 .trade-stats-badge {
   display: inline-flex;
   align-items: center;
@@ -879,7 +901,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   gap: 1px;
 }
 
-/* Quest 状态徽章 */
 .quest-status-badge {
   display: inline-flex;
   align-items: center;
@@ -927,7 +948,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
 }
 .quest-status-badge.patience .quest-value { color: #fbbf24; }
 
-/* 会话文本标签 */
 .session-text {
   display: inline-block;
   padding: 4px 12px;
@@ -939,7 +959,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
-/* 买入/卖出标签 */
 .buy, .sell {
   display: inline-block;
   padding: 0.2rem 0.6rem;
@@ -958,17 +977,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   box-shadow: 0 0 10px rgba(255, 77, 77, 0.3);
 }
 
-/* 盈亏正负 */
-.pnl-positive {
-  color: #0ee7ff !important;
-  font-weight: 600;
-}
-.pnl-negative {
-  color: #ef4444 !important;
-  font-weight: 600;
-}
-
-/* 操作按钮 */
 .action-buttons-cell {
   white-space: nowrap;
   text-align: center;
@@ -1020,7 +1028,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   transform: scale(1.05);
 }
 
-/* 风险回报比值 */
 .rr-value {
   display: inline-block !important;
   min-width: 70px !important;
@@ -1041,7 +1048,6 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
   -webkit-text-fill-color: #94a3b8 !important;
 }
 
-/* 响应式调整 */
 @media (max-width: 768px) {
   .trade-detail-row td:first-child {
     padding-left: 30px !important;
