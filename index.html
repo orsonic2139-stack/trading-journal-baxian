@@ -391,31 +391,34 @@
     </div>
   </div>
 
-  <!-- Overall Score 卡片 - 移到第二位 -->
-  <div class="rank-score-card">
-    <div class="score-header">
-      <span class="score-icon">🏆</span>
-      <span class="score-label">Overall Score</span>
-    </div>
-    <div class="score-value" id="overallScore">0</div>
-    <div class="score-max">/ 100</div>
+  <!-- Overall Score 卡片 -->
+<div class="rank-score-card ranking-card">
+  <div class="score-header">
+    <span class="score-icon">🏆</span>
+    <span class="score-label">Ranking Score</span>
+  </div>
+  
+  <!-- 当前徽章 + 进度条 + 下个徽章 -->
+  <div class="ranking-progress-container">
+    <div class="current-badge" id="currentBadge"></div>
     <div class="progress-bar-wrapper">
       <div class="progress-bar-bg">
         <div class="progress-bar-fill score-progress" id="scoreProgress" style="width: 0%;"></div>
       </div>
     </div>
-    <div class="score-status" id="scoreStatus">--</div>
+    <div class="next-badge" id="nextBadge"></div>
   </div>
-
-  <!-- Winning Streak 卡片 -->
-  <div class="rank-streak-card">
-    <div class="streak-icon">🔥</div>
-    <div class="streak-info">
-      <div class="streak-label">Winning Streak</div>
-      <div class="streak-value" id="winningStreak">0</div>
-      <div class="streak-unit">days</div>
-    </div>
+  
+  <!-- 分数显示 -->
+  <div class="score-display">
+    <span class="score-current" id="overallScore">0</span>
+    <span class="score-separator">/</span>
+    <span class="score-next" id="nextScoreTarget">1000</span>
+    <span class="score-unit">pts</span>
   </div>
+  
+  <div class="score-status" id="scoreStatus">📊 添加交易开始积累分数</div>
+</div>
 
   <!-- Discipline Score 卡片 -->
   <div class="rank-discipline-card">
@@ -676,12 +679,11 @@
             </div>
             
             <div class="row3">
-              <textarea id="editNotes" placeholder="Notes" style="height: 100px;"></textarea>
-              <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                <button type="submit" class="balance-btn">Save Changes</button>
-                <button type="button" id="deleteTradeBtn" class="balance-btn" style="background: #ff4d4d;">Delete Trade</button>
-              </div>
-            </div>
+  <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+    <button type="submit" class="balance-btn">Save Changes</button>
+    <button type="button" id="deleteTradeBtn" class="balance-btn" style="background: #ff4d4d;">Delete Trade</button>
+  </div>
+</div>
           </form>
         </div>
       </section>

@@ -260,8 +260,19 @@ header h1 {
 .rank-score-card .progress-bar-bg, .discipline-progress { background: rgba(255, 255, 255, 0.08); border-radius: 10px; overflow: hidden; }
 .rank-score-card .progress-bar-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #3eb489, #3b82f6); width: 0%; transition: width 0.6s ease; }
 
-/* Level Card with 3D Badge */
-.rank-level-card { display: flex; align-items: center; justify-content: space-between; background: transparent !important; border: none !important; box-shadow: none !important; padding: 0.5rem !important; }
+.rank-level-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 100px;
+}
+
 .rank-level-card .level-icon { background: transparent !important; border: none !important; width: 100px; height: 100px; margin: 0; padding: 0; }
 .rank-level-card .level-info { margin-left: 0; flex: 1; }
 .rank-level-card .level-label { font-size: 0.7rem; margin-bottom: 4px; }
@@ -299,16 +310,17 @@ header h1 {
   }
 }
 
-/* 星光粒子容器 */
+/* 星光粒子容器 - 限制在徽章周围 */
 .star-dust {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  transform: translate(-50%, -50%);
   z-index: 15;
   pointer-events: none;
+  overflow: hidden;
+  border-radius: 18px;
 }
 
 .dust {
@@ -442,27 +454,25 @@ header h1 {
   overflow: visible !important;
 }
 
-.level-info-icon {
+.level-icon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  background: rgba(59, 130, 246, 0.2);
-  border-radius: 50%;
-  font-size: 12px;
-  font-weight: 600;
-  color: #60a5fa;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  z-index: 100;
+  width: 100px;
+  height: 100px;
+  overflow: visible !important;
 }
 
-.level-info-icon:hover {
-  background: #3b82f6;
-  color: white;
-  transform: scale(1.1);
+.level-icon .star-dust {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140%;
+  height: 140%;
+  pointer-events: none;
+  z-index: 15;
 }
 
 .level-tooltip {
@@ -549,6 +559,7 @@ header h1 {
   margin-bottom: 0.75rem;
 }
 
+/* 更新 tooltip 中的等级显示 */
 .tooltip-rank {
   display: flex;
   align-items: center;
@@ -559,56 +570,19 @@ header h1 {
   transition: all 0.2s ease;
 }
 
-.tooltip-rank:hover {
-  background: rgba(59, 130, 246, 0.1);
-  transform: translateX(4px);
-}
-
-.tooltip-badge {
-  width: 36px;
-  height: 36px;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.tooltip-rank-svg {
-  width: 36px;
-  height: 36px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transition: all 0.2s ease;
-}
-
-.tooltip-rank:hover .tooltip-rank-svg {
-  transform: scale(1.1);
-  filter: drop-shadow(0 0 6px currentColor);
-}
-
-.tooltip-rank[data-rank="rookie"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 6px #8B7355); }
-.tooltip-rank[data-rank="apprentice"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 6px #cd7f32); }
-.tooltip-rank[data-rank="trader"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 6px #c0c0c0); }
-.tooltip-rank[data-rank="sniper"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 8px #FFD700); }
-.tooltip-rank[data-rank="elite"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 8px #e8e8e8); }
-.tooltip-rank[data-rank="master"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 10px #a855f7); }
-.tooltip-rank[data-rank="wizard"]:hover .tooltip-rank-svg { filter: drop-shadow(0 0 12px #ef4444); }
-
-.rank-name-text {
-  flex: 1;
-  color: #e2e8f0;
-  font-weight: 500;
-}
+.tooltip-rank[data-rank="bronze"] .rank-name-text { color: #CD7F32; }
+.tooltip-rank[data-rank="silver"] .rank-name-text { color: #C0C0C0; }
+.tooltip-rank[data-rank="gold"] .rank-name-text { color: #FFD700; }
+.tooltip-rank[data-rank="platinum"] .rank-name-text { color: #E5E4E2; }
+.tooltip-rank[data-rank="diamond"] .rank-name-text { color: #4169E1; }
+.tooltip-rank[data-rank="master"] .rank-name-text { color: #9B59B6; }
+.tooltip-rank[data-rank="grandmaster"] .rank-name-text { color: #FF6666; }
+.tooltip-rank[data-rank="legend"] .rank-name-text { color: #FFD700; text-shadow: 0 0 5px rgba(255,215,0,0.5); }
 
 .rank-score-range {
   font-size: 0.7rem;
   color: #64748b;
   font-family: monospace;
-}
-
-.tooltip-footer {
-  font-size: 0.7rem;
-  text-align: center;
-  padding-top: 0.5rem;
-  border-top: 1px solid rgba(59, 130, 246, 0.15);
-  color: #94a3b8;
 }
 
 /* Streak Card */
@@ -1072,4 +1046,290 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     font-size: 0.65rem;
     padding: 2px 8px;
   }
+}
+
+/* Ranking Card 新样式 */
+.ranking-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1.2rem;
+}
+
+.ranking-badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 1rem 0 1.5rem 0;
+  gap: 0.5rem;
+}
+
+.current-badge, .next-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.ranking-arrow {
+  font-size: 1.5rem;
+  color: #3b82f6;
+  opacity: 0.7;
+}
+
+.mini-badge {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-badge svg {
+  width: 45px;
+  height: 45px;
+}
+
+.badge-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.score-display {
+  text-align: center;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.score-current {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.score-separator {
+  font-size: 1.5rem;
+  color: #64748b;
+  margin: 0 0.2rem;
+}
+
+.score-next {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.score-unit {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-left: 0.2rem;
+}
+
+.score-status {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #3eb489;
+  margin-top: 0.5rem;
+}
+
+/* Ranking Card 样式 */
+.ranking-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1.2rem;
+}
+
+.ranking-levels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin: 0.8rem 0 1rem 0;
+}
+
+.current-rank-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3eb489;
+  background: rgba(62, 180, 137, 0.15);
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+}
+
+.to-next {
+  font-size: 1rem;
+  color: #3b82f6;
+  opacity: 0.7;
+}
+
+.next-rank-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.1);
+  padding: 0.2rem 0.8rem;
+  border-radius: 20px;
+}
+
+.score-display {
+  text-align: center;
+  margin: 0.8rem 0 0.5rem 0;
+}
+
+.score-current {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.score-separator {
+  font-size: 1.3rem;
+  color: #64748b;
+  margin: 0 0.2rem;
+}
+
+.score-next {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.score-unit {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-left: 0.2rem;
+}
+
+.score-status {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #3eb489;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+/* 进度条样式确保可见 */
+.progress-bar-wrapper {
+  margin: 0.5rem 0;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6);
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+/* Ranking Score 卡片样式 - 徽章+进度条布局 */
+.ranking-card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 18px;
+  padding: 1.2rem;
+}
+
+.ranking-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+
+.current-badge, .next-badge {
+  width: 55px;
+  height: 55px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.current-badge svg, .next-badge svg {
+  width: 50px;
+  height: 50px;
+}
+
+.ranking-progress-container .progress-bar-wrapper {
+  flex: 1;
+  margin: 0;
+}
+
+.ranking-progress-container .progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ranking-progress-container .progress-bar-fill {
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #3eb489, #3b82f6);
+  width: 0%;
+  transition: width 0.6s ease;
+}
+
+.score-display {
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.score-current {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3eb489, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.score-separator {
+  font-size: 1.3rem;
+  color: #64748b;
+  margin: 0 0.2rem;
+}
+
+.score-next {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.score-unit {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-left: 0.2rem;
+}
+
+.score-status {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #3eb489;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+/* 添加到 style.css 末尾，优化粒子渲染性能 */
+.star-dust {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.star-dust div {
+  will-change: left, top, width, height, opacity, box-shadow;
+  transform: translateZ(0);
 }

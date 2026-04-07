@@ -1,4 +1,4 @@
-// script.js - 完整修复版
+// script.js - 完整版（粒子围绕整个徽章 + Ranking Score 徽章进度条布局）
 
 // ---------------- Hamburger Menu ----------------
 const sidebar = document.getElementById("sidebar");
@@ -289,56 +289,179 @@ function updateAllImageButtons() {
   });
 }
 
+// ============== 图片查看模态框（支持放大 + notes编辑） ==============
 async function viewTradeImage(tradeId) {
   const imageData = tradeImages.get(tradeId);
   const existingNotes = await getTradeNotes(tradeId);
   
-  if (imageData) {
-    const modal = document.createElement('div');
-    modal.className = 'image-view-modal';
-    modal.innerHTML = `
-      <div class="image-view-modal-content">
-        <div class="image-view-header">
-          <h3>📷 Chart Image</h3>
-          <button class="image-view-close">&times;</button>
+  const modal = document.createElement('div');
+  modal.className = 'image-view-modal';
+  modal.innerHTML = `
+    <div class="image-view-modal-content">
+      <div class="image-view-header">
+        <h3>📷 Chart Image & Notes</h3>
+        <button class="image-view-close">&times;</button>
+      </div>
+      <div class="image-view-body">
+        <div class="image-container-wrapper">
+          <div class="image-main-container" id="imageMainContainer">
+            ${imageData ? `<img src="${imageData}" alt="Trade chart" id="viewableImage" class="viewable-image">` : '<div class="no-image-placeholder">📊 No chart image uploaded<br><span>Click "Change Image" to upload</span></div>'}
+          </div>
+          ${imageData ? `<button class="zoom-btn" id="zoomInBtn" title="Zoom In">🔍+</button>
+          <button class="zoom-btn zoom-out" id="zoomOutBtn" title="Zoom Out">🔍-</button>
+          <button class="zoom-btn reset-zoom" id="resetZoomBtn" title="Reset">⟳</button>` : ''}
         </div>
-        <div class="image-view-body">
-          <img src="${imageData}" alt="Trade chart">
-          ${existingNotes ? `<div class="image-view-notes"><strong>📝 Notes:</strong><br>${existingNotes.replace(/\n/g, '<br>')}</div>` : ''}
-        </div>
-        <div class="image-view-footer">
-          <button class="image-view-change">Change Image</button>
-          <button class="image-view-delete">Delete Image</button>
+        <div class="image-view-notes-section">
+          <div class="notes-section-header">
+            <strong>📝 Trading Notes</strong>
+            <button class="edit-notes-btn" id="editNotesBtn">✏️ Edit</button>
+          </div>
+          <div class="notes-display" id="notesDisplay">${existingNotes ? existingNotes.replace(/\n/g, '<br>') : '<em>No notes yet. Click Edit to add notes...</em>'}</div>
+          <div class="notes-editor" id="notesEditor" style="display: none;">
+            <textarea id="notesTextarea" class="notes-edit-textarea" placeholder="Write your trading notes here...">${existingNotes || ''}</textarea>
+            <div class="notes-editor-buttons">
+              <button class="notes-save-btn" id="saveNotesBtn">💾 Save Notes</button>
+              <button class="notes-cancel-btn" id="cancelNotesBtn">Cancel</button>
+            </div>
+          </div>
         </div>
       </div>
-    `;
+      <div class="image-view-footer">
+        <button class="image-view-change">📷 Change Image</button>
+        ${imageData ? `<button class="image-view-delete">🗑️ Delete Image</button>` : ''}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  addImageViewStyles();
+  
+  setTimeout(() => modal.classList.add('show'), 10);
+  
+  let currentZoom = 1;
+  const zoomStep = 0.2;
+  const maxZoom = 3;
+  const minZoom = 0.5;
+  
+  function closeModal() {
+    modal.classList.remove('show');
+    setTimeout(() => modal.remove(), 300);
+  }
+  
+  if (imageData) {
+    const img = document.getElementById('viewableImage');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const resetZoomBtn = document.getElementById('resetZoomBtn');
     
-    document.body.appendChild(modal);
-    addImageViewStyles();
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener('click', () => {
+        if (currentZoom < maxZoom) {
+          currentZoom += zoomStep;
+          img.style.transform = `scale(${currentZoom})`;
+          img.style.cursor = 'zoom-out';
+        }
+      });
+    }
     
-    setTimeout(() => modal.classList.add('show'), 10);
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener('click', () => {
+        if (currentZoom > minZoom) {
+          currentZoom -= zoomStep;
+          img.style.transform = `scale(${currentZoom})`;
+          img.style.cursor = currentZoom > 1 ? 'zoom-out' : 'zoom-in';
+        }
+      });
+    }
     
-    const closeModal = () => {
-      modal.classList.remove('show');
-      setTimeout(() => modal.remove(), 300);
-    };
+    if (resetZoomBtn) {
+      resetZoomBtn.addEventListener('click', () => {
+        currentZoom = 1;
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+      });
+    }
     
-    modal.querySelector('.image-view-close').addEventListener('click', closeModal);
-    modal.querySelector('.image-view-change').addEventListener('click', () => {
+    img.addEventListener('dblclick', () => {
+      if (currentZoom === 1) {
+        currentZoom = 2;
+        img.style.transform = 'scale(2)';
+      } else {
+        currentZoom = 1;
+        img.style.transform = 'scale(1)';
+      }
+    });
+    
+    img.addEventListener('click', () => {
+      if (currentZoom < maxZoom) {
+        currentZoom += zoomStep;
+        img.style.transform = `scale(${currentZoom})`;
+      } else {
+        currentZoom = 1;
+        img.style.transform = 'scale(1)';
+      }
+    });
+  }
+  
+  const notesDisplay = document.getElementById('notesDisplay');
+  const notesEditor = document.getElementById('notesEditor');
+  const editNotesBtn = document.getElementById('editNotesBtn');
+  const saveNotesBtn = document.getElementById('saveNotesBtn');
+  const cancelNotesBtn = document.getElementById('cancelNotesBtn');
+  const notesTextarea = document.getElementById('notesTextarea');
+  
+  if (editNotesBtn) {
+    editNotesBtn.addEventListener('click', () => {
+      notesDisplay.style.display = 'none';
+      notesEditor.style.display = 'block';
+      if (notesTextarea) notesTextarea.focus();
+    });
+  }
+  
+  if (cancelNotesBtn) {
+    cancelNotesBtn.addEventListener('click', () => {
+      notesEditor.style.display = 'none';
+      notesDisplay.style.display = 'block';
+      if (notesTextarea) notesTextarea.value = existingNotes || '';
+    });
+  }
+  
+  if (saveNotesBtn) {
+    saveNotesBtn.addEventListener('click', async () => {
+      const newNotes = notesTextarea ? notesTextarea.value : '';
+      await saveTradeNotes(tradeId, newNotes);
+      
+      notesDisplay.innerHTML = newNotes ? newNotes.replace(/\n/g, '<br>') : '<em>No notes yet. Click Edit to add notes...</em>';
+      notesEditor.style.display = 'none';
+      notesDisplay.style.display = 'block';
+      
+      showNotification('Notes saved successfully!', 'success');
+    });
+  }
+  
+  const closeBtn = modal.querySelector('.image-view-close');
+  const changeBtn = modal.querySelector('.image-view-change');
+  const deleteBtn = modal.querySelector('.image-view-delete');
+  
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  
+  if (changeBtn) {
+    changeBtn.addEventListener('click', () => {
       closeModal();
       openImageUploadModal(tradeId, existingNotes);
     });
-    modal.querySelector('.image-view-delete').addEventListener('click', () => {
+  }
+  
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
       closeModal();
       removeTradeImage(tradeId);
     });
-    
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal();
-    });
-  } else {
-    openImageUploadModal(tradeId, existingNotes);
   }
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
 }
 
 function loadSavedImages() {
@@ -564,9 +687,13 @@ function addImageViewStyles() {
       background: linear-gradient(145deg, #0f172a, #1e293b);
       border-radius: 20px;
       width: 90%;
-      max-width: 700px;
+      max-width: 800px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
       border: 1px solid rgba(59, 130, 246, 0.3);
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
     }
     .image-view-header {
       display: flex;
@@ -574,6 +701,7 @@ function addImageViewStyles() {
       align-items: center;
       padding: 1rem 1.5rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
     }
     .image-view-header h3 { color: #3b82f6; margin: 0; }
     .image-view-close {
@@ -585,35 +713,172 @@ function addImageViewStyles() {
       transition: color 0.2s;
     }
     .image-view-close:hover { color: #ef4444; }
-    .image-view-body { padding: 1.5rem; text-align: center; }
-    .image-view-body img {
-      max-width: 100%;
-      max-height: 400px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    .image-view-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
     }
-    .image-view-notes {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      background: rgba(0, 0, 0, 0.2);
+    .image-container-wrapper {
+      position: relative;
+      background: rgba(0, 0, 0, 0.3);
       border-radius: 12px;
-      text-align: left;
-      color: #94a3b8;
-      font-size: 0.85rem;
-      line-height: 1.5;
+      padding: 1rem;
+      text-align: center;
+      min-height: 300px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .image-main-container {
+      max-width: 100%;
+      max-height: 350px;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .viewable-image {
+      max-width: 100%;
+      max-height: 350px;
+      object-fit: contain;
+      border-radius: 12px;
+      transition: transform 0.2s ease;
+      cursor: zoom-in;
+    }
+    .no-image-placeholder {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+    .no-image-placeholder span {
+      font-size: 0.75rem;
+      display: block;
+      margin-top: 0.5rem;
+    }
+    .zoom-btn {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+      font-size: 1rem;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .zoom-btn.zoom-out { bottom: 5rem; }
+    .zoom-btn.reset-zoom { bottom: 9rem; }
+    .zoom-btn:hover {
+      background: rgba(59, 130, 246, 0.3);
+      transform: scale(1.05);
+    }
+    .image-view-notes-section {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 14px;
+      padding: 1rem;
       border: 1px solid rgba(59, 130, 246, 0.15);
     }
-    .image-view-notes strong {
-      color: #3b82f6;
-      display: block;
-      margin-bottom: 0.5rem;
+    .notes-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(59, 130, 246, 0.2);
     }
+    .notes-section-header strong {
+      color: #3b82f6;
+      font-size: 0.85rem;
+    }
+    .edit-notes-btn {
+      background: rgba(62, 180, 137, 0.2);
+      border: 1px solid rgba(62, 180, 137, 0.3);
+      color: #3eb489;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .edit-notes-btn:hover {
+      background: rgba(62, 180, 137, 0.4);
+      transform: scale(1.02);
+    }
+    .notes-display {
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      padding: 0.5rem;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .notes-display em { color: #64748b; }
+    .notes-editor { padding: 0.5rem 0; }
+    .notes-edit-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.8rem;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      resize: vertical;
+    }
+    .notes-edit-textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    .notes-editor-buttons {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+      justify-content: flex-end;
+    }
+    .notes-save-btn, .notes-cancel-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .notes-save-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      color: white;
+    }
+    .notes-save-btn:hover { transform: translateY(-2px); }
+    .notes-cancel-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #94a3b8;
+    }
+    .notes-cancel-btn:hover { background: rgba(255, 255, 255, 0.15); }
     .image-view-footer {
       display: flex;
       justify-content: center;
       gap: 1rem;
       padding: 1rem 1.5rem;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
     }
     .image-view-change, .image-view-delete {
       padding: 0.6rem 1.5rem;
@@ -637,8 +902,178 @@ function addImageViewStyles() {
       color: #ef4444;
     }
     .image-view-delete:hover { background: rgba(239, 68, 68, 0.3); }
+    .image-view-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .image-view-body::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 3px;
+    }
+    .image-view-body::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3eb489, #3b82f6);
+      border-radius: 3px;
+    }
   `;
   document.head.appendChild(style);
+}
+
+// ============== 鼠标悬停预览样式 ==============
+function addHoverPreviewStyles() {
+  if (document.getElementById('hover-preview-styles')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'hover-preview-styles';
+  style.textContent = `
+    .image-hover-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .image-hover-preview {
+      position: fixed;
+      z-index: 10050;
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      min-width: 280px;
+      max-width: 350px;
+      pointer-events: none;
+      animation: fadeInScale 0.2s ease;
+    }
+    
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .hover-preview-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .hover-image-container {
+      text-align: center;
+      max-height: 180px;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+    }
+    
+    .hover-image {
+      max-width: 100%;
+      max-height: 160px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    
+    .hover-no-image {
+      padding: 30px;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+    
+    .hover-notes-container {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 8px 12px;
+      border-left: 3px solid #3b82f6;
+    }
+    
+    .hover-notes-container strong {
+      color: #3b82f6;
+      font-size: 0.7rem;
+      display: block;
+      margin-bottom: 6px;
+    }
+    
+    .hover-notes-text {
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      max-height: 100px;
+      overflow-y: auto;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    
+    .image-hover-preview::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 20px;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(145deg, #1e293b, #0f172a);
+      transform: rotate(45deg);
+      border-left: 1px solid rgba(59, 130, 246, 0.3);
+      border-top: 1px solid rgba(59, 130, 246, 0.3);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// ============== 鼠标悬停预览事件 ==============
+function initHoverPreviews() {
+  document.addEventListener('mouseover', function(e) {
+    const imageBtn = e.target.closest('.image-btn');
+    if (!imageBtn) return;
+    
+    const tradeId = imageBtn.dataset.tradeId;
+    if (!tradeId) return;
+    
+    const hoverPreview = document.getElementById(`hoverPreview_${tradeId}`);
+    if (!hoverPreview) return;
+    
+    if (window.hoverTimeout) clearTimeout(window.hoverTimeout);
+    
+    window.hoverTimeout = setTimeout(() => {
+      const rect = imageBtn.getBoundingClientRect();
+      
+      hoverPreview.style.display = 'block';
+      
+      let left = rect.right + 10;
+      let top = rect.top - 10;
+      
+      if (left + 350 > window.innerWidth) {
+        left = rect.left - 360;
+      }
+      
+      if (top + 300 > window.innerHeight) {
+        top = window.innerHeight - 310;
+      }
+      
+      if (top < 10) top = 10;
+      
+      hoverPreview.style.left = left + 'px';
+      hoverPreview.style.top = top + 'px';
+    }, 400);
+  });
+  
+  document.addEventListener('mouseout', function(e) {
+    const imageBtn = e.target.closest('.image-btn');
+    if (!imageBtn) return;
+    
+    const tradeId = imageBtn.dataset.tradeId;
+    if (!tradeId) return;
+    
+    const hoverPreview = document.getElementById(`hoverPreview_${tradeId}`);
+    if (!hoverPreview) return;
+    
+    if (window.hoverTimeout) clearTimeout(window.hoverTimeout);
+    
+    hoverPreview.style.display = 'none';
+  });
 }
 
 // ============== Session 存储功能 ==============
@@ -892,8 +1327,31 @@ window.calculateRiskReward = calculateRiskReward;
 // ============== 日期分组功能 ==============
 function initDateGroups() { dateGroups = {}; }
 
-function groupTradesByDate(trades) {
+function groupTradesByDate(trades, globalInitialBalance = null) {
   if (!trades || trades.length === 0) return [];
+  
+  // 优先使用传入的 globalInitialBalance，否则从 DOM 读取
+  let initialBalance = globalInitialBalance;
+  
+  if (initialBalance === null || initialBalance === undefined) {
+    const initialBalanceEl = document.getElementById("initialBalance");
+    if (initialBalanceEl) {
+      const balanceText = initialBalanceEl.textContent;
+      const match = balanceText.match(/\$?([0-9.]+)/);
+      if (match) {
+        initialBalance = parseFloat(match[1]);
+      }
+    }
+  }
+  
+  // 调试日志
+  console.log("Daily Quest - 使用的起始资金:", initialBalance);
+  
+  // 如果仍然没有，默认使用 1000（但会显示警告）
+  if (initialBalance === null || initialBalance === undefined || isNaN(initialBalance)) {
+    console.warn("无法获取 Initial Balance，使用默认值 1000");
+    initialBalance = 1000;
+  }
   
   const sortedTrades = [...trades].sort((a, b) => {
     const dateA = new Date(a.created_at || a.date || 0);
@@ -902,6 +1360,7 @@ function groupTradesByDate(trades) {
   });
   
   const groups = {};
+  
   sortedTrades.forEach(trade => {
     const dateKey = trade.date || trade.created_at?.split('T')[0] || '未知日期';
     
@@ -916,7 +1375,8 @@ function groupTradesByDate(trades) {
         depositAmount: 0,
         withdrawalAmount: 0,
         hasBuySell: false,
-        hasBalanceTx: false
+        hasBalanceTx: false,
+        startingBalance: initialBalance  // 直接使用主页的 Initial Balance
       };
     }
     
@@ -1046,26 +1506,53 @@ function renderTable(groups) {
     headerRow.className = `date-group-header expanded`;
     headerRow.dataset.date = dateStr;
     
-    const buySellTradesForQuest = group.trades.filter(t => t.direction === "Buy" || t.direction === "Sell");
-    const dailyPnl = group.totalPnl;
-    let questStatus = '', questStatusText = '';
-    let startingBalance = group.startingBalance || 1000;
-    const profitTarget = startingBalance * 0.1;
-    const lossLimit = startingBalance * 0.25;
-    
-    if (buySellTradesForQuest.length === 0) {
-      questStatus = 'no-trades';
-      questStatusText = 'No Trades';
-    } else if (dailyPnl >= profitTarget) {
-      questStatus = 'passed';
-      questStatusText = 'Passed';
-    } else if (dailyPnl <= -lossLimit) {
-      questStatus = 'failed';
-      questStatusText = 'Failed';
-    } else {
-      questStatus = 'patience';
-      questStatusText = 'Patience';
+    // 在 renderTable 函数中，找到计算 questStatus 的代码块
+const buySellTradesForQuest = group.trades.filter(t => t.direction === "Buy" || t.direction === "Sell");
+const dailyPnl = group.totalPnl;
+let questStatus = '', questStatusText = '';
+
+// 使用 group 中存储的起始资金（来自主页 Initial Balance）
+let startingBalance = group.startingBalance;
+
+// 如果 group 中没有，从 DOM 重新读取
+if (startingBalance === null || startingBalance === undefined || isNaN(startingBalance)) {
+  const initialBalanceEl = document.getElementById("initialBalance");
+  if (initialBalanceEl) {
+    const balanceText = initialBalanceEl.textContent;
+    const match = balanceText.match(/\$?([0-9.]+)/);
+    if (match) {
+      startingBalance = parseFloat(match[1]);
     }
+  }
+}
+
+// 最终 fallback
+if (startingBalance === null || startingBalance === undefined || isNaN(startingBalance)) {
+  startingBalance = 1000;
+}
+
+// 添加调试日志（可以在控制台查看）
+console.log(`日期 ${group.date} - 起始资金: $${startingBalance}, 当日盈亏: $${dailyPnl}`);
+
+const profitTarget = startingBalance * 0.1;      // 盈利目标 = 起始资金 × 10%
+const lossLimit = startingBalance * 0.25;        // 亏损限制 = 起始资金 × 25%
+
+const profitTargetFormatted = profitTarget.toFixed(2);
+const lossLimitFormatted = lossLimit.toFixed(2);
+
+if (buySellTradesForQuest.length === 0) {
+  questStatus = 'no-trades';
+  questStatusText = 'No Trades';
+} else if (dailyPnl >= profitTarget) {
+  questStatus = 'passed';
+  questStatusText = 'Passed';
+} else if (dailyPnl <= -lossLimit) {
+  questStatus = 'failed';
+  questStatusText = 'Failed';
+} else {
+  questStatus = 'patience';
+  questStatusText = 'Patience';
+}
     
     headerRow.innerHTML = `<td colspan="10" style="padding: 0.3rem 0.5rem !important; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(59, 130, 246, 0.15);"><div class="date-header" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; width: 100%;"><strong style="color: #3b82f6; font-size: 0.85rem; font-weight: 600;">${formattedDate}</strong>${statsBadgeHtml}<div class="quest-status-badge ${questStatus}"><span class="quest-label">DQ:</span><span class="quest-value">${questStatusText}</span></div></div></td>`;
     tradeList.appendChild(headerRow);
@@ -1133,7 +1620,20 @@ function renderTable(groups) {
         <td style="text-align: center; min-width: 90px;">${riskRewardHtml}</td>
         <td class="${amountClass}" style="color: ${displayAmount >= 0 ? '#0ee7ff' : '#ef4444'} !important;">${amountSign}$${Math.abs(displayAmount).toFixed(2)}</td>
         <td class="action-buttons-cell">
-          <button class="action-btn image-btn" onclick="window.viewTradeImage('${t.id}')" data-trade-id="${t.id}" title="Upload Chart Image">${tradeImages.has(t.id) ? '📷✓' : '📷'}</button>
+          <div class="image-hover-container" style="position: relative; display: inline-block;">
+            <button class="action-btn image-btn" data-trade-id="${t.id}" title="View Chart Image" onclick="window.viewTradeImage('${t.id}')">${tradeImages.has(t.id) ? '📷✓' : '📷'}</button>
+            <div class="image-hover-preview" id="hoverPreview_${t.id}" style="display: none;">
+              <div class="hover-preview-content">
+                <div class="hover-image-container">
+                  ${tradeImages.has(t.id) ? `<img src="${tradeImages.get(t.id)}" class="hover-image">` : '<div class="hover-no-image">📷 No Image</div>'}
+                </div>
+                <div class="hover-notes-container">
+                  <strong>📝 Notes:</strong>
+                  <div class="hover-notes-text">${(t.notes || 'No notes').replace(/\n/g, '<br>')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
           <button class="action-btn edit-btn-icon" onclick="window.showEditForm(${JSON.stringify(t).replace(/"/g, '&quot;')})" title="Edit Trade">✏️</button>
           <button class="action-btn delete-btn-icon" onclick="window.deleteTrade('${t.id}')" title="Delete Trade">✕</button>
         </td>
@@ -1145,8 +1645,6 @@ function renderTable(groups) {
   updateAllImageButtons();
   loadAllSessionsToSelects();
 }
-
-window.toggleDateGroup = function(date) {};
 
 // ---------------- 检查登录状态 ----------------
 async function checkAuth() {
@@ -1283,152 +1781,338 @@ function updateSessionCard(prefix, data) {
   }
 }
 
-// ============== 综合评分计算函数 ==============
+// ============== 综合评分计算函数（每笔交易最多100-200分） ==============
 function calculateOverallScore(statsData) {
+  // 如果没有交易数据，直接返回 0
+  if (!statsData.total || statsData.total === 0) {
+    return 0;
+  }
+  
   let score = 0;
   
-  let winRateScore = (statsData.winRate / 100) * 35;
+  // 1. 胜率评分：最高 2000 分
+  let winRateScore = (statsData.winRate / 100) * 2000;
   score += winRateScore;
   
-  let avgPnlScore = Math.min(20, (Math.abs(statsData.avgPnl) / 200) * 20);
-  if (statsData.avgPnl < 0) avgPnlScore = avgPnlScore * 0.3;
-  score += avgPnlScore;
-  
-  let maxPnlScore = Math.min(15, (statsData.maxPnl / 500) * 15);
-  score += maxPnlScore;
-  
-  let minPnlScore = 0;
-  if (statsData.minPnl < 0) {
-    minPnlScore = Math.max(0, 15 - (Math.abs(statsData.minPnl) / 100) * 15);
-  } else {
-    minPnlScore = 15;
+  // 2. 净盈利评分：最高 3000 分，每盈利 $10 得 3 分
+  let totalProfit = statsData.avgPnl * statsData.total;
+  let profitScore = 0;
+  if (totalProfit > 0) {
+    profitScore = Math.min(3000, (totalProfit / 10) * 3);
   }
-  score += minPnlScore;
+  score += profitScore;
   
-  let totalTradesScore = Math.min(10, (statsData.total / 20) * 10);
-  score += totalTradesScore;
+  // 3. 风险控制评分：最高 2500 分
+  let riskScore = 2000;
+  if (statsData.minPnl < 0) {
+    let lossPenalty = Math.min(2000, (Math.abs(statsData.minPnl) / 100) * 50);
+    riskScore = Math.max(0, 2000 - lossPenalty);
+  }
+  score += riskScore;
   
-  let winCountScore = (statsData.winCount / Math.max(1, statsData.total)) * 5;
-  score += winCountScore;
+  // 4. 交易活跃度评分：最高 2500 分，每笔交易 50 分
+  let activityScore = Math.min(2500, statsData.total * 50);
+  score += activityScore;
   
-  return Math.min(100, Math.max(0, Math.floor(score)));
+  // 5. 盈亏比评分：最高 1000 分
+  let rrScore = 0;
+  if (statsData.minPnl < 0 && statsData.avgPnl > 0) {
+    let ratio = Math.abs(statsData.avgPnl / statsData.minPnl);
+    rrScore = Math.min(1000, ratio * 200);
+  } else if (statsData.avgPnl > 0) {
+    rrScore = 500;
+  }
+  score += rrScore;
+  
+  return Math.min(10000, Math.max(0, Math.floor(score)));
 }
 
-// ============== 等级判定函数 (7级系统) ==============
+// ============== 等级判定函数 (每个子等级间隔1000分) ==============
 function getRankByScore(score) {
-  var rankTiers = [
-    { main: 'Rookie', minScore: 0, maxScore: 14 },
-    { main: 'Apprentice', minScore: 15, maxScore: 28 },
-    { main: 'Trader', minScore: 29, maxScore: 42 },
-    { main: 'Sniper', minScore: 43, maxScore: 56 },
-    { main: 'Elite Trader', minScore: 57, maxScore: 70 },
-    { main: 'Master', minScore: 71, maxScore: 84 },
-    { main: 'Market Wizard', minScore: 85, maxScore: 100 }
+  // 如果没有分数，返回默认
+  if (score === 0) {
+    return {
+      name: 'Bronze I',
+      mainRank: 'Bronze',
+      subRank: 'I',
+      rankKey: 'bronze',
+      rankIndex: 0,
+      subRankIndex: 0,
+      currentSubLevel: 1,
+      nextNeeded: 1000,
+      totalPercent: 0,
+      isMaxLevel: false
+    };
+  }
+  
+  // 主等级顺序（每个主等级有4个子等级）
+  const mainRanks = [
+    'Bronze', 'Silver', 'Gold', 'Platinum', 
+    'Diamond', 'Master', 'Grandmaster', 'Legend'
   ];
   
-  var currentRank = rankTiers[0];
-  var rankIndex = 0;
-  for (var i = 0; i < rankTiers.length; i++) {
-    if (score >= rankTiers[i].minScore) {
-      currentRank = rankTiers[i];
-      rankIndex = i;
-    } else {
-      break;
-    }
-  }
+  // 子等级
+  const subRanks = ['I', 'II', 'III', 'IV'];
   
-  var nextNeeded = 0;
-  var isMaxLevel = false;
-  if (rankIndex < rankTiers.length - 1) {
-    nextNeeded = rankTiers[rankIndex + 1].minScore - score;
-    if (nextNeeded < 0) nextNeeded = 0;
-  } else {
+  // 计算当前等级（每个子等级1000分）
+  let adjustedScore = Math.max(0, score);
+  let levelNumber = Math.floor(adjustedScore / 1000);
+  
+  // 总共 32 个等级（8主等级 × 4子等级）
+  const maxLevels = mainRanks.length * 4;
+  
+  let isMaxLevel = false;
+  if (levelNumber >= maxLevels) {
+    levelNumber = maxLevels - 1;
     isMaxLevel = true;
-    nextNeeded = 0;
   }
   
-  var rankKey = currentRank.main.toLowerCase().replace(/ /g, '_');
-  if (rankKey === 'elite_trader') rankKey = 'elite';
-  if (rankKey === 'market_wizard') rankKey = 'wizard';
+  let rankIndex = Math.floor(levelNumber / 4);
+  let subRankIndex = levelNumber % 4;
+  
+  const mainRank = mainRanks[rankIndex];
+  const subRank = subRanks[subRankIndex];
+  const fullRankName = `${mainRank} ${subRank}`;
+  
+  // 计算下一级所需分数
+  let nextNeeded = 0;
+  if (!isMaxLevel) {
+    let nextLevelNumber = levelNumber + 1;
+    let nextScore = nextLevelNumber * 1000;
+    nextNeeded = nextScore - score;
+    if (nextNeeded < 0) nextNeeded = 0;
+  }
+  
+  const rankKey = mainRank.toLowerCase();
   
   return {
-    name: currentRank.main,
-    mainRank: currentRank.main,
-    subRank: null,
+    name: fullRankName,
+    mainRank: mainRank,
+    subRank: subRank,
     rankKey: rankKey,
     rankIndex: rankIndex,
+    subRankIndex: subRankIndex,
+    currentSubLevel: subRankIndex + 1,
     nextNeeded: nextNeeded,
-    totalPercent: Math.floor((score / 100) * 100),
+    totalPercent: Math.min(100, Math.floor((score / 32000) * 100)),
     isMaxLevel: isMaxLevel
   };
 }
 
-// 在 script.js 中找到 updateRankSvg 函数，完全替换为以下内容
+// ============== 根据等级获取粒子数量 ==============
+function getParticleCountByRank(rankKey) {
+    switch(rankKey) {
+        case 'bronze':
+            return 35;
+        case 'silver':
+            return 40;
+        case 'gold':
+            return 45;
+        case 'platinum':
+            return 50;
+        case 'diamond':
+            return 55;
+        case 'master':
+            return 60;
+        case 'grandmaster':
+            return 70;
+        case 'legend':
+            return 80;
+        case 'no_data':
+            return 20;
+        default:
+            return 35;
+    }
+}
 
-// ============== 星光粒子效果函数 ==============
-function addStarDustEffect(container, config) {
-    if (!container) return;
+// ============== 星光粒子效果函数（顺畅随机漂浮） ==============
+function addStarDustEffect(levelIcon, config) {
+    // 获取等级卡片
+    var rankCard = document.querySelector('.rank-level-card');
+    if (!rankCard) return;
     
-    var oldContainer = container.querySelector('.star-dust');
-    if (oldContainer) oldContainer.remove();
+    // 移除旧的粒子和动画
+    var oldDust = rankCard.querySelector('.star-dust');
+    if (oldDust) {
+        if (oldDust.animationId) cancelAnimationFrame(oldDust.animationId);
+        oldDust.remove();
+    }
     
-    var particleCount = getParticleCountByRank(config.rankKey);
+    // 粒子数量
+    var particleCount = 45;
+    
+    // 创建粒子容器
     var dustContainer = document.createElement('div');
     dustContainer.className = 'star-dust';
+    dustContainer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; overflow: hidden; border-radius: 18px;';
+    
+    // 获取卡片尺寸 - 使用整个卡片区域，不留边距
+    var cardWidth = rankCard.offsetWidth;
+    var cardHeight = rankCard.offsetHeight;
+    
+    // 粒子分布范围 - 整个卡片，留少量边缘
+    var minX = 5;
+    var maxX = cardWidth - 5;
+    var minY = 5;
+    var maxY = cardHeight - 5;
+    
+    var rangeWidth = Math.max(50, maxX - minX);
+    var rangeHeight = Math.max(50, maxY - minY);
+    
+    // 存储每个粒子的数据
+    var particles = [];
     
     for (var i = 0; i < particleCount; i++) {
         var particle = document.createElement('div');
-        particle.className = 'dust';
         
-        var size = 2 + Math.random() * 4;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        particle.style.color = config.particleColor;
-        particle.style.background = 'radial-gradient(circle, ' + config.particleColor + ', transparent)';
-        particle.style.boxShadow = '0 0 12px ' + config.particleGlow + ', 0 0 20px rgba(255,255,255,0.3)';
+        var size = 2 + Math.random() * 6;
+        var leftPos = minX + Math.random() * rangeWidth;
+        var topPos = minY + Math.random() * rangeHeight;
         
-        // 缩小粒子分布半径 - 紧贴徽章周围
+        // 随机速度 - 更慢更顺畅
         var angle = Math.random() * Math.PI * 2;
-        var radius = 35 + Math.random() * 25;  // 从 65-100 改为 35-60
-        var startX = 50 + Math.cos(angle) * (radius / 1.2);
-        var startY = 50 + Math.sin(angle) * (radius / 1.2);
+        var speed = 8 + Math.random() * 12;
+        var vx = Math.cos(angle) * speed;
+        var vy = Math.sin(angle) * speed;
         
-        particle.style.left = startX + '%';
-        particle.style.top = startY + '%';
-        
-        // 缩小飘移距离
-        var tx = -15 + Math.random() * 30;
-        var ty = -20 + Math.random() * 20;
-        particle.style.setProperty('--tx', tx + 'px');
-        particle.style.setProperty('--ty', ty + 'px');
-        
-        var tx2 = -25 + Math.random() * 50;
-        var ty2 = -30 + Math.random() * 25;
-        particle.style.setProperty('--tx2', tx2 + 'px');
-        particle.style.setProperty('--ty2', ty2 + 'px');
-        
-        var duration = 1.5 + Math.random() * 1.5;
-        var delay = Math.random() * 3;
-        particle.style.animationDuration = duration + 's';
-        particle.style.animationDelay = delay + 's';
+        particle.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${leftPos}px;
+            top: ${topPos}px;
+            border-radius: 50%;
+            background: ${config.particleColor || '#CD7F32'};
+            box-shadow: 0 0 ${size * 2}px ${config.particleGlow || '#F0C674'};
+            opacity: ${0.4 + Math.random() * 0.5};
+            will-change: left, top, opacity, width, height;
+        `;
         
         dustContainer.appendChild(particle);
+        
+        particles.push({
+            element: particle,
+            x: leftPos,
+            y: topPos,
+            vx: vx,
+            vy: vy,
+            size: size,
+            baseOpacity: 0.4 + Math.random() * 0.5,
+            angle: angle,
+            rotationSpeed: 0.5 + Math.random() * 1.5,
+            glowIntensity: 0.5 + Math.random() * 0.8
+        });
     }
     
-    container.appendChild(dustContainer);
-}
-
-function getParticleCountByRank(rankKey) {
-    switch(rankKey) {
-        case 'rookie': return 16;
-        case 'apprentice': return 20;
-        case 'trader': return 24;
-        case 'sniper': return 28;
-        case 'elite': return 32;
-        case 'master': return 36;
-        case 'wizard': return 42;
-        default: return 20;
+    rankCard.style.position = 'relative';
+    rankCard.style.overflow = 'hidden';
+    rankCard.appendChild(dustContainer);
+    
+    // 边界反弹（带一点随机反弹角度）
+    function bounce(p, minX, maxX, minY, maxY) {
+        if (p.x < minX) {
+            p.x = minX;
+            p.vx = Math.abs(p.vx) * (0.9 + Math.random() * 0.2);
+        }
+        if (p.x > maxX) {
+            p.x = maxX;
+            p.vx = -Math.abs(p.vx) * (0.9 + Math.random() * 0.2);
+        }
+        if (p.y < minY) {
+            p.y = minY;
+            p.vy = Math.abs(p.vy) * (0.9 + Math.random() * 0.2);
+        }
+        if (p.y > maxY) {
+            p.y = maxY;
+            p.vy = -Math.abs(p.vy) * (0.9 + Math.random() * 0.2);
+        }
     }
+    
+    // 动画循环 - 使用 requestAnimationFrame 实现60fps平滑动画
+    var lastTime = performance.now();
+    var animationId = null;
+    
+    function animateParticles(now) {
+        var delta = Math.min(0.033, (now - lastTime) / 1000);
+        if (delta <= 0) {
+            lastTime = now;
+            animationId = requestAnimationFrame(animateParticles);
+            return;
+        }
+        lastTime = now;
+        
+        // 实时获取卡片尺寸（支持响应式）
+        var currentWidth = rankCard.offsetWidth;
+        var currentHeight = rankCard.offsetHeight;
+        var boundMinX = 5;
+        var boundMaxX = currentWidth - 5;
+        var boundMinY = 5;
+        var boundMaxY = currentHeight - 5;
+        
+        if (boundMaxX <= boundMinX) boundMaxX = boundMinX + 10;
+        if (boundMaxY <= boundMinY) boundMaxY = boundMinY + 10;
+        
+        var time = Date.now() / 1000;
+        
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            
+            // 更新位置
+            p.x += p.vx * delta;
+            p.y += p.vy * delta;
+            
+            // 边界处理
+            bounce(p, boundMinX, boundMaxX, boundMinY, boundMaxY);
+            
+            // 应用位置
+            p.element.style.left = p.x + 'px';
+            p.element.style.top = p.y + 'px';
+            
+            // 平滑的呼吸效果（透明度+大小）
+            var breath = 0.6 + 0.4 * Math.sin(time * p.rotationSpeed + p.angle);
+            var finalOpacity = Math.min(0.9, Math.max(0.3, p.baseOpacity * breath));
+            p.element.style.opacity = finalOpacity;
+            
+            // 大小呼吸
+            var sizeBreath = p.size * (0.7 + 0.3 * Math.sin(time * p.rotationSpeed * 1.5 + p.angle));
+            p.element.style.width = sizeBreath + 'px';
+            p.element.style.height = sizeBreath + 'px';
+            
+            // 光晕强度变化
+            var glowIntensity = p.glowIntensity * (0.5 + 0.5 * Math.sin(time * p.rotationSpeed * 2));
+            p.element.style.boxShadow = `0 0 ${sizeBreath * (1.5 + glowIntensity)}px ${config.particleGlow || '#F0C674'}`;
+        }
+        
+        animationId = requestAnimationFrame(animateParticles);
+    }
+    
+    // 启动动画
+    animationId = requestAnimationFrame(animateParticles);
+    dustContainer.animationId = animationId;
+    
+    // 页面可见性变化时暂停/恢复动画（省电）
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            if (animationId) cancelAnimationFrame(animationId);
+            animationId = null;
+        } else if (!animationId && dustContainer.parentNode) {
+            lastTime = performance.now();
+            animationId = requestAnimationFrame(animateParticles);
+            dustContainer.animationId = animationId;
+        }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    dustContainer.visibilityHandler = handleVisibilityChange;
+    
+    // 清理函数（当卡片被移除时）
+    var observer = new MutationObserver(function(mutations) {
+        if (!document.body.contains(rankCard)) {
+            if (animationId) cancelAnimationFrame(animationId);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 }
 
 // ============== 3D等级徽章 SVG 更新函数（带星光粒子） ==============
@@ -1436,58 +2120,60 @@ function updateRankSvg(svgElement, rankKey, subRank) {
     if (!svgElement) return;
     
     var rankConfig = {
-        rookie: {
+        bronze: {
             bgGrad1: '#F0C674', bgGrad2: '#CD7F32', bgGrad3: '#8B5A2B', bgGrad4: '#3E2723',
             edgeGrad1: '#FFF8DC', edgeGrad2: '#CD7F32',
-            centerIcon: '🌱',
-            particleColor: '#CD7F32',
-            particleGlow: '#F0C674'
+            particleColor: '#CD7F32', particleGlow: '#F0C674'
         },
-        apprentice: {
+        silver: {
             bgGrad1: '#E8E8E8', bgGrad2: '#C0C0C0', bgGrad3: '#A0A0A0', bgGrad4: '#707070',
             edgeGrad1: '#FFFFFF', edgeGrad2: '#A0A0A0',
-            centerIcon: '📚',
-            particleColor: '#C0C0C0',
-            particleGlow: '#FFFFFF'
+            particleColor: '#C0C0C0', particleGlow: '#FFFFFF'
         },
-        trader: {
+        gold: {
             bgGrad1: '#FFD700', bgGrad2: '#DAA520', bgGrad3: '#B8860B', bgGrad4: '#8B6914',
             edgeGrad1: '#FFF8DC', edgeGrad2: '#DAA520',
-            centerIcon: '📈',
-            particleColor: '#FFD700',
-            particleGlow: '#FFF8DC'
+            particleColor: '#FFD700', particleGlow: '#FFF8DC'
         },
-        sniper: {
+        platinum: {
             bgGrad1: '#E5E4E2', bgGrad2: '#B8B8B8', bgGrad3: '#8C8C8C', bgGrad4: '#5C5C5C',
             edgeGrad1: '#FFFFFF', edgeGrad2: '#B8B8B8',
-            centerIcon: '🎯',
-            particleColor: '#E5E4E2',
-            particleGlow: '#FFFFFF'
+            particleColor: '#E5E4E2', particleGlow: '#FFFFFF'
         },
-        elite: {
+        diamond: {
             bgGrad1: '#4169E1', bgGrad2: '#2E4AB5', bgGrad3: '#1E3A8A', bgGrad4: '#0F2350',
             edgeGrad1: '#87CEEB', edgeGrad2: '#2E4AB5',
-            centerIcon: '💎',
-            particleColor: '#4169E1',
-            particleGlow: '#87CEEB'
+            particleColor: '#4169E1', particleGlow: '#87CEEB'
         },
         master: {
             bgGrad1: '#9B59B6', bgGrad2: '#7D3C98', bgGrad3: '#5B2C6F', bgGrad4: '#3B1E4A',
             edgeGrad1: '#D7BDE2', edgeGrad2: '#7D3C98',
-            centerIcon: '👑',
-            particleColor: '#9B59B6',
-            particleGlow: '#D7BDE2'
+            particleColor: '#9B59B6', particleGlow: '#D7BDE2'
         },
-        wizard: {
-            bgGrad1: '#FF4444', bgGrad2: '#CC0000', bgGrad3: '#990000', bgGrad4: '#660000',
-            edgeGrad1: '#FFB3B3', edgeGrad2: '#CC0000',
-            centerIcon: '⚡',
-            particleColor: '#FF4444',
-            particleGlow: '#FFB3B3'
+        grandmaster: {
+            bgGrad1: '#FF6666', bgGrad2: '#CC3333', bgGrad3: '#991111', bgGrad4: '#660000',
+            edgeGrad1: '#FFB3B3', edgeGrad2: '#CC3333',
+            particleColor: '#FF4444', particleGlow: '#FFB3B3'
+        },
+        legend: {
+            bgGrad1: '#FFD700', bgGrad2: '#FFA500', bgGrad3: '#FF8C00', bgGrad4: '#CC7000',
+            edgeGrad1: '#FFF8DC', edgeGrad2: '#FFD700',
+            particleColor: '#FFD700', particleGlow: '#FFF8DC'
+        },
+        no_data: {
+            bgGrad1: '#4B5563', bgGrad2: '#374151', bgGrad3: '#1F2937', bgGrad4: '#111827',
+            edgeGrad1: '#9CA3AF', edgeGrad2: '#6B7280',
+            particleColor: '#6B7280', particleGlow: '#9CA3AF'
         }
     };
     
-    var config = rankConfig[rankKey] || rankConfig.trader;
+    var config = rankConfig[rankKey] || rankConfig.bronze;
+    
+    var romanNumeral = '';
+    if (subRank === 'I') romanNumeral = 'I';
+    else if (subRank === 'II') romanNumeral = 'II';
+    else if (subRank === 'III') romanNumeral = 'III';
+    else if (subRank === 'IV') romanNumeral = 'IV';
     
     var svgContent = '<svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="rank-badge-svg">' +
         '<defs>' +
@@ -1524,23 +2210,19 @@ function updateRankSvg(svgElement, rankKey, subRank) {
         '<path d="M40 6 L72 22 L72 54 Q72 72 40 82 Q8 72 8 54 L8 22 Z" fill="url(#mainBg)" stroke="url(#edgeGrad)" stroke-width="3" filter="url(#mainGlow)"/>' +
         '<path d="M40 13 L64 26 L64 52 Q64 67 40 76 Q16 67 16 52 L16 26 Z" fill="none" stroke="' + config.edgeGrad1 + '" stroke-width="1.5" opacity="0.5"/>' +
         '<path d="M30 16 L36 8 L40 14 L44 8 L50 16" fill="none" stroke="' + config.edgeGrad1 + '" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#innerGlow)"/>' +
-        '<circle cx="40" cy="44" r="18" fill="rgba(0,0,0,0.25)" stroke="' + config.edgeGrad1 + '" stroke-width="1.2" opacity="0.6"/>' +
+        '<circle cx="40" cy="44" r="20" fill="rgba(0,0,0,0.25)" stroke="' + config.edgeGrad1 + '" stroke-width="1.2" opacity="0.6"/>' +
         '<circle cx="40" cy="44" r="14" fill="rgba(0,0,0,0.15)" stroke="' + config.edgeGrad1 + '" stroke-width="0.8" opacity="0.4"/>' +
-        '<text x="40" y="52" text-anchor="middle" fill="' + config.edgeGrad1 + '" font-size="28" font-weight="bold" filter="url(#innerGlow)">' + config.centerIcon + '</text>' +
+        '<text x="40" y="52" text-anchor="middle" fill="' + config.edgeGrad1 + '" font-size="22" font-weight="bold" filter="url(#innerGlow)">' + romanNumeral + '</text>' +
         '<path d="M28 70 L40 65 L52 70" fill="none" stroke="' + config.edgeGrad1 + '" stroke-width="2" stroke-linecap="round" opacity="0.8"/>' +
         '</svg>';
     
     svgElement.innerHTML = svgContent;
     
-    // 添加星光粒子效果（删除旧的 orbit 效果，使用新的 star-dust）
     var levelIcon = svgElement.closest('.level-icon');
-    if (levelIcon) {
-        var oldOrbit = levelIcon.querySelector('.stardust-orbit');
-        if (oldOrbit) oldOrbit.remove();
-        
-        // 添加星光粒子
-        addStarDustEffect(levelIcon, config);
-    }
+if (levelIcon) {
+    // 直接调用，让函数内部自己找到 rank-level-card
+    addStarDustEffect(levelIcon, config);
+}
 }
 
 // ============== 连胜天数计算函数 ==============
@@ -1576,901 +2258,131 @@ function calculateWinningStreak(trades) {
 // ============== 更新Ranking System UI ==============
 function updateRankingSystem(statsData, allTrades) {
   const overallScore = calculateOverallScore(statsData);
-  const scorePercent = (overallScore / 100) * 100;
   
+  // 获取当前等级
+  const currentRank = getRankByScore(overallScore);
+  
+  // 计算当前等级内的进度（0-1000）
+  let scoreInCurrentLevel = overallScore % 1000;
+  let nextLevelScore = 1000;
+  
+  let isMaxLevel = false;
+  if (currentRank.isMaxLevel) {
+    isMaxLevel = true;
+    scoreInCurrentLevel = 1000;
+    nextLevelScore = 1000;
+  }
+  
+  const scorePercent = (scoreInCurrentLevel / 1000) * 100;
+  
+  // 获取 DOM 元素
   const overallScoreEl = document.getElementById('overallScore');
   const scoreProgressEl = document.getElementById('scoreProgress');
   const scoreStatusEl = document.getElementById('scoreStatus');
-  
-  if (overallScoreEl) overallScoreEl.textContent = overallScore;
-  if (scoreProgressEl) scoreProgressEl.style.width = `${scorePercent}%`;
-  
-  if (scoreStatusEl) {
-    if (overallScore >= 85) scoreStatusEl.textContent = '🏆 Excellent';
-    else if (overallScore >= 70) scoreStatusEl.textContent = '✨ Great';
-    else if (overallScore >= 55) scoreStatusEl.textContent = '📈 Good';
-    else if (overallScore >= 40) scoreStatusEl.textContent = '🌱 Improving';
-    else scoreStatusEl.textContent = '💪 Keep Going';
-  }
-  
-  const rank = getRankByScore(overallScore);
-  const levelIcon3d = document.getElementById('levelIcon3d');
+  const nextScoreTargetEl = document.getElementById('nextScoreTarget');
+  const currentRankLabelEl = document.getElementById('currentRankLabel');
+  const nextRankLabelEl = document.getElementById('nextRankLabel');
   const currentLevelEl = document.getElementById('currentLevel');
   const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
   const rankSvg = document.getElementById('rankSvg');
-
-  if (currentLevelEl) currentLevelEl.textContent = rank.name;
+  const levelIcon3d = document.getElementById('levelIcon3d');
+  const currentBadgeEl = document.getElementById('currentBadge');
+  const nextBadgeEl = document.getElementById('nextBadge');
   
+  // 更新分数显示
+  if (overallScoreEl) overallScoreEl.textContent = overallScore;
+  if (scoreProgressEl) scoreProgressEl.style.width = `${scorePercent}%`;
+  if (nextScoreTargetEl) nextScoreTargetEl.textContent = nextLevelScore;
+  
+  // 更新左侧等级徽章文字
+  if (currentLevelEl) currentLevelEl.textContent = currentRank.name;
+  
+  // 更新左侧下一等级所需分数
   if (nextLevelNeededEl) {
-    if (rank.nextNeeded > 0) {
-      nextLevelNeededEl.textContent = `${rank.nextNeeded} pts`;
+    if (isMaxLevel) {
+      nextLevelNeededEl.textContent = 'MAX';
     } else {
-      nextLevelNeededEl.textContent = 'Max Level';
+      let needed = 1000 - (overallScore % 1000);
+      if (needed === 1000) needed = 0;
+      nextLevelNeededEl.textContent = `${needed} pts`;
     }
   }
   
+  // 更新右侧卡片中的当前等级标签
+  if (currentRankLabelEl) {
+    currentRankLabelEl.textContent = currentRank.name;
+  }
+  
+  // 更新左侧 3D 徽章 SVG
+  if (rankSvg) {
+    updateRankSvg(rankSvg, currentRank.rankKey, currentRank.subRank);
+  }
+  
+  // 设置等级图标的数据属性
   if (levelIcon3d) {
-    var rankKey = rank.rankKey;
-    levelIcon3d.setAttribute('data-rank', rankKey);
-    levelIcon3d.setAttribute('data-sub-rank', rank.subRank);
-    levelIcon3d.setAttribute('data-rank-index', rank.rankIndex);
+    levelIcon3d.setAttribute('data-rank', currentRank.rankKey);
+    levelIcon3d.setAttribute('data-sub-rank', currentRank.subRank);
+  }
+  
+  // 更新 Ranking Score 卡片中的当前徽章
+  if (currentBadgeEl) {
+    const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    tempSvg.setAttribute('viewBox', '0 0 80 80');
+    currentBadgeEl.innerHTML = '';
+    currentBadgeEl.appendChild(tempSvg);
+    updateRankSvg(tempSvg, currentRank.rankKey, currentRank.subRank);
+  }
+  
+  // 计算下一等级并更新徽章
+  let nextRankName = '';
+  let nextRankKey = '';
+  let nextSubRank = '';
+  
+  if (!isMaxLevel) {
+    let nextScore = overallScore + (1000 - (overallScore % 1000));
+    if (nextScore % 1000 === 0 && nextScore === overallScore) {
+      nextScore = overallScore + 1000;
+    }
+    const nextRank = getRankByScore(nextScore);
+    nextRankName = nextRank.name;
+    nextRankKey = nextRank.rankKey;
+    nextSubRank = nextRank.subRank;
     
-    if (rankSvg) {
-      updateRankSvg(rankSvg, rankKey, rank.subRank);
+    if (nextBadgeEl) {
+      const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      tempSvg.setAttribute('viewBox', '0 0 80 80');
+      nextBadgeEl.innerHTML = '';
+      nextBadgeEl.appendChild(tempSvg);
+      updateRankSvg(tempSvg, nextRankKey, nextSubRank);
+    }
+    
+    if (nextRankLabelEl) nextRankLabelEl.textContent = nextRankName;
+  } else {
+    nextRankName = 'MAX LEVEL';
+    if (nextBadgeEl) {
+      nextBadgeEl.innerHTML = '<div style="font-size: 2rem;">🏆</div>';
+    }
+    if (nextRankLabelEl) nextRankLabelEl.textContent = nextRankName;
+  }
+  
+  // 更新状态文本
+  if (scoreStatusEl) {
+    if (overallScore === 0) {
+      scoreStatusEl.textContent = '📊 添加交易开始积累分数';
+    } else if (isMaxLevel) {
+      scoreStatusEl.textContent = '🏆 已达最高等级！传奇交易员！';
+    } else {
+      let needed = 1000 - (overallScore % 1000);
+      if (needed === 1000) needed = 0;
+      scoreStatusEl.textContent = `📈 还需 ${needed} 分升级到 ${nextRankName}`;
     }
   }
   
+  // 更新连胜显示
   const winningStreak = calculateWinningStreak(allTrades);
   const streakValueEl = document.getElementById('winningStreak');
   if (streakValueEl) streakValueEl.textContent = winningStreak;
 }
-
-// ============== 纪律评分计算函数 ==============
-function calculateDisciplineScore(trades) {
-  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
-  
-  if (buySellTrades.length === 0) {
-    return { score: 0, details: { stopLossUsage: 0, consistency: 0, riskManagement: 0, tradeFrequency: 0 } };
-  }
-  
-  let stopLossUsage = 0;
-  let tradesWithSL = 0;
-  buySellTrades.forEach(trade => {
-    const sl = parseFloat(trade.sl || 0);
-    if (sl && sl !== 0) {
-      tradesWithSL++;
-    }
-  });
-  stopLossUsage = (tradesWithSL / buySellTrades.length) * 40;
-  
-  let consistencyScore = 25;
-  const dailyTradeCount = {};
-  buySellTrades.forEach(trade => {
-    const date = trade.date;
-    if (!dailyTradeCount[date]) dailyTradeCount[date] = 0;
-    dailyTradeCount[date]++;
-  });
-  
-  const dailyCounts = Object.values(dailyTradeCount);
-  if (dailyCounts.length > 1) {
-    const avgTrades = dailyCounts.reduce((a, b) => a + b, 0) / dailyCounts.length;
-    const variance = dailyCounts.reduce((acc, val) => acc + Math.pow(val - avgTrades, 2), 0) / dailyCounts.length;
-    const stdDev = Math.sqrt(variance);
-    const consistencyFactor = Math.max(0, Math.min(1, 1 - (stdDev / avgTrades)));
-    consistencyScore = 15 + (consistencyFactor * 10);
-  }
-  
-  let riskScore = 20;
-  let totalLosses = 0;
-  let lossCount = 0;
-  let largeLosses = 0;
-  
-  buySellTrades.forEach(trade => {
-    const pnl = parseFloat(trade.pnl_amount || 0);
-    if (pnl < 0) {
-      totalLosses += Math.abs(pnl);
-      lossCount++;
-    }
-  });
-  
-  const avgLoss = lossCount > 0 ? totalLosses / lossCount : 0;
-  
-  buySellTrades.forEach(trade => {
-    const pnl = parseFloat(trade.pnl_amount || 0);
-    if (pnl < 0 && avgLoss > 0) {
-      if (Math.abs(pnl) > avgLoss * 2) {
-        largeLosses++;
-      }
-    }
-  });
-  
-  if (largeLosses > 0) {
-    riskScore = Math.max(5, 20 - (largeLosses * 5));
-  }
-  
-  let frequencyScore = 15;
-  const tradingDays = Object.keys(dailyTradeCount).length;
-  if (tradingDays > 0) {
-    const avgTradesPerDay = buySellTrades.length / tradingDays;
-    if (avgTradesPerDay > 10) {
-      frequencyScore = 5;
-    } else if (avgTradesPerDay > 7) {
-      frequencyScore = 8;
-    } else if (avgTradesPerDay > 5) {
-      frequencyScore = 11;
-    } else if (avgTradesPerDay <= 3) {
-      frequencyScore = 15;
-    }
-  }
-  
-  const totalScore = Math.min(100, Math.max(0, Math.floor(stopLossUsage + consistencyScore + riskScore + frequencyScore)));
-  
-  let detailsText = '';
-  if (stopLossUsage >= 35) {
-    detailsText = '✅ 止损纪律优秀';
-  } else if (stopLossUsage >= 20) {
-    detailsText = '⚠️ 止损使用率偏低';
-  } else {
-    detailsText = '❌ 请设置止损保护';
-  }
-  
-  if (largeLosses > 0) {
-    detailsText += ` | 有${largeLosses}笔大额亏损`;
-  }
-  
-  return {
-    score: totalScore,
-    details: {
-      stopLossUsage: Math.round(stopLossUsage),
-      consistency: Math.round(consistencyScore),
-      riskManagement: Math.round(riskScore),
-      tradeFrequency: Math.round(frequencyScore),
-      detailsText: detailsText
-    }
-  };
-}
-
-// ============== 情绪状态计算函数 ==============
-function calculateEmotionalState(trades, winningStreak = null) {
-  const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
-  
-  if (buySellTrades.length === 0) {
-    return {
-      state: 'Calm',
-      stateClass: 'calm',
-      level: 30,
-      winStreakEffect: 0,
-      lossStreakEffect: 0,
-      riskAdherence: 100,
-      message: '📊 开始交易以追踪情绪状态',
-      color: '#34d399'
-    };
-  }
-  
-  let currentWinStreak = 0;
-  let currentLossStreak = 0;
-  let lastResult = null;
-  
-  const sortedTrades = [...buySellTrades].sort((a, b) => {
-    const dateA = new Date(a.created_at || a.date || 0);
-    const dateB = new Date(b.created_at || b.date || 0);
-    return dateB - dateA;
-  });
-  
-  for (const trade of sortedTrades) {
-    const pnl = parseFloat(trade.pnl_amount || 0);
-    const isWin = pnl > 0;
-    
-    if (lastResult === null) {
-      if (isWin) currentWinStreak = 1;
-      else currentLossStreak = 1;
-      lastResult = isWin;
-    } else if (lastResult === isWin) {
-      if (isWin) currentWinStreak++;
-      else currentLossStreak++;
-    } else {
-      break;
-    }
-  }
-  
-  let winStreakEffect = 0;
-  let lossStreakEffect = 0;
-  
-  if (currentWinStreak >= 5) {
-    winStreakEffect = 25;
-  } else if (currentWinStreak >= 3) {
-    winStreakEffect = 15;
-  } else if (currentWinStreak >= 2) {
-    winStreakEffect = 8;
-  } else if (currentWinStreak === 1) {
-    winStreakEffect = 3;
-  }
-  
-  if (currentLossStreak >= 5) {
-    lossStreakEffect = -30;
-  } else if (currentLossStreak >= 3) {
-    lossStreakEffect = -20;
-  } else if (currentLossStreak >= 2) {
-    lossStreakEffect = -10;
-  } else if (currentLossStreak === 1) {
-    lossStreakEffect = -5;
-  }
-  
-  let tradesWithSL = 0;
-  buySellTrades.forEach(trade => {
-    const sl = parseFloat(trade.sl || 0);
-    if (sl && sl !== 0) tradesWithSL++;
-  });
-  const riskAdherence = buySellTrades.length > 0 ? (tradesWithSL / buySellTrades.length) * 100 : 100;
-  
-  let totalPnl = 0;
-  buySellTrades.forEach(trade => {
-    totalPnl += parseFloat(trade.pnl_amount || 0);
-  });
-  
-  let performanceEffect = 0;
-  if (totalPnl > 500) performanceEffect = 15;
-  else if (totalPnl > 200) performanceEffect = 8;
-  else if (totalPnl > 50) performanceEffect = 3;
-  else if (totalPnl < -500) performanceEffect = -20;
-  else if (totalPnl < -200) performanceEffect = -12;
-  else if (totalPnl < -50) performanceEffect = -5;
-  
-  let emotionalLevel = 50 + winStreakEffect + lossStreakEffect + performanceEffect;
-  
-  if (riskAdherence < 30) emotionalLevel -= 15;
-  else if (riskAdherence < 60) emotionalLevel -= 5;
-  else if (riskAdherence >= 80) emotionalLevel += 5;
-  
-  emotionalLevel = Math.min(95, Math.max(5, emotionalLevel));
-  
-  let state = 'Calm';
-  let stateClass = 'calm';
-  let message = '';
-  let color = '#34d399';
-  
-  if (emotionalLevel >= 75 && winStreakEffect > 10) {
-    state = 'Excited';
-    stateClass = 'excited';
-    message = '⚡ 状态火热！保持专注，避免过度自信';
-    color = '#f472b6';
-  } else if (emotionalLevel >= 65) {
-    state = 'Focused';
-    stateClass = 'focused';
-    message = '🎯 状态良好，保持当前节奏';
-    color = '#fbbf24';
-  } else if (emotionalLevel <= 25) {
-    state = 'Stressed';
-    stateClass = 'stressed';
-    message = '😰 情绪压力较大，建议暂停交易休息';
-    color = '#f87171';
-  } else if (emotionalLevel <= 40) {
-    state = 'Anxious';
-    stateClass = 'stressed';
-    message = '😟 情绪波动较大，控制仓位大小';
-    color = '#f97316';
-  } else if (emotionalLevel <= 55) {
-    state = 'Calm';
-    stateClass = 'calm';
-    message = '🧘 情绪平稳，坚持交易计划';
-    color = '#34d399';
-  } else {
-    state = 'Confident';
-    stateClass = 'focused';
-    message = '💪 信心充足，继续保持纪律';
-    color = '#a78bfa';
-  }
-  
-  if (currentLossStreak >= 3) {
-    message = `⚠️ 连续${currentLossStreak}笔亏损，建议暂停复盘`;
-  } else if (currentWinStreak >= 3) {
-    message = `🔥 连续${currentWinStreak}笔盈利，保持谨慎`;
-  }
-  
-  return {
-    state: state,
-    stateClass: stateClass,
-    level: Math.round(emotionalLevel),
-    winStreakEffect: winStreakEffect,
-    lossStreakEffect: lossStreakEffect,
-    riskAdherence: Math.round(riskAdherence),
-    message: message,
-    color: color,
-    currentWinStreak: currentWinStreak,
-    currentLossStreak: currentLossStreak
-  };
-}
-
-// ============== 六维雷达图绘制函数 ==============
-function initRadarChart(statsData, allTradesData) {
-  const canvas = document.getElementById('radarChart');
-  if (!canvas) return;
-  
-  if (radarChart) {
-    try { radarChart.destroy(); } catch(e) {}
-  }
-  
-  const buySellTrades = allTradesData.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
-  const totalTrades = buySellTrades.length;
-  
-  let winRateScore = statsData.winRate;
-  
-  let profitFactorScore = 0;
-  let totalWinning = 0;
-  let totalLosing = 0;
-  buySellTrades.forEach(trade => {
-    const pnl = parseFloat(trade.pnl_amount || 0);
-    if (pnl > 0) totalWinning += pnl;
-    else if (pnl < 0) totalLosing += Math.abs(pnl);
-  });
-  const profitFactor = totalLosing > 0 ? totalWinning / totalLosing : (totalWinning > 0 ? 10 : 0);
-  profitFactorScore = Math.min(100, Math.max(0, (profitFactor - 0.5) / 3.5 * 100));
-  if (profitFactor >= 3) profitFactorScore = 100;
-  if (profitFactor <= 0.5) profitFactorScore = 0;
-  
-  let consistencyScore = 50;
-  if (buySellTrades.length > 0) {
-    const dailyPnL = {};
-    buySellTrades.forEach(trade => {
-      const date = trade.date;
-      const pnl = parseFloat(trade.pnl_amount || 0);
-      if (!dailyPnL[date]) dailyPnL[date] = 0;
-      dailyPnL[date] += pnl;
-    });
-    const dailyValues = Object.values(dailyPnL);
-    if (dailyValues.length > 0) {
-      const mean = dailyValues.reduce((a, b) => a + b, 0) / dailyValues.length;
-      const variance = dailyValues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / dailyValues.length;
-      const stdDev = Math.sqrt(variance);
-      const maxPossibleStdDev = 300;
-      consistencyScore = Math.max(0, Math.min(100, 100 - (stdDev / maxPossibleStdDev) * 100));
-    }
-  }
-  
-  let maxDrawdownScore = 100;
-  let balance = 0;
-  let peak = 0;
-  let maxDrawdown = 0;
-  const sortedTrades = [...buySellTrades].sort((a, b) => {
-    const dateA = new Date(a.created_at || a.date || 0);
-    const dateB = new Date(b.created_at || b.date || 0);
-    return dateA - dateB;
-  });
-  sortedTrades.forEach(trade => {
-    const pnl = parseFloat(trade.pnl_amount || 0);
-    balance += pnl;
-    if (balance > peak) peak = balance;
-    const drawdown = peak > 0 ? (peak - balance) / peak * 100 : 0;
-    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
-  });
-  maxDrawdownScore = Math.max(0, Math.min(100, 100 - maxDrawdown * 2));
-  
-  let recoveryFactorScore = 50;
-  const maxDrawdownAmount = maxDrawdown / 100 * peak;
-  const recoveryFactor = maxDrawdownAmount > 0 ? totalWinning / maxDrawdownAmount : (totalWinning > 0 ? 10 : 0);
-  recoveryFactorScore = Math.min(100, Math.max(0, (recoveryFactor / 3) * 100));
-  if (recoveryFactor >= 3) recoveryFactorScore = 100;
-  
-  let avgWinLossScore = 50;
-  const winTrades = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0);
-  const lossTrades = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0);
-  const avgWin = winTrades.length > 0 ? totalWinning / winTrades.length : 0;
-  const avgLoss = lossTrades.length > 0 ? totalLosing / lossTrades.length : 0;
-  const winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? 5 : 0);
-  avgWinLossScore = Math.min(100, Math.max(0, (winLossRatio / 3) * 100));
-  if (winLossRatio >= 3) avgWinLossScore = 100;
-  
-  const radarData = {
-    labels: ['Win Rate', 'Profit Factor', 'Consistency', 'Max Drawdown', 'Recovery Factor', 'Avg Win/Loss'],
-    datasets: [{
-      label: 'Ability Score',
-      data: [winRateScore, profitFactorScore, consistencyScore, maxDrawdownScore, recoveryFactorScore, avgWinLossScore],
-      backgroundColor: 'rgba(59, 130, 246, 0.2)',
-      borderColor: 'rgba(59, 130, 246, 0.8)',
-      borderWidth: 2,
-      pointBackgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: '#3b82f6',
-      pointRadius: 4,
-      pointHoverRadius: 6
-    }]
-  };
-  
-  const radarConfig = {
-    type: 'radar',
-    data: radarData,
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      scales: {
-        r: {
-          beginAtZero: true,
-          max: 100,
-          ticks: { stepSize: 20, color: '#64748b', backdropColor: 'transparent' },
-          grid: { color: 'rgba(100, 116, 139, 0.25)', circular: true },
-          angleLines: { color: 'rgba(100, 116, 139, 0.15)' },
-          pointLabels: { color: '#94a3b8', font: { size: 10, weight: '500' } }
-        }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.95)',
-          titleColor: '#e2e8f0',
-          bodyColor: '#94a3b8',
-          borderColor: 'rgba(59, 130, 246, 0.3)',
-          borderWidth: 1,
-          callbacks: {
-            label: function(ctx) {
-              let value = ctx.raw;
-              let label = ctx.label;
-              let scoreText = value >= 80 ? 'Excellent' : (value >= 60 ? 'Good' : (value >= 40 ? 'Average' : 'Needs Improvement'));
-              return `${label}: ${value.toFixed(1)} pts (${scoreText})`;
-            }
-          }
-        }
-      }
-    }
-  };
-  
-  try {
-    radarChart = new Chart(canvas, radarConfig);
-  } catch(e) {
-    console.error('创建雷达图失败:', e);
-  }
-}
-
-// ============== 更新雷达图 ==============
-function updateRadarChart() {
-  const totalTradesEl = document.getElementById('totalTrades');
-  const winningTradesEl = document.getElementById('winningTrades');
-  const winRateEl = document.getElementById('winRate');
-  const avgPnlEl = document.getElementById('avgPnl');
-  const maxPnlEl = document.getElementById('maxPnl');
-  const minPnlEl = document.getElementById('minPnl');
-  
-  if (!totalTradesEl) return;
-  
-  const statsData = {
-    total: parseInt(totalTradesEl.textContent) || 0,
-    winCount: parseInt(winningTradesEl.textContent) || 0,
-    winRate: parseFloat(winRateEl.textContent) || 0,
-    avgPnl: parseFloat(avgPnlEl.textContent) || 0,
-    maxPnl: parseFloat(maxPnlEl.textContent) || 0,
-    minPnl: parseFloat(minPnlEl.textContent) || 0
-  };
-  
-  initRadarChart(statsData, window.allTradesData);
-}
-
-// ---------------- Fetch Trades ----------------
-async function fetchTrades() {
-  const session = await checkAuth();
-  if (!session) return;
-  displayUserInfo(session);
-  
-  try {
-    const { data, error } = await client.from("trades").select("*").eq("user_id", session.user.id).order("date", { ascending: false }).order("created_at", { ascending: false });
-    if (error) { console.error("Error fetching trades:", error); return; }
-    
-    window.allTradesData = data || [];
-    const groupedData = groupTradesByDate(data);
-    renderTable(groupedData);
-    updateStats(data);
-    updateChart(data);
-    updateTopBalance(data);
-    addTimeSessionSelector();
-    updateSessionStats();
-    updateDisciplineScore(data);
-    updateEmotionalState(data);
-  } catch (error) { console.error("获取交易数据异常:", error); }
-}
-
-// ---------------- 删除交易 ----------------
-async function deleteTrade(tradeId) {
-  const session = await checkAuth();
-  if (!session) return;
-  const confirmMsg = '确定要删除这笔交易吗？';
-  if (!confirm(confirmMsg)) return;
-  
-  try {
-    const { error } = await client.from("trades").delete().eq("id", tradeId).eq("user_id", session.user.id);
-    if (error) throw error;
-    showNotification('交易删除成功', 'success');
-    fetchTrades();
-  } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
-}
-
-// ---------------- Update Stats ----------------
-function updateStats(data) {
-  const tradesOnly = Array.isArray(data) ? data.filter(t => t.direction === "Buy" || t.direction === "Sell") : [];
-  let total = tradesOnly.length, wins = 0, sum = 0, max = null, min = null;
-  
-  tradesOnly.forEach(t => {
-    const pnl = Number(t.pnl_amount || 0);
-    sum += pnl;
-    if(pnl > 0) wins++;
-    if (max === null || pnl > max) max = pnl;
-    if (pnl < 0 && (min === null || pnl < min)) min = pnl;
-  });
-  
-  if (stats.total) stats.total.textContent = total;
-  if (stats.win) stats.win.textContent = wins;
-  if (stats.rate) stats.rate.textContent = total ? ((wins/total)*100).toFixed(2)+'%' : "0%";
-  if (stats.avg) stats.avg.textContent = total ? (sum/total).toFixed(2) : "0.00";
-  if (stats.max) stats.max.textContent = (max !== null ? max.toFixed(2) : "0.00");
-  if (stats.min) stats.min.textContent = (min !== null ? min.toFixed(2) : "0.00");
-  
-  const statsDataForRanking = {
-    total: total,
-    winCount: wins,
-    winRate: total ? (wins/total)*100 : 0,
-    avgPnl: total ? sum/total : 0,
-    maxPnl: max !== null ? max : 0,
-    minPnl: min !== null ? min : 0
-  };
-  
-  setTimeout(() => {
-    updateRadarChart();
-    updateRankingSystem(statsDataForRanking, data);
-  }, 200);
-}
-
-// ---------------- Update Chart ----------------
-const updateChart = debounce(function(data) {
-  if(!chart) initChart();
-  
-  const chartData = [...data].sort((a, b) => new Date(a.created_at || a.date || 0).getTime() - new Date(b.created_at || b.date || 0).getTime());
-  
-  let balance = 0;
-  let labels = [];
-  let values = [];
-  let colors = [];
-  chartTradeDetails = [];
-  
-  chartData.forEach((t) => {
-    const change = t.balance_change !== undefined && t.balance_change !== 0 ? Number(t.balance_change) : Number(t.pnl_amount || 0);
-    balance += change;
-    let displayLabel = '';
-    if (t.created_at) {
-      const date = new Date(t.created_at);
-      displayLabel = `${date.toLocaleDateString('en-US', {month: '2-digit', day: '2-digit'})} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-    } else if (t.date) displayLabel = t.date.replace(/-/g,'/');
-    
-    labels.push(displayLabel);
-    values.push(balance);
-    chartTradeDetails.push({ direction: t.direction, symbol: t.symbol, pnl_amount: t.pnl_amount, balance_change: t.balance_change, notes: t.notes, created_at: t.created_at, date: t.date });
-    if(t.direction === "Withdrawal") colors.push("#ff4d4d");
-    else if(t.direction === "Deposit") colors.push("#3eb489");
-    else colors.push(change >= 0 ? "#3eb489" : "#ff4d4d");
-  });
-
-  chart.data.labels = labels;
-  chart.data.datasets[0].data = values;
-  chart.data.datasets[0].pointBackgroundColor = colors;
-  chart.update();
-
-  const initialBalance = values.length > 0 ? values[0] : 0;
-  const currentPnl = values.length > 0 ? values[values.length - 1] - initialBalance : 0;
-  initialBalanceEl.textContent = `$${initialBalance.toFixed(2)}`;
-  currentPnlEl.textContent = `${currentPnl>=0?'+':''}$${currentPnl.toFixed(2)}`;
-  currentPnlEl.className = currentPnl>=0 ? "pnl-positive" : "pnl-negative";
-}, 300);
-
-// ---------------- Update Top Balance ----------------
-function updateTopBalance(data) {
-  let balance = 0;
-  data.forEach(t => { const change = t.balance_change !== undefined && t.balance_change !== 0 ? Number(t.balance_change) : Number(t.pnl_amount || 0); balance += change; });
-  topBalanceEl.textContent = `$${balance.toFixed(2)}`;
-}
-
-// ---------------- Submit Trade ----------------
-if (form) {
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    const session = await checkAuth();
-    if (!session) return;
-    if (!date.value) { alert('Please select a date'); return; }
-    if (!pnlAmount.value) { alert('Please enter P/L amount'); return; }
-    
-    const sessionSelect = document.getElementById('sessionSelect');
-    const selectedSession = sessionSelect ? sessionSelect.value : 'Asia';
-    
-    const payload = {
-      date: date.value, symbol: symbol.value, direction: direction.value, session: selectedSession,
-      lot_size: parseFloat(lotSize.value) || 0, sl: parseFloat(sl.value) || 0, entry: parseFloat(entry.value) || 0,
-      exit: parseFloat(exit.value) || 0, pnl_amount: parseFloat(pnlAmount.value) || 0, balance_change: 0,
-      notes: notes ? notes.value : '', user_id: session.user.id
-    };
-    
-    const { error } = await client.from("trades").insert([payload]);
-    if(error) { console.error("Error adding trade:", error); alert("Failed to add trade: " + error.message); }
-    else { form.reset(); date.value = new Date().toISOString().split('T')[0]; if (symbol) symbol.focus(); showNotification('Trade added successfully!', 'success'); fetchTrades(); }
-  });
-}
-
-// ============== 存款/取款模态框功能 ==============
-function initBalanceModal() {
-  const modal = document.getElementById('balanceModal');
-  if (!modal) return;
-  const closeBtn = document.getElementById('closeModal');
-  const cancelBtn = document.getElementById('cancelModal');
-  const confirmBtn = document.getElementById('confirmModal');
-  
-  function closeModal() {
-    modal.style.display = 'none';
-    const modalDate = document.getElementById('modalDate');
-    const modalAmount = document.getElementById('modalAmount');
-    const modalNotes = document.getElementById('modalNotes');
-    if (modalDate) modalDate.value = '';
-    if (modalAmount) modalAmount.value = '';
-    if (modalNotes) modalNotes.value = '';
-    currentTransactionType = null;
-  }
-  
-  if (closeBtn) closeBtn.addEventListener('click', closeModal);
-  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-  
-  if (confirmBtn) confirmBtn.addEventListener('click', async () => { await handleBalanceTransaction(); });
-  const modalAmountInput = document.getElementById('modalAmount');
-  if (modalAmountInput) modalAmountInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleBalanceTransaction(); });
-}
-
-function showBalanceModal(type) {
-  const modal = document.getElementById('balanceModal');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalDate = document.getElementById('modalDate');
-  if (!modal || !modalTitle) return;
-  currentTransactionType = type;
-  modalTitle.textContent = type === 'Deposit' ? 'Deposit' : 'Withdrawal';
-  if (modalDate) modalDate.value = new Date().toISOString().split('T')[0];
-  modal.className = 'modal-overlay ' + type.toLowerCase() + '-modal';
-  modal.style.display = 'flex';
-  setTimeout(() => { const amountInput = document.getElementById('modalAmount'); if (amountInput) amountInput.focus(); }, 100);
-}
-
-async function handleBalanceTransaction() {
-  if (!currentTransactionType) return;
-  const session = await checkAuth();
-  if (!session) return;
-  const modalDate = document.getElementById('modalDate');
-  const modalAmount = document.getElementById('modalAmount');
-  const modalNotes = document.getElementById('modalNotes');
-  if (!modalDate || !modalAmount) return;
-  const date = modalDate.value;
-  const amount = parseFloat(modalAmount.value);
-  const notes = modalNotes ? modalNotes.value : '';
-  if (!date) { alert('Please select a date'); return; }
-  if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount'); return; }
-  
-  const payload = {
-    date: date, symbol: currentTransactionType, direction: currentTransactionType, lot_size: 0, entry: 0, exit: 0,
-    pnl_amount: 0, balance_change: currentTransactionType === "Deposit" ? amount : -amount, notes: notes || '', user_id: session.user.id
-  };
-  
-  try {
-    const { error } = await client.from("trades").insert([payload]);
-    if (error) throw error;
-    document.getElementById('balanceModal').style.display = 'none';
-    modalDate.value = '';
-    modalAmount.value = '';
-    if (modalNotes) modalNotes.value = '';
-    showNotification(`${currentTransactionType} successful!`, 'success');
-    fetchTrades();
-    currentTransactionType = null;
-  } catch (error) { console.error("Error adding transaction:", error); alert("Failed to add transaction: " + error.message); }
-}
-
-function updateBalanceButtons() {
-  document.querySelectorAll(".balance-btn[data-type]").forEach(btn => {
-    if (btn.dataset.type === 'Deposit' || btn.dataset.type === 'Withdrawal') {
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener('click', (e) => { e.preventDefault(); showBalanceModal(newBtn.dataset.type); });
-    }
-  });
-}
-
-// ============== 编辑/删除功能 ==============
-function showEditForm(trade) {
-  if (!trade || !trade.id) return;
-  const editId = document.getElementById('editId');
-  const editDate = document.getElementById('editDate');
-  const editSymbol = document.getElementById('editSymbol');
-  const editDirection = document.getElementById('editDirection');
-  const editSession = document.getElementById('editSession');
-  const editLotSize = document.getElementById('editLotSize');
-  const editEntry = document.getElementById('editEntry');
-  const editExit = document.getElementById('editExit');
-  const editPnlAmount = document.getElementById('editPnlAmount');
-  const editNotes = document.getElementById('editNotes');
-  if (!editId || !editDate) return;
-  
-  editId.value = trade.id;
-  editDate.value = trade.date || '';
-  if (editSymbol) editSymbol.value = trade.symbol || '';
-  if (editDirection) editDirection.value = trade.direction || 'Buy';
-  if (editSession) editSession.value = trade.session || getTradeSession(trade.id) || 'Asia';
-  if (editLotSize) editLotSize.value = trade.lot_size || '';
-  if (editEntry) editEntry.value = trade.entry || '';
-  if (editExit) editExit.value = trade.exit || '';
-  if (editPnlAmount) editPnlAmount.value = trade.pnl_amount || '';
-  if (editNotes) editNotes.value = trade.notes || '';
-  
-  const editFormSection = document.getElementById('editFormSection');
-  const formSection = document.getElementById('formSection');
-  const tradeSection = document.getElementById('tradeSection');
-  const chartSection = document.getElementById('chartSection');
-  if (editFormSection) editFormSection.style.display = 'block';
-  if (formSection) formSection.style.display = 'none';
-  if (tradeSection) tradeSection.style.display = 'none';
-  if (chartSection) chartSection.style.display = 'none';
-}
-
-function hideEditForm() {
-  const editFormSection = document.getElementById('editFormSection');
-  const formSection = document.getElementById('formSection');
-  const tradeSection = document.getElementById('tradeSection');
-  const chartSection = document.getElementById('chartSection');
-  if (editFormSection) editFormSection.style.display = 'none';
-  if (formSection) formSection.style.display = 'block';
-  if (tradeSection) tradeSection.style.display = 'block';
-  if (chartSection) chartSection.style.display = 'block';
-}
-
-const editTradeForm = document.getElementById('editTradeForm');
-if (editTradeForm) {
-  editTradeForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const session = await checkAuth();
-    if (!session) return;
-    const editId = document.getElementById('editId');
-    const editDate = document.getElementById('editDate');
-    const editSymbol = document.getElementById('editSymbol');
-    const editDirection = document.getElementById('editDirection');
-    const editSession = document.getElementById('editSession');
-    const editLotSize = document.getElementById('editLotSize');
-    const editEntry = document.getElementById('editEntry');
-    const editExit = document.getElementById('editExit');
-    const editPnlAmount = document.getElementById('editPnlAmount');
-    const editNotes = document.getElementById('editNotes');
-    if (!editId || !editDate) return;
-    
-    const payload = {
-      date: editDate.value, symbol: editSymbol ? editSymbol.value : '', direction: editDirection ? editDirection.value : 'Buy',
-      session: editSession ? editSession.value : 'Asia', lot_size: editLotSize ? parseFloat(editLotSize.value) || 0 : 0,
-      entry: editEntry ? parseFloat(editEntry.value) || 0 : 0, exit: editExit ? parseFloat(editExit.value) || 0 : 0,
-      pnl_amount: editPnlAmount ? parseFloat(editPnlAmount.value) || 0 : 0, notes: editNotes ? editNotes.value : '', user_id: session.user.id
-    };
-    const tradeId = editId.value;
-    
-    try {
-      const { error } = await client.from('trades').update(payload).eq('id', tradeId).eq('user_id', session.user.id);
-      if (error) throw error;
-      showNotification('交易更新成功', 'success');
-      hideEditForm();
-      fetchTrades();
-    } catch (error) { console.error('更新失败:', error); alert('更新失败: ' + error.message); }
-  });
-}
-
-const deleteTradeBtn = document.getElementById('deleteTradeBtn');
-if (deleteTradeBtn) {
-  deleteTradeBtn.addEventListener('click', async function() {
-    const editId = document.getElementById('editId');
-    if (!editId) return;
-    const tradeId = editId.value;
-    const confirmMsg = '确定要删除这笔交易吗？';
-    if (!confirm(confirmMsg)) return;
-    const session = await checkAuth();
-    if (!session) return;
-    
-    try {
-      const { error } = await client.from('trades').delete().eq('id', tradeId).eq('user_id', session.user.id);
-      if (error) throw error;
-      showNotification('交易删除成功', 'success');
-      hideEditForm();
-      fetchTrades();
-    } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
-  });
-}
-
-const cancelEditBtn = document.getElementById('cancelEditBtn');
-if (cancelEditBtn) cancelEditBtn.addEventListener('click', hideEditForm);
-
-// ---------------- Toggle last 3 trades ----------------
-if (toggleBtn) {
-  toggleBtn.onclick = () => {
-    showAll = !showAll;
-    toggleBtn.textContent = showAll ? 'Hide' : 'Show All';
-    fetchTrades();
-  };
-}
-
-// ---------------- Set default date to today ----------------
-if (date) date.value = new Date().toISOString().split('T')[0];
-
-function showNotification(message, type = 'info') {
-  const existingNotification = document.querySelector('.notification-toast');
-  if (existingNotification) existingNotification.remove();
-  const notification = document.createElement('div');
-  notification.className = `notification-toast notification-${type}`;
-  notification.innerHTML = `<div class="notification-content"><span>${message}</span></div><button class="notification-close">&times;</button>`;
-  document.body.appendChild(notification);
-  setTimeout(() => notification.classList.add('show'), 10);
-  setTimeout(() => { notification.classList.remove('show'); setTimeout(() => notification.remove(), 300); }, 3000);
-  const closeBtn = notification.querySelector('.notification-close');
-  if (closeBtn) closeBtn.addEventListener('click', () => { notification.classList.remove('show'); setTimeout(() => notification.remove(), 300); });
-}
-
-// ============== 漂浮粒子效果 ==============
-(function() {
-  let container = document.getElementById('global-particles');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'global-particles';
-    document.body.insertBefore(container, document.body.firstChild);
-  }
-  container.innerHTML = '';
-  
-  const colors = ['#3b82f6', '#60a5fa', '#06b6d4', '#22d3ee', '#14b8a6'];
-  
-  for (let i = 0; i < 60; i++) {
-    const particle = document.createElement('div');
-    const size = 2 + Math.random() * 6;
-    const left = Math.random() * 100;
-    const duration = 6 + Math.random() * 9;
-    const delay = Math.random() * 10;
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    particle.style.cssText = `
-      position: fixed;
-      width: ${size}px;
-      height: ${size}px;
-      background: ${color};
-      border-radius: 50%;
-      left: ${left}%;
-      bottom: -10px;
-      opacity: 0.7;
-      box-shadow: 0 0 ${size * 2}px ${color};
-      animation: floatUp ${duration}s linear infinite;
-      animation-delay: ${delay}s;
-      pointer-events: none;
-      z-index: 0;
-    `;
-    container.appendChild(particle);
-  }
-  
-  if (!document.querySelector('#particle-keyframes')) {
-    const style = document.createElement('style');
-    style.id = 'particle-keyframes';
-    style.textContent = `
-      @keyframes floatUp {
-        0% { transform: translateY(0) translateX(0); opacity: 0; }
-        10% { opacity: 0.8; }
-        90% { opacity: 0.8; }
-        100% { transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-})();
-
-// ============== 全局函数暴露 ==============
-window.showEditForm = showEditForm;
-window.hideEditForm = hideEditForm;
-window.deleteTrade = deleteTrade;
-window.fetchTrades = fetchTrades;
-window.showBalanceModal = showBalanceModal;
-window.viewTradeImage = viewTradeImage;
-window.removeTradeImage = removeTradeImage;
-window.updateTradeSession = updateTradeSession;
-window.getTradeSession = getTradeSession;
-window.saveTradeNotes = saveTradeNotes;
-window.getTradeNotes = getTradeNotes;
-window.updateRankSvg = updateRankSvg;
 
 // ============== 纪律评分计算函数 ==============
 function updateDisciplineScore(trades) {
@@ -2720,6 +2632,647 @@ function updateEmotionalState(trades) {
   }
 }
 
+// ============== 六维雷达图绘制函数 ==============
+function initRadarChart(statsData, allTradesData) {
+  const canvas = document.getElementById('radarChart');
+  if (!canvas) return;
+  
+  if (radarChart) {
+    try { radarChart.destroy(); } catch(e) {}
+  }
+  
+  const buySellTrades = allTradesData.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+  const totalTrades = buySellTrades.length;
+  
+  let winRateScore = statsData.winRate;
+  
+  let profitFactorScore = 0;
+  let totalWinning = 0;
+  let totalLosing = 0;
+  buySellTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    if (pnl > 0) totalWinning += pnl;
+    else if (pnl < 0) totalLosing += Math.abs(pnl);
+  });
+  const profitFactor = totalLosing > 0 ? totalWinning / totalLosing : (totalWinning > 0 ? 10 : 0);
+  profitFactorScore = Math.min(100, Math.max(0, (profitFactor - 0.5) / 3.5 * 100));
+  if (profitFactor >= 3) profitFactorScore = 100;
+  if (profitFactor <= 0.5) profitFactorScore = 0;
+  
+  let consistencyScore = 50;
+  if (buySellTrades.length > 0) {
+    const dailyPnL = {};
+    buySellTrades.forEach(trade => {
+      const date = trade.date;
+      const pnl = parseFloat(trade.pnl_amount || 0);
+      if (!dailyPnL[date]) dailyPnL[date] = 0;
+      dailyPnL[date] += pnl;
+    });
+    const dailyValues = Object.values(dailyPnL);
+    if (dailyValues.length > 0) {
+      const mean = dailyValues.reduce((a, b) => a + b, 0) / dailyValues.length;
+      const variance = dailyValues.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / dailyValues.length;
+      const stdDev = Math.sqrt(variance);
+      const maxPossibleStdDev = 300;
+      consistencyScore = Math.max(0, Math.min(100, 100 - (stdDev / maxPossibleStdDev) * 100));
+    }
+  }
+  
+  let maxDrawdownScore = 100;
+  let balance = 0;
+  let peak = 0;
+  let maxDrawdown = 0;
+  const sortedTrades = [...buySellTrades].sort((a, b) => {
+    const dateA = new Date(a.created_at || a.date || 0);
+    const dateB = new Date(b.created_at || b.date || 0);
+    return dateA - dateB;
+  });
+  sortedTrades.forEach(trade => {
+    const pnl = parseFloat(trade.pnl_amount || 0);
+    balance += pnl;
+    if (balance > peak) peak = balance;
+    const drawdown = peak > 0 ? (peak - balance) / peak * 100 : 0;
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+  });
+  maxDrawdownScore = Math.max(0, Math.min(100, 100 - maxDrawdown * 2));
+  
+  let recoveryFactorScore = 50;
+  const maxDrawdownAmount = maxDrawdown / 100 * peak;
+  const recoveryFactor = maxDrawdownAmount > 0 ? totalWinning / maxDrawdownAmount : (totalWinning > 0 ? 10 : 0);
+  recoveryFactorScore = Math.min(100, Math.max(0, (recoveryFactor / 3) * 100));
+  if (recoveryFactor >= 3) recoveryFactorScore = 100;
+  
+  let avgWinLossScore = 50;
+  const winTrades = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) > 0);
+  const lossTrades = buySellTrades.filter(t => parseFloat(t.pnl_amount || 0) < 0);
+  const avgWin = winTrades.length > 0 ? totalWinning / winTrades.length : 0;
+  const avgLoss = lossTrades.length > 0 ? totalLosing / lossTrades.length : 0;
+  const winLossRatio = avgLoss > 0 ? avgWin / avgLoss : (avgWin > 0 ? 5 : 0);
+  avgWinLossScore = Math.min(100, Math.max(0, (winLossRatio / 3) * 100));
+  if (winLossRatio >= 3) avgWinLossScore = 100;
+  
+  const radarData = {
+    labels: ['Win Rate', 'Profit Factor', 'Consistency', 'Max Drawdown', 'Recovery Factor', 'Avg Win/Loss'],
+    datasets: [{
+      label: 'Ability Score',
+      data: [winRateScore, profitFactorScore, consistencyScore, maxDrawdownScore, recoveryFactorScore, avgWinLossScore],
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: 'rgba(59, 130, 246, 0.8)',
+      borderWidth: 2,
+      pointBackgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: '#3b82f6',
+      pointRadius: 4,
+      pointHoverRadius: 6
+    }]
+  };
+  
+  const radarConfig = {
+    type: 'radar',
+    data: radarData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: { stepSize: 20, color: '#64748b', backdropColor: 'transparent' },
+          grid: { color: 'rgba(100, 116, 139, 0.25)', circular: true },
+          angleLines: { color: 'rgba(100, 116, 139, 0.15)' },
+          pointLabels: { color: '#94a3b8', font: { size: 10, weight: '500' } }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleColor: '#e2e8f0',
+          bodyColor: '#94a3b8',
+          borderColor: 'rgba(59, 130, 246, 0.3)',
+          borderWidth: 1,
+          callbacks: {
+            label: function(ctx) {
+              let value = ctx.raw;
+              let label = ctx.label;
+              let scoreText = value >= 80 ? 'Excellent' : (value >= 60 ? 'Good' : (value >= 40 ? 'Average' : 'Needs Improvement'));
+              return `${label}: ${value.toFixed(1)} pts (${scoreText})`;
+            }
+          }
+        }
+      }
+    }
+  };
+  
+  try {
+    radarChart = new Chart(canvas, radarConfig);
+  } catch(e) {
+    console.error('创建雷达图失败:', e);
+  }
+}
+
+// ============== 更新雷达图 ==============
+function updateRadarChart() {
+  const totalTradesEl = document.getElementById('totalTrades');
+  const winningTradesEl = document.getElementById('winningTrades');
+  const winRateEl = document.getElementById('winRate');
+  const avgPnlEl = document.getElementById('avgPnl');
+  const maxPnlEl = document.getElementById('maxPnl');
+  const minPnlEl = document.getElementById('minPnl');
+  
+  if (!totalTradesEl) return;
+  
+  const statsData = {
+    total: parseInt(totalTradesEl.textContent) || 0,
+    winCount: parseInt(winningTradesEl.textContent) || 0,
+    winRate: parseFloat(winRateEl.textContent) || 0,
+    avgPnl: parseFloat(avgPnlEl.textContent) || 0,
+    maxPnl: parseFloat(maxPnlEl.textContent) || 0,
+    minPnl: parseFloat(minPnlEl.textContent) || 0
+  };
+  
+  initRadarChart(statsData, window.allTradesData);
+}
+
+// 在 fetchTrades 函数中，找到调用 groupTradesByDate 的地方
+// 大约在第 2150 行附近
+
+async function fetchTrades() {
+  const session = await checkAuth();
+  if (!session) return;
+  displayUserInfo(session);
+  
+  try {
+    const { data, error } = await client.from("trades").select("*").eq("user_id", session.user.id).order("date", { ascending: false }).order("created_at", { ascending: false });
+    if (error) { console.error("Error fetching trades:", error); return; }
+    
+    window.allTradesData = data || [];
+    
+    // 从 DOM 获取当前的 Initial Balance
+    let currentInitialBalance = null;
+    const initialBalanceEl = document.getElementById("initialBalance");
+    if (initialBalanceEl) {
+      const balanceText = initialBalanceEl.textContent;
+      const match = balanceText.match(/\$?([0-9.]+)/);
+      if (match) {
+        currentInitialBalance = parseFloat(match[1]);
+      }
+    }
+    
+    console.log("fetchTrades - 读取到的 Initial Balance:", currentInitialBalance);
+    
+    // 如果没有读取到，尝试从图表数据计算
+    if (currentInitialBalance === null || isNaN(currentInitialBalance)) {
+      // 从 allTradesData 计算初始余额
+      const sortedForBalance = [...data].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0);
+        const dateB = new Date(b.created_at || b.date || 0);
+        return dateA - dateB;
+      });
+      
+      let calcBalance = 0;
+      for (const trade of sortedForBalance) {
+        const change = trade.balance_change !== undefined && trade.balance_change !== 0 
+          ? Number(trade.balance_change) 
+          : Number(trade.pnl_amount || 0);
+        calcBalance += change;
+      }
+      // 如果有负的累计（说明有初始资金），需要推算
+      // 简化处理：如果 chart 有数据，从 chart 获取
+      if (chart && chart.data && chart.data.datasets[0].data.length > 0) {
+        currentInitialBalance = chart.data.datasets[0].data[0];
+      } else {
+        currentInitialBalance = 1000;
+      }
+      console.log("fetchTrades - 推算的 Initial Balance:", currentInitialBalance);
+    }
+    
+    // 传递初始资金给 groupTradesByDate
+    const groupedData = groupTradesByDate(data, currentInitialBalance);
+    renderTable(groupedData);
+    updateStats(data);
+    updateChart(data);
+    updateTopBalance(data);
+    addTimeSessionSelector();
+    updateSessionStats();
+    updateDisciplineScore(data);
+    updateEmotionalState(data);
+  } catch (error) { console.error("获取交易数据异常:", error); }
+}
+
+// ---------------- 删除交易 ----------------
+async function deleteTrade(tradeId) {
+  const session = await checkAuth();
+  if (!session) return;
+  const confirmMsg = '确定要删除这笔交易吗？';
+  if (!confirm(confirmMsg)) return;
+  
+  try {
+    const { error } = await client.from("trades").delete().eq("id", tradeId).eq("user_id", session.user.id);
+    if (error) throw error;
+    showNotification('交易删除成功', 'success');
+    fetchTrades();
+  } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
+}
+
+// ---------------- Update Stats ----------------
+function updateStats(data) {
+  const tradesOnly = Array.isArray(data) ? data.filter(t => t.direction === "Buy" || t.direction === "Sell") : [];
+  let total = tradesOnly.length, wins = 0, sum = 0, max = null, min = null;
+  
+  tradesOnly.forEach(t => {
+    const pnl = Number(t.pnl_amount || 0);
+    sum += pnl;
+    if(pnl > 0) wins++;
+    if (max === null || pnl > max) max = pnl;
+    if (pnl < 0 && (min === null || pnl < min)) min = pnl;
+  });
+  
+  if (stats.total) stats.total.textContent = total;
+  if (stats.win) stats.win.textContent = wins;
+  if (stats.rate) stats.rate.textContent = total ? ((wins/total)*100).toFixed(2)+'%' : "0%";
+  if (stats.avg) stats.avg.textContent = total ? (sum/total).toFixed(2) : "0.00";
+  if (stats.max) stats.max.textContent = (max !== null ? max.toFixed(2) : "0.00");
+  if (stats.min) stats.min.textContent = (min !== null ? min.toFixed(2) : "0.00");
+  
+  const statsDataForRanking = {
+    total: total,
+    winCount: wins,
+    winRate: total ? (wins/total)*100 : 0,
+    avgPnl: total ? sum/total : 0,
+    maxPnl: max !== null ? max : 0,
+    minPnl: min !== null ? min : 0
+  };
+  
+  setTimeout(() => {
+    updateRadarChart();
+    updateRankingSystem(statsDataForRanking, data);
+  }, 200);
+}
+
+// ---------------- Update Chart ----------------
+const updateChart = debounce(function(data) {
+  if(!chart) initChart();
+  
+  const chartData = [...data].sort((a, b) => new Date(a.created_at || a.date || 0).getTime() - new Date(b.created_at || b.date || 0).getTime());
+  
+  let balance = 0;
+  let labels = [];
+  let values = [];
+  let colors = [];
+  chartTradeDetails = [];
+  
+  chartData.forEach((t) => {
+    const change = t.balance_change !== undefined && t.balance_change !== 0 ? Number(t.balance_change) : Number(t.pnl_amount || 0);
+    balance += change;
+    let displayLabel = '';
+    if (t.created_at) {
+      const date = new Date(t.created_at);
+      displayLabel = `${date.toLocaleDateString('en-US', {month: '2-digit', day: '2-digit'})} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    } else if (t.date) displayLabel = t.date.replace(/-/g,'/');
+    
+    labels.push(displayLabel);
+    values.push(balance);
+    chartTradeDetails.push({ direction: t.direction, symbol: t.symbol, pnl_amount: t.pnl_amount, balance_change: t.balance_change, notes: t.notes, created_at: t.created_at, date: t.date });
+    if(t.direction === "Withdrawal") colors.push("#ff4d4d");
+    else if(t.direction === "Deposit") colors.push("#3eb489");
+    else colors.push(change >= 0 ? "#3eb489" : "#ff4d4d");
+  });
+
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = values;
+  chart.data.datasets[0].pointBackgroundColor = colors;
+  chart.update();
+
+  // 确保 Initial Balance 正确显示
+  const initialBalance = values.length > 0 ? values[0] : 0;
+  const currentPnl = values.length > 0 ? values[values.length - 1] - initialBalance : 0;
+  
+  const initialBalanceEl = document.getElementById("initialBalance");
+  const currentPnlEl = document.getElementById("currentPnl");
+  
+  if (initialBalanceEl) {
+    initialBalanceEl.textContent = `$${initialBalance.toFixed(2)}`;
+    console.log("updateChart - 设置 Initial Balance:", initialBalance);
+  }
+  if (currentPnlEl) {
+    currentPnlEl.textContent = `${currentPnl>=0?'+':''}$${currentPnl.toFixed(2)}`;
+    currentPnlEl.className = currentPnl>=0 ? "pnl-positive" : "pnl-negative";
+  }
+}, 300);
+
+// ---------------- Update Top Balance ----------------
+function updateTopBalance(data) {
+  let balance = 0;
+  data.forEach(t => { const change = t.balance_change !== undefined && t.balance_change !== 0 ? Number(t.balance_change) : Number(t.pnl_amount || 0); balance += change; });
+  topBalanceEl.textContent = `$${balance.toFixed(2)}`;
+}
+
+// ---------------- Submit Trade ----------------
+if (form) {
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const session = await checkAuth();
+    if (!session) return;
+    if (!date.value) { alert('Please select a date'); return; }
+    if (!pnlAmount.value) { alert('Please enter P/L amount'); return; }
+    
+    const sessionSelect = document.getElementById('sessionSelect');
+    const selectedSession = sessionSelect ? sessionSelect.value : 'Asia';
+    
+    const payload = {
+      date: date.value, symbol: symbol.value, direction: direction.value, session: selectedSession,
+      lot_size: parseFloat(lotSize.value) || 0, sl: parseFloat(sl.value) || 0, entry: parseFloat(entry.value) || 0,
+      exit: parseFloat(exit.value) || 0, pnl_amount: parseFloat(pnlAmount.value) || 0, balance_change: 0,
+      notes: notes ? notes.value : '', user_id: session.user.id
+    };
+    
+    const { error } = await client.from("trades").insert([payload]);
+    if(error) { console.error("Error adding trade:", error); alert("Failed to add trade: " + error.message); }
+    else { form.reset(); date.value = new Date().toISOString().split('T')[0]; if (symbol) symbol.focus(); showNotification('Trade added successfully!', 'success'); fetchTrades(); }
+  });
+}
+
+// ============== 存款/取款模态框功能 ==============
+function initBalanceModal() {
+  const modal = document.getElementById('balanceModal');
+  if (!modal) return;
+  const closeBtn = document.getElementById('closeModal');
+  const cancelBtn = document.getElementById('cancelModal');
+  const confirmBtn = document.getElementById('confirmModal');
+  
+  function closeModal() {
+    modal.style.display = 'none';
+    const modalDate = document.getElementById('modalDate');
+    const modalAmount = document.getElementById('modalAmount');
+    const modalNotes = document.getElementById('modalNotes');
+    if (modalDate) modalDate.value = '';
+    if (modalAmount) modalAmount.value = '';
+    if (modalNotes) modalNotes.value = '';
+    currentTransactionType = null;
+  }
+  
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  
+  if (confirmBtn) confirmBtn.addEventListener('click', async () => { await handleBalanceTransaction(); });
+  const modalAmountInput = document.getElementById('modalAmount');
+  if (modalAmountInput) modalAmountInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleBalanceTransaction(); });
+}
+
+function showBalanceModal(type) {
+  const modal = document.getElementById('balanceModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalDate = document.getElementById('modalDate');
+  if (!modal || !modalTitle) return;
+  currentTransactionType = type;
+  modalTitle.textContent = type === 'Deposit' ? 'Deposit' : 'Withdrawal';
+  if (modalDate) modalDate.value = new Date().toISOString().split('T')[0];
+  modal.className = 'modal-overlay ' + type.toLowerCase() + '-modal';
+  modal.style.display = 'flex';
+  setTimeout(() => { const amountInput = document.getElementById('modalAmount'); if (amountInput) amountInput.focus(); }, 100);
+}
+
+async function handleBalanceTransaction() {
+  if (!currentTransactionType) return;
+  const session = await checkAuth();
+  if (!session) return;
+  const modalDate = document.getElementById('modalDate');
+  const modalAmount = document.getElementById('modalAmount');
+  const modalNotes = document.getElementById('modalNotes');
+  if (!modalDate || !modalAmount) return;
+  const date = modalDate.value;
+  const amount = parseFloat(modalAmount.value);
+  const notes = modalNotes ? modalNotes.value : '';
+  if (!date) { alert('Please select a date'); return; }
+  if (isNaN(amount) || amount <= 0) { alert('Please enter a valid amount'); return; }
+  
+  const payload = {
+    date: date, symbol: currentTransactionType, direction: currentTransactionType, lot_size: 0, entry: 0, exit: 0,
+    pnl_amount: 0, balance_change: currentTransactionType === "Deposit" ? amount : -amount, notes: notes || '', user_id: session.user.id
+  };
+  
+  try {
+    const { error } = await client.from("trades").insert([payload]);
+    if (error) throw error;
+    document.getElementById('balanceModal').style.display = 'none';
+    modalDate.value = '';
+    modalAmount.value = '';
+    if (modalNotes) modalNotes.value = '';
+    showNotification(`${currentTransactionType} successful!`, 'success');
+    fetchTrades();
+    currentTransactionType = null;
+  } catch (error) { console.error("Error adding transaction:", error); alert("Failed to add transaction: " + error.message); }
+}
+
+function updateBalanceButtons() {
+  document.querySelectorAll(".balance-btn[data-type]").forEach(btn => {
+    if (btn.dataset.type === 'Deposit' || btn.dataset.type === 'Withdrawal') {
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', (e) => { e.preventDefault(); showBalanceModal(newBtn.dataset.type); });
+    }
+  });
+}
+
+// ============== 编辑/删除功能 ==============
+function showEditForm(trade) {
+  if (!trade || !trade.id) return;
+  const editId = document.getElementById('editId');
+  const editDate = document.getElementById('editDate');
+  const editSymbol = document.getElementById('editSymbol');
+  const editDirection = document.getElementById('editDirection');
+  const editSession = document.getElementById('editSession');
+  const editLotSize = document.getElementById('editLotSize');
+  const editEntry = document.getElementById('editEntry');
+  const editExit = document.getElementById('editExit');
+  const editPnlAmount = document.getElementById('editPnlAmount');
+  if (!editId || !editDate) return;
+  
+  editId.value = trade.id;
+  editDate.value = trade.date || '';
+  if (editSymbol) editSymbol.value = trade.symbol || '';
+  if (editDirection) editDirection.value = trade.direction || 'Buy';
+  if (editSession) editSession.value = trade.session || getTradeSession(trade.id) || 'Asia';
+  if (editLotSize) editLotSize.value = trade.lot_size || '';
+  if (editEntry) editEntry.value = trade.entry || '';
+  if (editExit) editExit.value = trade.exit || '';
+  if (editPnlAmount) editPnlAmount.value = trade.pnl_amount || '';
+  
+  const editFormSection = document.getElementById('editFormSection');
+  const formSection = document.getElementById('formSection');
+  const tradeSection = document.getElementById('tradeSection');
+  const chartSection = document.getElementById('chartSection');
+  if (editFormSection) editFormSection.style.display = 'block';
+  if (formSection) formSection.style.display = 'none';
+  if (tradeSection) tradeSection.style.display = 'none';
+  if (chartSection) chartSection.style.display = 'none';
+}
+
+function hideEditForm() {
+  const editFormSection = document.getElementById('editFormSection');
+  const formSection = document.getElementById('formSection');
+  const tradeSection = document.getElementById('tradeSection');
+  const chartSection = document.getElementById('chartSection');
+  if (editFormSection) editFormSection.style.display = 'none';
+  if (formSection) formSection.style.display = 'block';
+  if (tradeSection) tradeSection.style.display = 'block';
+  if (chartSection) chartSection.style.display = 'block';
+}
+
+const editTradeForm = document.getElementById('editTradeForm');
+if (editTradeForm) {
+  editTradeForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const session = await checkAuth();
+    if (!session) return;
+    const editId = document.getElementById('editId');
+    const editDate = document.getElementById('editDate');
+    const editSymbol = document.getElementById('editSymbol');
+    const editDirection = document.getElementById('editDirection');
+    const editSession = document.getElementById('editSession');
+    const editLotSize = document.getElementById('editLotSize');
+    const editEntry = document.getElementById('editEntry');
+    const editExit = document.getElementById('editExit');
+    const editPnlAmount = document.getElementById('editPnlAmount');
+    if (!editId || !editDate) return;
+    
+    const payload = {
+      date: editDate.value, symbol: editSymbol ? editSymbol.value : '', direction: editDirection ? editDirection.value : 'Buy',
+      session: editSession ? editSession.value : 'Asia', lot_size: editLotSize ? parseFloat(editLotSize.value) || 0 : 0,
+      entry: editEntry ? parseFloat(editEntry.value) || 0 : 0, exit: editExit ? parseFloat(editExit.value) || 0 : 0,
+      pnl_amount: editPnlAmount ? parseFloat(editPnlAmount.value) || 0 : 0, user_id: session.user.id
+    };
+    const tradeId = editId.value;
+    
+    try {
+      const { error } = await client.from('trades').update(payload).eq('id', tradeId).eq('user_id', session.user.id);
+      if (error) throw error;
+      showNotification('交易更新成功', 'success');
+      hideEditForm();
+      fetchTrades();
+    } catch (error) { console.error('更新失败:', error); alert('更新失败: ' + error.message); }
+  });
+}
+
+const deleteTradeBtn = document.getElementById('deleteTradeBtn');
+if (deleteTradeBtn) {
+  deleteTradeBtn.addEventListener('click', async function() {
+    const editId = document.getElementById('editId');
+    if (!editId) return;
+    const tradeId = editId.value;
+    const confirmMsg = '确定要删除这笔交易吗？';
+    if (!confirm(confirmMsg)) return;
+    const session = await checkAuth();
+    if (!session) return;
+    
+    try {
+      const { error } = await client.from('trades').delete().eq('id', tradeId).eq('user_id', session.user.id);
+      if (error) throw error;
+      showNotification('交易删除成功', 'success');
+      hideEditForm();
+      fetchTrades();
+    } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
+  });
+}
+
+const cancelEditBtn = document.getElementById('cancelEditBtn');
+if (cancelEditBtn) cancelEditBtn.addEventListener('click', hideEditForm);
+
+// ---------------- Toggle last 3 trades ----------------
+if (toggleBtn) {
+  toggleBtn.onclick = () => {
+    showAll = !showAll;
+    toggleBtn.textContent = showAll ? 'Hide' : 'Show All';
+    fetchTrades();
+  };
+}
+
+// ---------------- Set default date to today ----------------
+if (date) date.value = new Date().toISOString().split('T')[0];
+
+function showNotification(message, type = 'info') {
+  const existingNotification = document.querySelector('.notification-toast');
+  if (existingNotification) existingNotification.remove();
+  const notification = document.createElement('div');
+  notification.className = `notification-toast notification-${type}`;
+  notification.innerHTML = `<div class="notification-content"><span>${message}</span></div><button class="notification-close">&times;</button>`;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.classList.add('show'), 10);
+  setTimeout(() => { notification.classList.remove('show'); setTimeout(() => notification.remove(), 300); }, 3000);
+  const closeBtn = notification.querySelector('.notification-close');
+  if (closeBtn) closeBtn.addEventListener('click', () => { notification.classList.remove('show'); setTimeout(() => notification.remove(), 300); });
+}
+
+// ============== 漂浮粒子效果 ==============
+(function() {
+  let container = document.getElementById('global-particles');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'global-particles';
+    document.body.insertBefore(container, document.body.firstChild);
+  }
+  container.innerHTML = '';
+  
+  const colors = ['#3b82f6', '#60a5fa', '#06b6d4', '#22d3ee', '#14b8a6'];
+  
+  for (let i = 0; i < 60; i++) {
+    const particle = document.createElement('div');
+    const size = 2 + Math.random() * 6;
+    const left = Math.random() * 100;
+    const duration = 6 + Math.random() * 9;
+    const delay = Math.random() * 10;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    particle.style.cssText = `
+      position: fixed;
+      width: ${size}px;
+      height: ${size}px;
+      background: ${color};
+      border-radius: 50%;
+      left: ${left}%;
+      bottom: -10px;
+      opacity: 0.7;
+      box-shadow: 0 0 ${size * 2}px ${color};
+      animation: floatUp ${duration}s linear infinite;
+      animation-delay: ${delay}s;
+      pointer-events: none;
+      z-index: 0;
+    `;
+    container.appendChild(particle);
+  }
+  
+  if (!document.querySelector('#particle-keyframes')) {
+    const style = document.createElement('style');
+    style.id = 'particle-keyframes';
+    style.textContent = `
+      @keyframes floatUp {
+        0% { transform: translateY(0) translateX(0); opacity: 0; }
+        10% { opacity: 0.8; }
+        90% { opacity: 0.8; }
+        100% { transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+})();
+
+// ============== 全局函数暴露 ==============
+window.showEditForm = showEditForm;
+window.hideEditForm = hideEditForm;
+window.deleteTrade = deleteTrade;
+window.fetchTrades = fetchTrades;
+window.showBalanceModal = showBalanceModal;
+window.viewTradeImage = viewTradeImage;
+window.removeTradeImage = removeTradeImage;
+window.updateTradeSession = updateTradeSession;
+window.getTradeSession = getTradeSession;
+window.saveTradeNotes = saveTradeNotes;
+window.getTradeNotes = getTradeNotes;
+window.updateRankSvg = updateRankSvg;
+
 // ---------------- Initial Load ----------------
 async function initApp() {
   const session = await checkAuth();
@@ -2732,6 +3285,8 @@ async function initApp() {
     fetchTrades();
     initBalanceModal();
     updateBalanceButtons();
+    addHoverPreviewStyles();
+    initHoverPreviews();
     if (window.initLanguage) window.initLanguage();
     setTimeout(() => { updateRadarChart(); }, 500);
   }
