@@ -1781,68 +1781,404 @@ function updateSessionCard(prefix, data) {
   }
 }
 
-// ============== 综合评分计算函数（每笔交易最多100-200分） ==============
-function calculateOverallScore(statsData) {
-  // 如果没有交易数据，直接返回 0
-  if (!statsData.total || statsData.total === 0) {
-    return 0;
-  }
-  
-  let score = 0;
-  
-  // 1. 胜率评分：最高 2000 分
-  let winRateScore = (statsData.winRate / 100) * 2000;
-  score += winRateScore;
-  
-  // 2. 净盈利评分：最高 3000 分，每盈利 $10 得 3 分
-  let totalProfit = statsData.avgPnl * statsData.total;
-  let profitScore = 0;
-  if (totalProfit > 0) {
-    profitScore = Math.min(3000, (totalProfit / 10) * 3);
-  }
-  score += profitScore;
-  
-  // 3. 风险控制评分：最高 2500 分
-  let riskScore = 2000;
-  if (statsData.minPnl < 0) {
-    let lossPenalty = Math.min(2000, (Math.abs(statsData.minPnl) / 100) * 50);
-    riskScore = Math.max(0, 2000 - lossPenalty);
-  }
-  score += riskScore;
-  
-  // 4. 交易活跃度评分：最高 2500 分，每笔交易 50 分
-  let activityScore = Math.min(2500, statsData.total * 50);
-  score += activityScore;
-  
-  // 5. 盈亏比评分：最高 1000 分
-  let rrScore = 0;
-  if (statsData.minPnl < 0 && statsData.avgPnl > 0) {
-    let ratio = Math.abs(statsData.avgPnl / statsData.minPnl);
-    rrScore = Math.min(1000, ratio * 200);
-  } else if (statsData.avgPnl > 0) {
-    rrScore = 500;
-  }
-  score += rrScore;
-  
-  return Math.min(10000, Math.max(0, Math.floor(score)));
+// ============== 交易记录存储（用于动态分数计算） ==============
+let tradeHistoryCache = [];
+
+// 更新交易历史缓存
+function updateTradeHistoryCache(trades) {
+    tradeHistoryCache = [...trades].filter(t => t.direction === 'Buy' || t.direction === 'Sell');
 }
 
-// ============== 等级判定函数 (每个子等级间隔1000分) ==============
+// 获取连续盈利次数（按时间顺序，从最新往前计算）
+function getConsecutiveWins(trades) {
+    if (!trades || trades.length === 0) return 0;
+    
+    // 按时间排序（从旧到新）
+    const sorted = [...trades].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0);
+        const dateB = new Date(b.created_at || b.date || 0);
+        return dateA - dateB;
+    });
+    
+    let consecutive = 0;
+    // 从最新的交易往前数
+    for (let i = sorted.length - 1; i >= 0; i--) {
+        const pnl = parseFloat(sorted[i].pnl_amount || 0);
+        if (pnl > 0) {
+            consecutive++;
+        } else {
+            break;
+        }
+    }
+    return consecutive;
+}
+
+// 获取指定日期的交易数量
+function getTradesCountOnDate(trades, targetDate) {
+    return trades.filter(t => {
+        const tradeDate = t.date || (t.created_at ? t.created_at.split('T')[0] : '');
+        return tradeDate === targetDate && (t.direction === 'Buy' || t.direction === 'Sell');
+    }).length;
+}
+
+// 获取指定日期的 Daily Quest 状态
+function getDailyQuestStatusForDate(trades, targetDate, initialBalance) {
+    const dayTrades = trades.filter(t => {
+        const tradeDate = t.date || (t.created_at ? t.created_at.split('T')[0] : '');
+        return tradeDate === targetDate && (t.direction === 'Buy' || t.direction === 'Sell');
+    });
+    
+    if (dayTrades.length === 0) return 'no-trades';
+    
+    let dailyPnl = 0;
+    dayTrades.forEach(t => {
+        dailyPnl += parseFloat(t.pnl_amount || 0);
+    });
+    
+    let startingBalance = initialBalance;
+    if (startingBalance === null || startingBalance === undefined || isNaN(startingBalance)) {
+        startingBalance = 1000;
+    }
+    
+    const profitTarget = startingBalance * 0.1;
+    const lossLimit = startingBalance * 0.25;
+    
+    if (dailyPnl >= profitTarget) return 'passed';
+    if (dailyPnl <= -lossLimit) return 'failed';
+    return 'patience';
+}
+
+// ============== 综合评分计算函数（每笔交易动态评分） ==============
+function calculateOverallScore(statsData, allTrades = null) {
+    // 如果没有交易数据，直接返回 0
+    if (!statsData.total || statsData.total === 0) {
+        return 0;
+    }
+    
+    // 使用传入的交易数据或缓存
+    const trades = allTrades || tradeHistoryCache;
+    const buySellTrades = trades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+    
+    if (buySellTrades.length === 0) {
+        return 0;
+    }
+    
+    let totalScore = 0;
+    const processedDates = new Set();
+    
+    // 获取初始资金用于 Daily Quest 判断
+    let initialBalance = 1000;
+    const initialBalanceEl = document.getElementById("initialBalance");
+    if (initialBalanceEl) {
+        const balanceText = initialBalanceEl.textContent;
+        const match = balanceText.match(/\$?([0-9.]+)/);
+        if (match) {
+            initialBalance = parseFloat(match[1]);
+        }
+    }
+    
+    // 按日期分组交易
+    const tradesByDate = {};
+    buySellTrades.forEach(trade => {
+        const date = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
+        if (!tradesByDate[date]) {
+            tradesByDate[date] = [];
+        }
+        tradesByDate[date].push(trade);
+    });
+    
+    // ========== 1. 每笔交易基础分数 ==========
+    for (const trade of buySellTrades) {
+        const pnl = parseFloat(trade.pnl_amount || 0);
+        if (pnl > 0) {
+            totalScore += 150;  // 盈利交易 +150分
+        } else {
+            totalScore += 50;   // 亏损交易 +50分
+        }
+    }
+    
+    // ========== 2. Daily Quest 分数 ==========
+    for (const [date, dayTrades] of Object.entries(tradesByDate)) {
+        if (processedDates.has(date)) continue;
+        processedDates.add(date);
+        
+        let dailyPnl = 0;
+        dayTrades.forEach(t => {
+            dailyPnl += parseFloat(t.pnl_amount || 0);
+        });
+        
+        const profitTarget = initialBalance * 0.1;
+        const lossLimit = initialBalance * 0.25;
+        
+        if (dailyPnl >= profitTarget) {
+            totalScore += 200;   // Daily Quest Passed +200分
+        } else if (dailyPnl <= -lossLimit) {
+            totalScore -= 250;   // Daily Quest Failed -250分
+        } else {
+            totalScore += 50;    // Daily Quest Patience +50分
+        }
+    }
+    
+    // ========== 3. 当日添加交易超过两笔 -300分（每日期限一次） ==========
+    let penaltyRecord = JSON.parse(localStorage.getItem('daily_penalty_record') || '{}');
+    for (const [date, dayTrades] of Object.entries(tradesByDate)) {
+        if (dayTrades.length > 2 && !penaltyRecord[date]) {
+            totalScore -= 300;
+            penaltyRecord[date] = true;
+            localStorage.setItem('daily_penalty_record', JSON.stringify(penaltyRecord));
+        }
+    }
+    
+    // ========== 4. 连续盈利额外奖励（每笔都叠加） ==========
+    function getStreakBonusForCurrentTrade(streakCount) {
+        if (streakCount === 1) return 0;
+        if (streakCount === 2) return 100;
+        if (streakCount === 3) return 200;
+        if (streakCount === 4) return 300;
+        if (streakCount === 5) return 400;
+        if (streakCount === 6) return 500;
+        if (streakCount >= 7) return 600;
+        return 0;
+    }
+    
+    // 按时间顺序排序（从旧到新）
+    const sortedByTime = [...buySellTrades].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0);
+        const dateB = new Date(b.created_at || b.date || 0);
+        return dateA - dateB;
+    });
+    
+    let currentStreak = 0;
+    for (let i = 0; i < sortedByTime.length; i++) {
+        const trade = sortedByTime[i];
+        const pnl = parseFloat(trade.pnl_amount || 0);
+        
+        if (pnl > 0) {
+            currentStreak++;
+            const bonus = getStreakBonusForCurrentTrade(currentStreak);
+            totalScore += bonus;
+        } else {
+            currentStreak = 0;
+        }
+    }
+    
+    // 确保分数不低于0
+    totalScore = Math.max(0, Math.floor(totalScore));
+    
+    return totalScore;
+}
+
+// 更新缓存的函数，在 fetchTrades 中调用
+function updateRankingWithDynamicScore(statsData, allTrades) {
+    // 更新交易历史缓存
+    updateTradeHistoryCache(allTrades);
+    // 使用动态评分系统计算原始总分
+    const rawTotalScore = calculateOverallScore(statsData, allTrades);
+    
+    // 获取当前等级（基于原始总分）
+    const currentRank = getRankByScore(rawTotalScore);
+    
+    // 重要：使用等级内的显示分数（0-1000），而不是原始总分
+    let displayScore = currentRank.displayScore;
+    let nextLevelScore = 1000;
+    
+    let isMaxLevel = currentRank.isMaxLevel;
+    
+    // 计算进度条百分比（基于等级内分数）
+    const scorePercent = (displayScore / 1000) * 100;
+    
+    // 获取 DOM 元素
+    const overallScoreEl = document.getElementById('overallScore');
+    const scoreProgressEl = document.getElementById('scoreProgress');
+    const scoreStatusEl = document.getElementById('scoreStatus');
+    const nextScoreTargetEl = document.getElementById('nextScoreTarget');
+    const currentRankLabelEl = document.getElementById('currentRankLabel');
+    const nextRankLabelEl = document.getElementById('nextRankLabel');
+    const currentLevelEl = document.getElementById('currentLevel');
+    const nextLevelNeededEl = document.getElementById('nextLevelNeeded');
+    const rankSvg = document.getElementById('rankSvg');
+    const levelIcon3d = document.getElementById('levelIcon3d');
+    const currentBadgeEl = document.getElementById('currentBadge');
+    const nextBadgeEl = document.getElementById('nextBadge');
+    
+    // 更新分数显示（显示当前等级内的分数，如 50/1000）
+    if (overallScoreEl) {
+        overallScoreEl.textContent = displayScore;
+    }
+    
+    // 更新进度条
+    if (scoreProgressEl) {
+        scoreProgressEl.style.width = `${scorePercent}%`;
+    }
+    
+    // 更新目标分数显示
+    if (nextScoreTargetEl) {
+        nextScoreTargetEl.textContent = nextLevelScore;
+    }
+    
+    // 更新左侧等级徽章文字
+    if (currentLevelEl) {
+        currentLevelEl.textContent = currentRank.name;
+    }
+    
+    // 更新左侧下一等级所需分数
+    if (nextLevelNeededEl) {
+        if (isMaxLevel) {
+            nextLevelNeededEl.textContent = 'MAX';
+        } else {
+            let needed = currentRank.nextNeeded;
+            nextLevelNeededEl.textContent = `${needed} pts`;
+        }
+    }
+    
+    // 更新右侧卡片中的当前等级标签
+    if (currentRankLabelEl) {
+        currentRankLabelEl.textContent = currentRank.name;
+    }
+    
+    // 更新左侧 3D 徽章 SVG
+    if (rankSvg) {
+        updateRankSvg(rankSvg, currentRank.rankKey, currentRank.subRank);
+    }
+    
+    // 设置等级图标的数据属性
+    if (levelIcon3d) {
+        levelIcon3d.setAttribute('data-rank', currentRank.rankKey);
+        levelIcon3d.setAttribute('data-sub-rank', currentRank.subRank);
+    }
+    
+    // 更新 Ranking Score 卡片中的当前徽章
+    if (currentBadgeEl) {
+        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        tempSvg.setAttribute('viewBox', '0 0 80 80');
+        currentBadgeEl.innerHTML = '';
+        currentBadgeEl.appendChild(tempSvg);
+        updateRankSvg(tempSvg, currentRank.rankKey, currentRank.subRank);
+    }
+    
+    // 计算下一等级并更新徽章
+    let nextRankName = '';
+    let nextRankKey = '';
+    let nextSubRank = '';
+    
+    if (!isMaxLevel) {
+        // 计算下一等级（当前等级+1级）
+        let nextLevelNumber = Math.floor(rawTotalScore / 1000) + 1;
+        const maxLevels = 32;
+        if (nextLevelNumber >= maxLevels) {
+            nextLevelNumber = maxLevels - 1;
+        }
+        const mainRanks = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Master', 'Grandmaster', 'Legend'];
+        const subRanks = ['I', 'II', 'III', 'IV'];
+        let nextRankIndex = Math.floor(nextLevelNumber / 4);
+        let nextSubRankIndex = nextLevelNumber % 4;
+        nextRankName = `${mainRanks[nextRankIndex]} ${subRanks[nextSubRankIndex]}`;
+        nextRankKey = mainRanks[nextRankIndex].toLowerCase();
+        nextSubRank = subRanks[nextSubRankIndex];
+        
+        if (nextBadgeEl) {
+            const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            tempSvg.setAttribute('viewBox', '0 0 80 80');
+            nextBadgeEl.innerHTML = '';
+            nextBadgeEl.appendChild(tempSvg);
+            updateRankSvg(tempSvg, nextRankKey, nextSubRank);
+        }
+        
+        if (nextRankLabelEl) {
+            nextRankLabelEl.textContent = nextRankName;
+        }
+    } else {
+        nextRankName = 'MAX LEVEL';
+        if (nextBadgeEl) {
+            nextBadgeEl.innerHTML = '<div style="font-size: 2rem;">🏆</div>';
+        }
+        if (nextRankLabelEl) {
+            nextRankLabelEl.textContent = nextRankName;
+        }
+    }
+    
+            // 更新状态文本
+    if (scoreStatusEl) {
+        if (rawTotalScore === 0) {
+            scoreStatusEl.textContent = '📊 添加交易开始积累分数';
+        } else if (isMaxLevel) {
+            scoreStatusEl.textContent = '🏆 已达最高等级！传奇交易员！';
+        } else {
+            let needed = currentRank.nextNeeded;
+            scoreStatusEl.textContent = `📈 还需 ${needed} 分升级到 ${nextRankName}`;
+        }
+    }
+    
+    // ========== 更新分数历史记录 ==========
+    const scoreHistoryList = document.getElementById('scoreHistoryList');
+    if (scoreHistoryList && allTrades) {
+        const buySellTrades = allTrades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+        
+        if (buySellTrades.length === 0) {
+            scoreHistoryList.innerHTML = '<div class="history-empty">暂无交易记录</div>';
+        } else {
+            // 获取最近5笔交易
+            const recentTrades = [...buySellTrades].slice(-5).reverse();
+            let historyHtml = '';
+            
+            for (const trade of recentTrades) {
+                const pnl = parseFloat(trade.pnl_amount || 0);
+                const isProfit = pnl > 0;
+                const profitAmount = Math.abs(pnl).toFixed(2);
+                const date = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
+                
+                let actionText = '';
+                let pointsText = '';
+                let itemClass = '';
+                
+                if (isProfit) {
+                    actionText = `📈 盈利交易 $${profitAmount}`;
+                    pointsText = '+150';
+                    itemClass = '';
+                } else {
+                    actionText = `📉 亏损交易 $${profitAmount}`;
+                    pointsText = '+50';
+                    itemClass = 'loss';
+                }
+                
+                historyHtml += `
+                    <div class="score-history-item ${itemClass}">
+                        <span class="history-action">${actionText}</span>
+                        <span class="history-points">${pointsText}</span>
+                    </div>
+                `;
+            }
+            
+            scoreHistoryList.innerHTML = historyHtml;
+        }
+    }
+    
+    // ========== 添加分数记录区域 ==========
+    const scoreHistoryEl = document.getElementById('scoreHistory');
+    if (scoreHistoryEl && allTrades) {
+        const buySellTrades = allTrades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+        
+        let historyHtml = '<div class="score-history-title">📋 分数规则 <span>Rules</span></div>';
+        historyHtml += '<div class="score-history-list">';
+        
+        // 显示基础规则
+        historyHtml += `<div class="score-history-item"><span class="label">盈利:</span><span class="value">+150</span></div>`;
+        historyHtml += `<div class="score-history-item loss"><span class="label">亏损:</span><span class="value">+50</span></div>`;
+        historyHtml += `<div class="score-history-item streak"><span class="label">连续盈利:</span><span class="value">+100~600</span></div>`;
+        historyHtml += `<div class="score-history-item quest"><span class="label">DQ完成:</span><span class="value">+200</span></div>`;
+        historyHtml += `<div class="score-history-item penalty"><span class="label">DQ失败:</span><span class="value">-250</span></div>`;
+        historyHtml += `<div class="score-history-item penalty"><span class="label">交易超2笔:</span><span class="value">-300</span></div>`;
+        
+        historyHtml += '</div>';
+        scoreHistoryEl.innerHTML = historyHtml;
+    }
+}
+
+// ============== 等级判定函数 (每个子等级间隔1000分，升级后重置归零) ==============
 function getRankByScore(score) {
-  // 如果没有分数，返回默认
-  if (score === 0) {
-    return {
-      name: 'Bronze I',
-      mainRank: 'Bronze',
-      subRank: 'I',
-      rankKey: 'bronze',
-      rankIndex: 0,
-      subRankIndex: 0,
-      currentSubLevel: 1,
-      nextNeeded: 1000,
-      totalPercent: 0,
-      isMaxLevel: false
-    };
+  // 确保 score 是有效数字
+  if (typeof score !== 'number' || isNaN(score) || score === null || score === undefined) {
+    score = 0;
   }
   
   // 主等级顺序（每个主等级有4个子等级）
@@ -1854,17 +2190,22 @@ function getRankByScore(score) {
   // 子等级
   const subRanks = ['I', 'II', 'III', 'IV'];
   
-  // 计算当前等级（每个子等级1000分）
-  let adjustedScore = Math.max(0, score);
-  let levelNumber = Math.floor(adjustedScore / 1000);
-  
   // 总共 32 个等级（8主等级 × 4子等级）
   const maxLevels = mainRanks.length * 4;
+  
+  // 计算当前等级索引（每个等级1000分）
+  let levelNumber = Math.floor(score / 1000);
   
   let isMaxLevel = false;
   if (levelNumber >= maxLevels) {
     levelNumber = maxLevels - 1;
     isMaxLevel = true;
+  }
+  
+  // 计算当前等级内的显示分数（0-1000）
+  let displayScore = score % 1000;
+  if (isMaxLevel) {
+    displayScore = 1000;
   }
   
   let rankIndex = Math.floor(levelNumber / 4);
@@ -1874,17 +2215,24 @@ function getRankByScore(score) {
   const subRank = subRanks[subRankIndex];
   const fullRankName = `${mainRank} ${subRank}`;
   
-  // 计算下一级所需分数
+  // 计算下一级所需分数（当前等级内还差多少分）
   let nextNeeded = 0;
   if (!isMaxLevel) {
-    let nextLevelNumber = levelNumber + 1;
-    let nextScore = nextLevelNumber * 1000;
-    nextNeeded = nextScore - score;
+    nextNeeded = 1000 - displayScore;
     if (nextNeeded < 0) nextNeeded = 0;
   }
   
   const rankKey = mainRank.toLowerCase();
   
+  // 计算总进度百分比（相对于所有等级）
+  let totalPercent = 0;
+  if (!isMaxLevel) {
+    totalPercent = Math.floor((score / (maxLevels * 1000)) * 100);
+  } else {
+    totalPercent = 100;
+  }
+  
+  // 返回结果对象
   return {
     name: fullRankName,
     mainRank: mainRank,
@@ -1894,8 +2242,10 @@ function getRankByScore(score) {
     subRankIndex: subRankIndex,
     currentSubLevel: subRankIndex + 1,
     nextNeeded: nextNeeded,
-    totalPercent: Math.min(100, Math.floor((score / 32000) * 100)),
-    isMaxLevel: isMaxLevel
+    totalPercent: totalPercent,
+    isMaxLevel: isMaxLevel,
+    displayScore: displayScore,
+    totalRawScore: score
   };
 }
 
@@ -2808,6 +3158,7 @@ async function fetchTrades() {
     if (error) { console.error("Error fetching trades:", error); return; }
     
     window.allTradesData = data || [];
+    updateTradeHistoryCache(window.allTradesData);
     
     // 从 DOM 获取当前的 Initial Balance
     let currentInitialBalance = null;
@@ -2907,7 +3258,7 @@ function updateStats(data) {
   
   setTimeout(() => {
     updateRadarChart();
-    updateRankingSystem(statsDataForRanking, data);
+    updateRankingWithDynamicScore(statsDataForRanking, data);
   }, 200);
 }
 

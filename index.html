@@ -391,33 +391,55 @@
     </div>
   </div>
 
-  <!-- Overall Score 卡片 -->
-<div class="rank-score-card ranking-card">
-  <div class="score-header">
-    <span class="score-icon">🏆</span>
-    <span class="score-label">Ranking Score</span>
-  </div>
-  
-  <!-- 当前徽章 + 进度条 + 下个徽章 -->
-  <div class="ranking-progress-container">
-    <div class="current-badge" id="currentBadge"></div>
-    <div class="progress-bar-wrapper">
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill score-progress" id="scoreProgress" style="width: 0%;"></div>
-      </div>
+  <!-- Ranking Score 卡片 -->
+<div class="rank-score-card">
+    <!-- 徽章 + 进度条 横向布局 -->
+    <div class="ranking-progress-container">
+        <div class="current-badge" id="currentBadge"></div>
+        <div class="progress-bar-wrapper">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="scoreProgress" style="width: 0%;"></div>
+            </div>
+        </div>
+        <div class="next-badge" id="nextBadge"></div>
     </div>
-    <div class="next-badge" id="nextBadge"></div>
-  </div>
-  
-  <!-- 分数显示 -->
-  <div class="score-display">
-    <span class="score-current" id="overallScore">0</span>
-    <span class="score-separator">/</span>
-    <span class="score-next" id="nextScoreTarget">1000</span>
-    <span class="score-unit">pts</span>
-  </div>
-  
-  <div class="score-status" id="scoreStatus">📊 添加交易开始积累分数</div>
+    
+    <!-- 分数显示 -->
+    <div class="score-display">
+        <span class="score-current" id="overallScore">0</span>
+        <span class="score-separator">/</span>
+        <span class="score-next" id="nextScoreTarget">1000</span>
+        <span class="score-unit">pts</span>
+    </div>
+    
+    <!-- Score History 区域 -->
+    <div class="score-history">
+        <div class="score-history-header">
+            <span>📋 Score History</span>
+            <div class="rules-tooltip">
+                <span class="rules-icon">ⓘ Rules</span>
+                <div class="rules-tooltip-content">
+                    <div class="rules-list">
+                        <div class="rule-item"><span class="rule-label">Win Trade:</span><span class="rule-value">+150</span></div>
+                        <div class="rule-item"><span class="rule-label">Loss Trade:</span><span class="rule-value">+50</span></div>
+                        <div class="rule-item"><span class="rule-label">2 Consecutive Wins:</span><span class="rule-value">+100</span></div>
+                        <div class="rule-item"><span class="rule-label">3 Consecutive Wins:</span><span class="rule-value">+200</span></div>
+                        <div class="rule-item"><span class="rule-label">4 Consecutive Wins:</span><span class="rule-value">+300</span></div>
+                        <div class="rule-item"><span class="rule-label">5 Consecutive Wins:</span><span class="rule-value">+400</span></div>
+                        <div class="rule-item"><span class="rule-label">6 Consecutive Wins:</span><span class="rule-value">+500</span></div>
+                        <div class="rule-item"><span class="rule-label">7+ Consecutive Wins:</span><span class="rule-value">+600 each</span></div>
+                        <div class="rule-item"><span class="rule-label">Daily Quest Passed:</span><span class="rule-value">+200</span></div>
+                        <div class="rule-item"><span class="rule-label">Daily Quest Failed:</span><span class="rule-value">-250</span></div>
+                        <div class="rule-item"><span class="rule-label">Daily Quest Patience:</span><span class="rule-value">+50</span></div>
+                        <div class="rule-item"><span class="rule-label">>2 Trades/Day:</span><span class="rule-value">-300</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="score-history-list" id="scoreHistoryList">
+            <div class="history-empty">No trades yet</div>
+        </div>
+    </div>
 </div>
 
   <!-- Discipline Score 卡片 -->
