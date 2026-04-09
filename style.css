@@ -1225,8 +1225,17 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     color: #fbbf24;
 }
 
-.score-history-item.penalty .value {
-    color: #ef4444;
+.score-history-item.penalty {
+    border-left-color: #ef4444;
+}
+
+.score-history-item.penalty .history-action {
+    color: #f87171;
+}
+
+.score-history-item.penalty .history-points {
+    color: #ef4444 !important;
+    font-weight: 700;
 }
 
 .score-history-item.quest .value {
@@ -1372,133 +1381,101 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     letter-spacing: 0.5px;
 }
 
-/* Rules 提示框 */
+/* Rules 提示框 - 向左上弹出，覆盖所有卡片 */
 .rules-tooltip {
     position: relative;
     display: inline-block;
     cursor: pointer;
+    z-index: 10000;
 }
 
 .rules-icon {
-    font-size: 0.6rem;
-    padding: 2px 6px;
-    background: rgba(59, 130, 246, 0.15);
-    border-radius: 12px;
-    color: #60a5fa;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    border-radius: 20px;
+    color: white !important;
     transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .rules-icon:hover {
-    background: rgba(59, 130, 246, 0.3);
-    color: #93c5fd;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    transform: scale(1.02);
 }
 
+/* Rules 弹出框 - 向左上弹出，覆盖所有内容 */
 .rules-tooltip-content {
-    position: absolute;
-    bottom: 100%;
-    right: 0;
-    margin-bottom: 8px;
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    border-radius: 12px;
-    padding: 0.8rem;
-    min-width: 220px;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
+    position: fixed;
+    background: #0a0f1a;
+    border-radius: 20px;
+    padding: 16px;
+    width: 580px;
+    max-width: 85vw;
+    border: 2px solid #3b82f6;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(59, 130, 246, 0.5), 0 0 30px rgba(59, 130, 246, 0.4);
+    backdrop-filter: blur(20px);
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s ease;
-    z-index: 100;
+    z-index: 999999;
     pointer-events: none;
 }
 
 .rules-tooltip:hover .rules-tooltip-content {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
-.rules-tooltip-content::after {
-    content: '';
-    position: absolute;
-    bottom: -6px;
-    right: 15px;
-    border-width: 6px 6px 0 6px;
-    border-style: solid;
-    border-color: #1e293b transparent transparent transparent;
+/* 标题 */
+.rules-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+    text-align: center;
 }
 
+/* 3列网格布局 */
 .rules-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px 12px;
 }
 
 .rule-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.65rem;
-    padding: 0.2rem 0;
-    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
-}
-
-.rule-item:last-child {
-    border-bottom: none;
+    font-size: 0.7rem;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+    border-radius: 10px;
+    border-left: 3px solid #3b82f6;
 }
 
 .rule-label {
-    color: #94a3b8;
+    color: #e2e8f0;
+    font-weight: 500;
 }
 
 .rule-value {
-    font-weight: 600;
-    color: #3eb489;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.15);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: monospace;
 }
 
-/* 分数历史列表 */
-.score-history-list {
-    max-height: 120px;
-    overflow-y: auto;
-    font-size: 0.7rem;
-}
-
-.score-history-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.3rem 0.5rem;
-    margin-bottom: 0.2rem;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    border-left: 2px solid #3eb489;
-}
-
-.score-history-item .history-action {
-    color: #94a3b8;
-}
-
-.score-history-item .history-points {
-    font-weight: 600;
-    color: #3eb489;
-}
-
-.score-history-item.loss .history-points {
+.rule-value.negative {
     color: #f87171;
-}
-
-.score-history-item.streak .history-points {
-    color: #fbbf24;
-}
-
-.score-history-item.penalty .history-points {
-    color: #ef4444;
-}
-
-.history-empty {
-    text-align: center;
-    color: #64748b;
-    font-size: 0.65rem;
-    padding: 0.5rem;
+    background: rgba(248, 113, 113, 0.15);
 }
 
 /* Ranking Score 卡片 - 无标题紧凑版 */
@@ -1631,136 +1608,168 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     color: #cbd5e1;
 }
 
-/* Rules 提示框 - 向下展开 */
+/* Rules 提示框 - 屏幕左上角显示，完全不遮挡 */
 .rules-tooltip {
     position: relative;
     display: inline-block;
     cursor: pointer;
+    z-index: 10000;
 }
 
 .rules-icon {
     font-size: 0.7rem;
     font-weight: 500;
     padding: 2px 8px;
-    background: rgba(59, 130, 246, 0.15);
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
     border-radius: 20px;
-    color: #60a5fa;
+    color: white !important;
     transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .rules-icon:hover {
-    background: rgba(59, 130, 246, 0.3);
-    color: #93c5fd;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    transform: scale(1.02);
 }
 
-/* Rules 向下展开 */
+/* Rules 弹出框 - 固定在屏幕左上角，完全脱离卡片 */
 .rules-tooltip-content {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    background: linear-gradient(145deg, #1e293b, #0f172a);
-    border-radius: 12px;
-    padding: 0.8rem;
-    min-width: 240px;
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #0a0f1a;
+    border-radius: 20px;
+    padding: 20px;
+    width: 700px;
+    max-width: 90vw;
+    border: 2px solid #3b82f6;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.5), 0 0 30px rgba(59, 130, 246, 0.3);
+    backdrop-filter: blur(16px);
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s ease;
-    z-index: 100;
+    z-index: 999999;
     pointer-events: none;
 }
 
+/* 悬停时显示在屏幕中央 */
 .rules-tooltip:hover .rules-tooltip-content {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
-/* 向下箭头 */
-.rules-tooltip-content::before {
-    content: '';
+/* 关闭按钮 */
+.rules-close {
     position: absolute;
-    top: -6px;
+    top: 10px;
     right: 15px;
-    border-width: 0 6px 6px 6px;
-    border-style: solid;
-    border-color: transparent transparent #1e293b transparent;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    z-index: 10;
 }
 
+.rules-close:hover {
+    color: #ef4444;
+}
+
+/* 标题 */
+.rules-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+    text-align: center;
+}
+
+/* 3列网格布局 */
 .rules-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    max-height: 280px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px 16px;
+    max-height: 70vh;
     overflow-y: auto;
+}
+
+/* 滚动条 */
+.rules-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rules-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.rules-list::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 4px;
 }
 
 .rule-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.7rem;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
-}
-
-.rule-item:last-child {
-    border-bottom: none;
+    font-size: 0.75rem;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
+    border-radius: 10px;
+    border-left: 3px solid #3b82f6;
 }
 
 .rule-label {
-    color: #94a3b8;
+    color: #e2e8f0;
+    font-weight: 500;
 }
 
 .rule-value {
-    font-weight: 600;
-    color: #3eb489;
+    font-weight: 700;
+    color: #34d399;
+    background: rgba(52, 211, 153, 0.15);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: monospace;
 }
 
-/* 分数历史列表 - 可滚动 */
+.rule-value.negative {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.15);
+}
+
+/* 强制单排 - 每条记录独占一行 */
 .score-history-list {
     max-height: 150px;
     overflow-y: auto;
-    font-size: 0.7rem;
-}
-
-/* 自定义滚动条 */
-.score-history-list::-webkit-scrollbar,
-.rules-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.score-history-list::-webkit-scrollbar-track,
-.rules-list::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-}
-
-.score-history-list::-webkit-scrollbar-thumb,
-.rules-list::-webkit-scrollbar-thumb {
-    background: #3b82f6;
-    border-radius: 4px;
+    display: block !important;
 }
 
 .score-history-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.4rem 0.5rem;
-    margin-bottom: 0.3rem;
-    background: rgba(0, 0, 0, 0.25);
+    display: block !important;
+    width: 100% !important;
+    margin-bottom: 6px !important;
+    padding: 6px 10px !important;
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     border-left: 2px solid #3eb489;
+    box-sizing: border-box !important;
 }
 
 .score-history-item .history-action {
+    float: left;
     color: #94a3b8;
     font-size: 0.7rem;
 }
 
 .score-history-item .history-points {
+    float: right;
     font-weight: 600;
     color: #3eb489;
     font-size: 0.7rem;
@@ -1770,17 +1779,368 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     color: #f87171;
 }
 
-.score-history-item.streak .history-points {
-    color: #fbbf24;
-}
-
-.score-history-item.penalty .history-points {
-    color: #ef4444;
+/* 清除浮动 */
+.score-history-item::after {
+    content: "";
+    clear: both;
+    display: table;
 }
 
 .history-empty {
     text-align: center;
     color: #64748b;
     font-size: 0.7rem;
-    padding: 0.8rem;
+    padding: 10px;
+}
+
+/* Score History 容器样式 */
+#scoreHistoryList {
+    max-height: 350px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* 历史记录项样式 */
+.score-history-item {
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.score-history-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(2px);
+}
+
+/* 时间样式 */
+.history-time {
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.7rem;
+    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.15);
+    padding: 2px 6px;
+    border-radius: 12px;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+/* 操作文字样式 */
+.history-action {
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 分数样式 */
+.history-points {
+    font-weight: 600;
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+/* 亏损交易样式 */
+.score-history-item.loss .history-action {
+    color: #f87171;
+}
+
+.score-history-item.loss {
+    background: rgba(239, 68, 68, 0.05);
+}
+
+/* 扣分样式 */
+.score-history-item.penalty {
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+}
+
+/* Daily Quest 样式 */
+.score-history-item.dailyquest {
+    background: rgba(59, 130, 246, 0.08);
+    border-left: 3px solid #3b82f6;
+}
+
+/* 空状态样式 */
+.history-empty {
+    text-align: center;
+    padding: 30px;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+/* 滚动条样式 */
+#scoreHistoryList::-webkit-scrollbar {
+    width: 4px;
+}
+
+#scoreHistoryList::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+#scoreHistoryList::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    border-radius: 4px;
+}
+
+/* ========== 激进布局调整 - 左右面板不重叠，6卡片向下排列 ========== */
+
+/* 1. 两栏容器 - 使用 flex 布局，确保不重叠 */
+.dashboard-two-columns {
+    display: flex;
+    flex-direction: row;
+    gap: 25px;
+    align-items: flex-start;
+    overflow-x: visible;
+}
+
+/* 2. 左侧面板 - 固定宽度，6卡片垂直排列 */
+.dashboard-left {
+    flex: 0 0 360px;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 3. 右侧面板 - 向左延伸，但留出间隙 */
+.dashboard-right {
+    flex: 1;
+    min-width: 480px;
+    margin-left: -15px;
+    padding-left: 10px;
+    width: calc(100% + 15px);
+}
+
+/* 4. 6个统计卡片 - 垂直排列，自动填充下方空间 */
+.stats-cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* 5. 每个卡片占满宽度 */
+.stats-card-modern {
+    width: 100%;
+    margin: 0;
+}
+
+/* 6. 雷达图卡片稍微缩小一点 */
+.radar-capability-card {
+    width: 100%;
+    padding: 12px;
+}
+
+/* 7. 雷达图容器调整大小 */
+.radar-chart-wrapper {
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+/* 8. 右侧面板内各卡片间距 */
+.rank-level-card,
+.rank-score-card,
+.rank-discipline-card,
+.rank-emotion-card {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+/* 9. Score History 区域 - 增加高度和宽度 */
+.score-history {
+    width: 100%;
+    min-width: 100%;
+}
+
+.score-history-list {
+    max-height: 350px;
+    min-height: 280px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* 10. 历史记录项优化 - 防止换行错位 */
+.score-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 12px;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+}
+
+.history-action {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.history-time {
+    min-width: 52px;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.history-points {
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* 11. 响应式：屏幕较小时恢复正常布局 */
+@media (max-width: 1100px) {
+    .dashboard-two-columns {
+        flex-direction: column;
+    }
+    
+    .dashboard-left {
+        flex: 1;
+        max-width: 100%;
+    }
+    
+    .dashboard-right {
+        margin-left: 0;
+        padding-left: 0;
+        width: 100%;
+    }
+    
+    .stats-cards-wrapper {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .stats-card-modern {
+        width: calc(33.33% - 12px);
+    }
+}
+
+/* ========== 左侧卡片缝隙 = 左右面板缝隙 ========== */
+
+/* 1. 定义左右面板缝隙变量 */
+:root {
+    --panel-gap: 25px;  /* 左右面板之间的缝隙 */
+}
+
+/* 2. 两栏容器 - 左右面板之间的缝隙 */
+.dashboard-two-columns {
+    display: flex;
+    flex-direction: row;
+    gap: var(--panel-gap);  /* 25px */
+    align-items: flex-start;
+    overflow-x: visible;
+}
+
+/* 3. 左侧面板 - 上下卡片之间的缝隙 = 左右面板缝隙 */
+.dashboard-left {
+    flex: 0 0 360px;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--panel-gap);  /* 雷达图与6卡片之间的缝隙 = 25px */
+}
+
+/* 4. 左侧6个卡片之间的缝隙 = 左右面板缝隙 */
+.stats-cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--panel-gap);  /* 6个卡片之间的缝隙 = 25px */
+}
+
+/* 5. 移除左侧卡片的多余边距 */
+.radar-capability-card,
+.stats-card-modern {
+    margin: 0;
+}
+
+/* 6. 6个卡片保持细窄 */
+.stats-card-modern {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 14px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    min-height: 48px;
+    max-height: 52px;
+}
+
+/* 7. 右侧面板保持不变 */
+.dashboard-right {
+    flex: 1;
+    min-width: 480px;
+    margin-left: -15px;
+    padding-left: 10px;
+    width: calc(100% + 15px);
+}
+
+/* ========== 强制统一左侧卡片缝隙 ========== */
+.dashboard-left {
+    gap: 10px !important;
+}
+
+.radar-capability-card {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.stats-cards-wrapper {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    gap: 25px !important;
+}
+
+.stats-card-modern:first-child {
+    margin-top: 0 !important;
+}
+
+/* 强制底部对齐 */
+.dashboard-two-columns {
+    align-items: stretch !important;
+}
+
+.dashboard-left,
+.dashboard-right {
+    height: auto !important;
+    min-height: 100% !important;
+}
+
+.stats-cards-wrapper {
+    flex: 1;
+    justify-content: space-between;  /* 让卡片均匀分布填满高度 */
+}
+
+.stats-cards-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+}
+
+/* 雷达图容器和下方的间距 */
+.radar-chart-wrapper {
+    margin-bottom: 0;  /* 减少雷达图下方的空间 */
+}
+
+/* 图例容器向上移动 */
+.radar-legend {
+    margin-top: -15px;  /* 向上移动15px */
+    padding-bottom: 15px;
+}
+
+/* 确保图例项不被裁剪 */
+.radar-capability-card {
+    overflow: visible;
 }

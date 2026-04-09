@@ -917,6 +917,59 @@ function addImageViewStyles() {
   document.head.appendChild(style);
 }
 
+// ============== Score History 滚动样式 ==============
+function addScoreHistoryStyles() {
+  if (document.getElementById('score-history-scroll-styles')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'score-history-scroll-styles';
+  style.textContent = `
+    /* Score History 滚动区域样式 */
+    .score-history-container {
+      max-height: 280px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    
+    .score-history-list {
+      max-height: 260px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 6px;
+    }
+    
+    .score-history-list::-webkit-scrollbar,
+    .score-history-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    
+    .score-history-list::-webkit-scrollbar-track,
+    .score-history-container::-webkit-scrollbar-track {
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 10px;
+    }
+    
+    .score-history-list::-webkit-scrollbar-thumb,
+    .score-history-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      border-radius: 10px;
+    }
+    
+    .score-history-list::-webkit-scrollbar-thumb:hover,
+    .score-history-container::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #60a5fa, #22d3ee);
+    }
+    
+    .score-history-list,
+    .score-history-container {
+      scrollbar-width: thin;
+      scrollbar-color: #3b82f6 rgba(30, 41, 59, 0.5);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // ============== 鼠标悬停预览样式 ==============
 function addHoverPreviewStyles() {
   if (document.getElementById('hover-preview-styles')) return;
@@ -1613,10 +1666,10 @@ if (buySellTradesForQuest.length === 0) {
         <td style="color: #94a3b8; font-size: 0.9rem;">${t.symbol || (isBalanceTransaction ? '' : '-')}</td>
         <td style="text-align: center;"><span class="session-text">${t.session || getTradeSession(t.id) || 'Asia'}</span></td>
         <td><span class="${directionClass}">${directionDisplay}</span></td>
-        <td>${isBuySell ? Number(t.lot_size||0).toFixed(2) : ''}</td>
-        <td>${isBuySell ? (t.sl ? Number(t.sl||0).toFixed(2) : '-') : ''}</td>
-        <td>${isBuySell ? (t.entry ? Number(t.entry||0).toFixed(2) : '-') : ''}</td>
-        <td>${isBuySell ? (t.exit ? Number(t.exit||0).toFixed(2) : '-') : ''}</td>
+        <td>${isBuySell ? Number(t.lot_size||0).toFixed(5) : ''}</td>
+        <td>${isBuySell ? (t.sl ? Number(t.sl||0).toFixed(5) : '-') : ''}</td>
+        <td>${isBuySell ? (t.entry ? Number(t.entry||0).toFixed(5) : '-') : ''}</td>
+        <td>${isBuySell ? (t.exit ? Number(t.exit||0).toFixed(5) : '-') : ''}</td>
         <td style="text-align: center; min-width: 90px;">${riskRewardHtml}</td>
         <td class="${amountClass}" style="color: ${displayAmount >= 0 ? '#0ee7ff' : '#ef4444'} !important;">${amountSign}$${Math.abs(displayAmount).toFixed(2)}</td>
         <td class="action-buttons-cell">
@@ -1920,14 +1973,15 @@ function calculateOverallScore(statsData, allTrades = null) {
     }
     
     // ========== 3. 当日添加交易超过两笔 -300分（每日期限一次） ==========
-    let penaltyRecord = JSON.parse(localStorage.getItem('daily_penalty_record') || '{}');
-    for (const [date, dayTrades] of Object.entries(tradesByDate)) {
-        if (dayTrades.length > 2 && !penaltyRecord[date]) {
-            totalScore -= 300;
-            penaltyRecord[date] = true;
-            localStorage.setItem('daily_penalty_record', JSON.stringify(penaltyRecord));
-        }
+let penaltyRecord = JSON.parse(localStorage.getItem('daily_penalty_record') || '{}');
+for (const [date, dayTrades] of Object.entries(tradesByDate)) {
+    if (dayTrades.length > 2 && !penaltyRecord[date]) {
+        totalScore -= 300;
+        penaltyRecord[date] = true;
+        localStorage.setItem('daily_penalty_record', JSON.stringify(penaltyRecord));
+        console.log(`扣分生效: ${date} 有 ${dayTrades.length} 笔交易, 扣300分, 当前总分: ${totalScore}`);  // 添加这行调试
     }
+}
     
     // ========== 4. 连续盈利额外奖励（每笔都叠加） ==========
     function getStreakBonusForCurrentTrade(streakCount) {
@@ -1972,8 +2026,108 @@ function calculateOverallScore(statsData, allTrades = null) {
 function updateRankingWithDynamicScore(statsData, allTrades) {
     // 更新交易历史缓存
     updateTradeHistoryCache(allTrades);
-    // 使用动态评分系统计算原始总分
-    const rawTotalScore = calculateOverallScore(statsData, allTrades);
+    
+    // 获取所有交易（用于分数计算）
+    const buySellTrades = allTrades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+    
+    // 计算原始总分（包含所有加分和扣分）
+    let rawTotalScore = 0;
+    const processedDates = new Set();
+    const penaltyRecord = JSON.parse(localStorage.getItem('daily_penalty_record') || '{}');
+    
+    // 获取初始资金
+    let initialBalance = 1000;
+    const initialBalanceEl = document.getElementById("initialBalance");
+    if (initialBalanceEl) {
+        const balanceText = initialBalanceEl.textContent;
+        const match = balanceText.match(/\$?([0-9.]+)/);
+        if (match) {
+            initialBalance = parseFloat(match[1]);
+        }
+    }
+    
+    // 按日期分组
+    const tradesByDate = {};
+    buySellTrades.forEach(trade => {
+        const date = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
+        if (!tradesByDate[date]) {
+            tradesByDate[date] = [];
+        }
+        tradesByDate[date].push(trade);
+    });
+    
+    // 按时间顺序排序（从旧到新）用于连胜计算
+    const sortedByTime = [...buySellTrades].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0);
+        const dateB = new Date(b.created_at || b.date || 0);
+        return dateA - dateB;
+    });
+    
+    // 1. 每笔交易基础分数 + 连胜奖励
+    let currentStreak = 0;
+    function getStreakBonusForCurrentTrade(streakCount) {
+        if (streakCount === 1) return 0;
+        if (streakCount === 2) return 100;
+        if (streakCount === 3) return 200;
+        if (streakCount === 4) return 300;
+        if (streakCount === 5) return 400;
+        if (streakCount === 6) return 500;
+        if (streakCount >= 7) return 600;
+        return 0;
+    }
+    
+    for (const trade of sortedByTime) {
+        const pnl = parseFloat(trade.pnl_amount || 0);
+        const isProfit = pnl > 0;
+        
+        if (isProfit) {
+            rawTotalScore += 150;
+            currentStreak++;
+            rawTotalScore += getStreakBonusForCurrentTrade(currentStreak);
+        } else {
+            rawTotalScore += 50;
+            currentStreak = 0;
+        }
+    }
+    
+    // 2. Daily Quest 分数（Passed +200 / Failed -250 / Patience +50）
+    for (const [date, dayTrades] of Object.entries(tradesByDate)) {
+        if (processedDates.has(date)) continue;
+        processedDates.add(date);
+        
+        let dailyPnl = 0;
+        dayTrades.forEach(t => {
+            dailyPnl += parseFloat(t.pnl_amount || 0);
+        });
+        
+        const profitTarget = initialBalance * 0.1;
+        const lossLimit = initialBalance * 0.25;
+        
+        if (dailyPnl >= profitTarget) {
+            rawTotalScore += 200;
+            console.log(`Daily Quest Passed on ${date}: +200 points`);
+        } else if (dailyPnl <= -lossLimit) {
+            rawTotalScore -= 250;
+            console.log(`Daily Quest Failed on ${date}: -250 points (PnL: ${dailyPnl})`);
+        } else {
+            rawTotalScore += 50;
+            console.log(`Daily Quest Patience on ${date}: +50 points`);
+        }
+    }
+    
+    // 3. 当日添加交易超过两笔 -300分
+    for (const [date, dayTrades] of Object.entries(tradesByDate)) {
+        if (dayTrades.length > 2 && !penaltyRecord[date]) {
+            rawTotalScore -= 300;
+            penaltyRecord[date] = true;
+            localStorage.setItem('daily_penalty_record', JSON.stringify(penaltyRecord));
+            console.log(`Penalty applied: ${date} has ${dayTrades.length} trades, -300 points`);
+        }
+    }
+    
+    // 确保分数不低于0
+    rawTotalScore = Math.max(0, Math.floor(rawTotalScore));
+    console.log("Final rawTotalScore:", rawTotalScore);
     
     // 获取当前等级（基于原始总分）
     const currentRank = getRankByScore(rawTotalScore);
@@ -2003,13 +2157,13 @@ function updateRankingWithDynamicScore(statsData, allTrades) {
     
     // 更新分数显示（显示当前等级内的分数，如 50/1000）
     if (overallScoreEl) {
-        overallScoreEl.textContent = displayScore;
-    }
+    overallScoreEl.textContent = displayScore;
+}
     
     // 更新进度条
     if (scoreProgressEl) {
-        scoreProgressEl.style.width = `${scorePercent}%`;
-    }
+    scoreProgressEl.style.width = `${scorePercent}%`;
+}
     
     // 更新目标分数显示
     if (nextScoreTargetEl) {
@@ -2097,7 +2251,7 @@ function updateRankingWithDynamicScore(statsData, allTrades) {
         }
     }
     
-            // 更新状态文本
+    // 更新状态文本
     if (scoreStatusEl) {
         if (rawTotalScore === 0) {
             scoreStatusEl.textContent = '📊 添加交易开始积累分数';
@@ -2109,59 +2263,284 @@ function updateRankingWithDynamicScore(statsData, allTrades) {
         }
     }
     
-    // ========== 更新分数历史记录 ==========
-    const scoreHistoryList = document.getElementById('scoreHistoryList');
-    if (scoreHistoryList && allTrades) {
-        const buySellTrades = allTrades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+    // ========== 更新分数历史记录（严格按照 created_at 精确时间排序，包含秒） ==========
+const scoreHistoryList = document.getElementById('scoreHistoryList');
+if (scoreHistoryList && allTrades) {
+    // 收集所有事件
+    const allTimelineEvents = [];
+    
+    // 获取所有交易并按 created_at 精确时间排序（从旧到新）
+    const sortedByTimeForHistory = [...buySellTrades].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0);
+        const dateB = new Date(b.created_at || b.date || 0);
+        return dateA - dateB;
+    });
+    
+    // 按日期分组交易（仅用于检测超2笔扣分）
+    const tradesByDateForHistory = {};
+    for (const trade of sortedByTimeForHistory) {
+        const date = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
+        if (!tradesByDateForHistory[date]) {
+            tradesByDateForHistory[date] = [];
+        }
+        tradesByDateForHistory[date].push(trade);
+    }
+    
+    let streakCount = 0;
+    
+    function getStreakBonusAmount(streakCount) {
+        if (streakCount === 1) return 0;
+        if (streakCount === 2) return 100;
+        if (streakCount === 3) return 200;
+        if (streakCount === 4) return 300;
+        if (streakCount === 5) return 400;
+        if (streakCount === 6) return 500;
+        if (streakCount >= 7) return 600;
+        return 0;
+    }
+    
+    // 格式化完整时间函数（包含秒）
+    function formatFullDateTime(timestamp) {
+    const date = new Date(timestamp);
+    if (!isNaN(date.getTime())) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        return `${day}/${month}`;
+    }
+    return '';
+}
+    
+    // ========== 第一步：添加所有交易事件（使用精确的 created_at 时间） ==========
+    for (let i = 0; i < sortedByTimeForHistory.length; i++) {
+        const trade = sortedByTimeForHistory[i];
+        const pnl = parseFloat(trade.pnl_amount || 0);
+        const isProfit = pnl > 0;
+        const tradeTimestamp = new Date(trade.created_at || trade.date || 0).getTime();
         
-        if (buySellTrades.length === 0) {
-            scoreHistoryList.innerHTML = '<div class="history-empty">暂无交易记录</div>';
+        let baseScore = 0;
+        if (isProfit) {
+            baseScore = 150;
+            streakCount++;
         } else {
-            // 获取最近5笔交易
-            const recentTrades = [...buySellTrades].slice(-5).reverse();
-            let historyHtml = '';
+            baseScore = 50;
+            streakCount = 0;
+        }
+        
+        const streakBonus = getStreakBonusAmount(streakCount);
+        let totalScore = baseScore + streakBonus;
+        
+        allTimelineEvents.push({
+            type: 'trade',
+            timestamp: tradeTimestamp,
+            displayTime: formatFullDateTime(tradeTimestamp),
+            trade: trade,
+            score: totalScore,
+            isProfit: isProfit,
+            streak: streakCount,
+            profitAmount: Math.abs(pnl)
+        });
+    }
+    
+    // ========== 第二步：计算每个日期的 Daily Quest 并添加事件 ==========
+    // 重要：DQ 事件应该使用触发时的精确时间（基于累计盈亏达到目标的那笔交易）
+    const processedDatesForDQ = new Set();
+    
+    for (const [date, dayTrades] of Object.entries(tradesByDateForHistory)) {
+        if (processedDatesForDQ.has(date)) continue;
+        processedDatesForDQ.add(date);
+        
+        // 按时间顺序排序该日期的交易
+        const sortedDayTrades = [...dayTrades].sort((a, b) => {
+            const dateA = new Date(a.created_at || a.date || 0);
+            const dateB = new Date(b.created_at || b.date || 0);
+            return dateA - dateB;
+        });
+        
+        let cumulativePnl = 0;
+        let dqTriggerTimestamp = null;
+        let dqStatus = '';
+        let dqScore = 0;
+        
+        const profitTarget = initialBalance * 0.1;
+        const lossLimit = initialBalance * 0.25;
+        
+        // 遍历交易，找到触发 DQ 的那一笔
+        for (let i = 0; i < sortedDayTrades.length; i++) {
+            const trade = sortedDayTrades[i];
+            const pnl = parseFloat(trade.pnl_amount || 0);
+            cumulativePnl += pnl;
+            const tradeTimestamp = new Date(trade.created_at || trade.date || 0).getTime();
             
-            for (const trade of recentTrades) {
-                const pnl = parseFloat(trade.pnl_amount || 0);
-                const isProfit = pnl > 0;
-                const profitAmount = Math.abs(pnl).toFixed(2);
-                const date = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
-                
-                let actionText = '';
-                let pointsText = '';
-                let itemClass = '';
-                
-                if (isProfit) {
-                    actionText = `📈 盈利交易 $${profitAmount}`;
-                    pointsText = '+150';
-                    itemClass = '';
-                } else {
-                    actionText = `📉 亏损交易 $${profitAmount}`;
-                    pointsText = '+50';
-                    itemClass = 'loss';
-                }
-                
-                historyHtml += `
-                    <div class="score-history-item ${itemClass}">
-                        <span class="history-action">${actionText}</span>
-                        <span class="history-points">${pointsText}</span>
-                    </div>
-                `;
+            if (cumulativePnl >= profitTarget && dqStatus === '') {
+                dqStatus = 'passed';
+                dqScore = 200;
+                dqTriggerTimestamp = tradeTimestamp;
+                break;
+            } else if (cumulativePnl <= -lossLimit && dqStatus === '') {
+                dqStatus = 'failed';
+                dqScore = -250;
+                dqTriggerTimestamp = tradeTimestamp;
+                break;
             }
+        }
+        
+        // 如果没有触发任何目标，设置为 Patience（使用最后一笔交易的时间）
+        if (dqStatus === '') {
+            dqStatus = 'patience';
+            dqScore = 50;
+            const lastTrade = sortedDayTrades[sortedDayTrades.length - 1];
+            dqTriggerTimestamp = new Date(lastTrade.created_at || lastTrade.date || 0).getTime();
+        }
+        
+        // DQ 事件使用触发交易的时间戳（不添加任何偏移）
+        allTimelineEvents.push({
+            type: 'dailyquest',
+            timestamp: dqTriggerTimestamp,
+            displayTime: formatFullDateTime(dqTriggerTimestamp),
+            date: date,
+            dqStatus: dqStatus,
+            dqScore: dqScore,
+            dailyPnl: cumulativePnl
+        });
+    }
+    
+    // ========== 第三步：添加扣分事件（在第3笔交易发生的精确时间） ==========
+    const dailyTradeCount = {};
+    const penaltyAddedForDate = {};
+    
+    for (let i = 0; i < sortedByTimeForHistory.length; i++) {
+        const trade = sortedByTimeForHistory[i];
+        const tradeDate = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
+        
+        if (!dailyTradeCount[tradeDate]) {
+            dailyTradeCount[tradeDate] = 0;
+        }
+        dailyTradeCount[tradeDate]++;
+        
+        // 当交易数量达到3笔且该日期还没有添加扣分事件时
+        if (dailyTradeCount[tradeDate] === 3 && !penaltyAddedForDate[tradeDate]) {
+            penaltyAddedForDate[tradeDate] = true;
             
-            scoreHistoryList.innerHTML = historyHtml;
+            const tradeTimestamp = new Date(trade.created_at || trade.date || 0).getTime();
+            
+            allTimelineEvents.push({
+                type: 'penalty',
+                timestamp: tradeTimestamp,
+                displayTime: formatFullDateTime(tradeTimestamp),
+                date: tradeDate,
+                penaltyAmount: 300,
+                tradeCount: dailyTradeCount[tradeDate]
+            });
         }
     }
+    
+    // ========== 按时间戳排序（从旧到新） ==========
+    allTimelineEvents.sort((a, b) => a.timestamp - b.timestamp);
+    
+    // ========== 构建 HTML ==========
+    let historyHtml = '';
+    
+    for (const event of allTimelineEvents) {
+                if (event.type === 'trade') {
+            const score = event.score;
+            const isProfit = event.isProfit;
+            const profitAmount = event.profitAmount.toFixed(2);
+            const streak = event.streak;
+            const displayTime = event.displayTime;
+            const trade = event.trade;
+            const pair = trade.symbol || 'Unknown';
+            
+            let actionText = '';
+            let itemClass = '';
+            let extraInfo = '';
+            let amountColor = isProfit ? '#22d3ee' : '#f87171';  // 亮青色 / 亮红色
+            
+            if (isProfit) {
+                actionText = `Winning Trade On ${pair}`;
+                itemClass = '';
+                if (streak >= 2) {
+                    const bonusAmount = streak === 2 ? 100 : streak === 3 ? 200 : streak === 4 ? 300 : streak === 5 ? 400 : streak === 6 ? 500 : 600;
+                    extraInfo = ` <span style="color: #a78bfa;">(${streak}连胜 +${bonusAmount})</span>`;
+                }
+            } else {
+                actionText = `Losing Trade On ${pair}`;
+                itemClass = 'loss';
+            }
+            
+            historyHtml += `
+                <div class="score-history-item ${itemClass}">
+                    <span class="history-action">
+                        <span class="history-time" style="color: #64748b; min-width: 55px;">${displayTime}</span>
+                        ${actionText}
+                        <span style="color: ${amountColor}; font-weight: 600;"> ($${profitAmount})</span>
+                        ${extraInfo}
+                    </span>
+                    <span class="history-points" style="color: #3b82f6 !important;">+${score} Scores</span>
+                </div>
+            `;
+            
+        } else if (event.type === 'dailyquest') {
+            const displayTime = event.displayTime;
+            
+            let dqText = '';
+            let dqColor = '';
+            if (event.dqStatus === 'passed') {
+                dqText = '🎯 Daily Quest Passed';
+                dqColor = '#10b981';
+            } else if (event.dqStatus === 'failed') {
+                dqText = '💀 Daily Quest Failed';
+                dqColor = '#ef4444';
+            } else {
+                dqText = '⏳ Daily Quest Patience';
+                dqColor = '#f59e0b';
+            }
+            const scoreDisplay = event.dqScore >= 0 ? `+${event.dqScore}` : `${event.dqScore}`;
+            const scoreColor = event.dqScore >= 0 ? '#10b981' : '#ef4444';
+            
+            historyHtml += `
+                <div class="score-history-item dailyquest">
+                    <span class="history-action">
+                        <span class="history-time">${displayTime}</span>
+                        ${dqText}
+                    </span>
+                    <span class="history-points" style="color: ${scoreColor} !important;">${scoreDisplay} Scores</span>
+                </div>
+            `;
+            
+        } else if (event.type === 'penalty') {
+            const displayTime = event.displayTime;
+            
+            historyHtml += `
+                <div class="score-history-item penalty">
+                    <span class="history-action">
+                        <span class="history-time">${displayTime}</span>
+                        ⚠️ >2 Trades/Day (${event.tradeCount} trades)
+                    </span>
+                    <span class="history-points" style="color: #ef4444 !important;">-${event.penaltyAmount} Scores</span>
+                </div>
+            `;
+        }
+    }
+    
+    if (historyHtml === '') {
+        historyHtml = '<div class="history-empty">No trades yet</div>';
+    }
+    scoreHistoryList.innerHTML = historyHtml;
+    
+    // 自动滚动到底部，显示最新的事件
+    setTimeout(() => {
+        if (scoreHistoryList) {
+            scoreHistoryList.scrollTop = scoreHistoryList.scrollHeight;
+        }
+    }, 50);
+}
     
     // ========== 添加分数记录区域 ==========
     const scoreHistoryEl = document.getElementById('scoreHistory');
     if (scoreHistoryEl && allTrades) {
-        const buySellTrades = allTrades.filter(t => t.direction === 'Buy' || t.direction === 'Sell');
-        
         let historyHtml = '<div class="score-history-title">📋 分数规则 <span>Rules</span></div>';
         historyHtml += '<div class="score-history-list">';
         
-        // 显示基础规则
         historyHtml += `<div class="score-history-item"><span class="label">盈利:</span><span class="value">+150</span></div>`;
         historyHtml += `<div class="score-history-item loss"><span class="label">亏损:</span><span class="value">+50</span></div>`;
         historyHtml += `<div class="score-history-item streak"><span class="label">连续盈利:</span><span class="value">+100~600</span></div>`;
@@ -2203,7 +2582,11 @@ function getRankByScore(score) {
   }
   
   // 计算当前等级内的显示分数（0-1000）
-  let displayScore = score % 1000;
+  // 关键修复：使用 score - (levelNumber * 1000) 确保正确计算
+  let displayScore = score - (levelNumber * 1000);
+  if (displayScore < 0) displayScore = 0;
+  if (displayScore > 1000) displayScore = 1000;
+  
   if (isMaxLevel) {
     displayScore = 1000;
   }
@@ -2220,6 +2603,11 @@ function getRankByScore(score) {
   if (!isMaxLevel) {
     nextNeeded = 1000 - displayScore;
     if (nextNeeded < 0) nextNeeded = 0;
+    // 如果 displayScore 为 0 且分数不是整千，修正 nextNeeded
+    if (displayScore === 0 && score > 0 && score % 1000 !== 0) {
+      // 这种情况不应该发生，但做个保护
+      nextNeeded = 1000;
+    }
   }
   
   const rankKey = mainRank.toLowerCase();
@@ -2231,6 +2619,9 @@ function getRankByScore(score) {
   } else {
     totalPercent = 100;
   }
+  
+  // 调试日志
+  console.log(`getRankByScore: score=${score}, levelNumber=${levelNumber}, displayScore=${displayScore}, rank=${fullRankName}, nextNeeded=${nextNeeded}`);
   
   // 返回结果对象
   return {
@@ -3223,6 +3614,29 @@ async function deleteTrade(tradeId) {
     const { error } = await client.from("trades").delete().eq("id", tradeId).eq("user_id", session.user.id);
     if (error) throw error;
     showNotification('交易删除成功', 'success');
+    
+    // 删除交易后重新获取所有交易，并重新计算扣分记录
+    const { data: allTrades } = await client.from("trades").select("*").eq("user_id", session.user.id);
+    
+    // 重新计算 penalty_record
+    const buySellTrades = (allTrades || []).filter(t => t.direction === 'Buy' || t.direction === 'Sell');
+    const tradesByDate = {};
+    buySellTrades.forEach(trade => {
+        const date = trade.date || (trade.created_at ? trade.created_at.split('T')[0] : '');
+        if (!tradesByDate[date]) {
+            tradesByDate[date] = [];
+        }
+        tradesByDate[date].push(trade);
+    });
+    
+    const newPenaltyRecord = {};
+    for (const [date, dayTrades] of Object.entries(tradesByDate)) {
+        if (dayTrades.length > 2) {
+            newPenaltyRecord[date] = true;
+        }
+    }
+    localStorage.setItem('daily_penalty_record', JSON.stringify(newPenaltyRecord));
+    
     fetchTrades();
   } catch (error) { console.error('删除失败:', error); alert('删除失败: ' + error.message); }
 }
@@ -3258,8 +3672,8 @@ function updateStats(data) {
   
   setTimeout(() => {
     updateRadarChart();
-    updateRankingWithDynamicScore(statsDataForRanking, data);
-  }, 200);
+    updateRankingWithDynamicScore(statsDataForRanking, window.allTradesData);
+}, 200);
 }
 
 // ---------------- Update Chart ----------------
