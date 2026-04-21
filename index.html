@@ -46,21 +46,19 @@
           <div class="radar-capability-card">
             <div class="card-header-glow">
   <div class="card-title-section">
-    <span class="title-icon">📊</span>
-    <h3 class="card-title">6-Dimension Trading Ability</h3>
+    <span class="card-badge">Real-time Analysis</span>
   </div>
-  <span class="card-badge">Real-time Analysis</span>
 </div>
             <div class="radar-chart-wrapper">
               <canvas id="radarChart" width="320" height="320" style="width: 100%; max-width: 320px; height: auto; margin: 0 auto;"></canvas>
             </div>
             <div class="radar-legend">
-  <div class="legend-item"><span class="legend-dot" style="background: #3b82f6;"></span>🎯 Win Rate</div>
-  <div class="legend-item"><span class="legend-dot" style="background: #10b981;"></span>📊 Profit Factor</div>
-  <div class="legend-item"><span class="legend-dot" style="background: #f59e0b;"></span>📈 Consistency</div>
-  <div class="legend-item"><span class="legend-dot" style="background: #ef4444;"></span>📉 Max Drawdown</div>
-  <div class="legend-item"><span class="legend-dot" style="background: #8b5cf6;"></span>🔄 Recovery Factor</div>
-  <div class="legend-item"><span class="legend-dot" style="background: #ec4899;"></span>⚖️ Avg Win/Loss</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #3b82f6;"></span>Win Rate</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #10b981;"></span>Profit Factor</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #f59e0b;"></span>Consistency</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #ef4444;"></span>Max Drawdown</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #8b5cf6;"></span>Recovery Factor</div>
+  <div class="legend-item"><span class="legend-dot" style="background: #ec4899;"></span>Avg Win/Loss</div>
 </div>
           </div>
 
@@ -485,7 +483,7 @@
       </div>
     </div>
     <div class="emotion-message" id="emotionMessage">
-      🧘 Keep up the good discipline!
+      🧘 Keep up the good discipline!---------------------------------------
     </div>
   </div>
 </div>
@@ -608,9 +606,7 @@
                   </div>
                 </div>
                 <div class="session-winrate" id="nyWinRate">Win Rate: 0%</div>
-              </div>
-            </div>
-          </div>
+              
         </form>
       </section>
 
@@ -632,6 +628,42 @@
         </div>
         <canvas id="plChart"></canvas>
       </section>
+
+<!-- DQ 手动设置面板 -->
+<div class="dq-setting-panel">
+  <div class="dq-setting-header">
+    <h4>⚙️ DQ Setting</h4>
+    <button class="dq-setting-toggle" id="dqSettingToggle">▼</button>
+  </div>
+  <div class="dq-setting-content" id="dqSettingContent">
+    <div class="dq-setting-row">
+      <label>Date:</label>
+      <input type="date" id="dqDate" class="dq-input">
+    </div>
+    <div class="dq-setting-row">
+      <label>Balance ($):</label>
+      <input type="number" id="dqBalance" class="dq-input" step="0.01" placeholder="Enter balance">
+    </div>
+    <div class="dq-setting-row">
+      <label>Profit Goal (%):</label>
+      <input type="number" id="dqProfitPercent" class="dq-input" step="0.1" value="10" placeholder="10">
+      <span class="dq-hint">% of balance</span>
+    </div>
+    <div class="dq-setting-row">
+      <label>Loss Limit (%):</label>
+      <input type="number" id="dqLossPercent" class="dq-input" step="0.1" value="25" placeholder="25">
+      <span class="dq-hint">% of balance</span>
+    </div>
+    <div class="dq-setting-row">
+      <button id="dqApplyBtn" class="dq-apply-btn">Apply for Today</button>
+      <button id="dqResetBtn" class="dq-reset-btn">Reset</button>
+    </div>
+    <div class="dq-preview" id="dqPreview">
+      <span>Preview: </span>
+      <strong id="dqPreviewText">0.00 (0.00/0.00)</strong>
+    </div>
+  </div>
+</div>
 
       <!-- Trade History -->
       <section id="tradeSection">

@@ -1360,25 +1360,34 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     color: #64748b;
 }
 
-/* 分数历史区域 */
+/* Score History 区域 - 整体容器 */
 .score-history {
-    margin-top: 0.5rem;
-    padding-top: 0.6rem;
-    border-top: 1px solid rgba(59, 130, 246, 0.15);
+  position: relative;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 16px;
+  padding: 0 12px;
 }
 
+/* 标题行 - 固定不动，加背景遮挡下方内容 */
 .score-history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.65rem;
-    color: #64748b;
-    margin-bottom: 0.6rem;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  z-index: 10;
+  padding: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-.score-history-header span:first-child {
-    font-weight: 600;
-    letter-spacing: 0.5px;
+/* 列表区域 - 可滚动 */
+.score-history-list,
+#scoreHistoryList {
+  max-height: 210px;
+  overflow-y: auto;
+  padding-bottom: 8px;
 }
 
 /* Rules 提示框 - 向左上弹出，覆盖所有卡片 */
@@ -1585,27 +1594,29 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
     color: #64748b;
 }
 
-/* 分数历史区域 */
+/* Score History 区域 - 整体容器 */
 .score-history {
-    margin-top: 0.5rem;
-    padding-top: 0.6rem;
-    border-top: 1px solid rgba(59, 130, 246, 0.15);
+  position: relative;
 }
 
+/* 标题行 - 固定不动 */
 .score-history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #94a3b8;
-    margin-bottom: 0.6rem;
+  position: sticky;
+  top: 0;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  z-index: 10;
+  padding: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
-.score-history-header span:first-child {
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #cbd5e1;
+/* 列表区域 - 可滚动 */
+.score-history-list,
+#scoreHistoryList {
+  max-height: 210px;
+  overflow-y: auto;
 }
 
 /* Rules 提示框 - 屏幕左上角显示，完全不遮挡 */
@@ -2143,4 +2154,838 @@ th, td { padding: 0.7rem; text-align: center; border-bottom: 1px solid var(--bor
 /* 确保图例项不被裁剪 */
 .radar-capability-card {
     overflow: visible;
+}
+
+.rank-svg-3d text {
+    animation: textGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes textGlow {
+    0% { filter: drop-shadow(0 0 2px currentColor); }
+    50% { filter: drop-shadow(0 0 8px currentColor); }
+    100% { filter: drop-shadow(0 0 2px currentColor); }
+}
+
+/* ========== 调整面板宽度，让 Real-time Analysis 显示在一行 ========== */
+
+/* 1. 左侧面板 - 增加宽度 */
+.dashboard-left {
+    flex: 0 0 400px;  /* 从 360px 增加到 400px */
+    max-width: 400px;
+}
+
+/* 2. 右侧面板 - 减少宽度（通过 flex 自动收缩） */
+.dashboard-right {
+    flex: 0.9;  /* 从 1 减少到 0.9，让右侧变窄 */
+    min-width: 440px;  /* 减少最小宽度 */
+    margin-left: -10px;
+    padding-left: 10px;
+}
+
+/* 3. 雷达图卡片内的标题区域 - 确保一行显示 */
+.card-header-glow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;  /* 禁止换行 */
+    white-space: nowrap; /* 文字不换行 */
+}
+
+.card-title-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.card-title {
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+.card-badge {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ========== 罗马数字闪烁效果 ========== */
+
+/* 徽章中的罗马数字 */
+.rank-svg-3d text,
+.rank-badge-svg text,
+.tooltip-rank-svg text {
+    animation: romanGlow 1.2s ease-in-out infinite;
+    font-weight: bold;
+}
+
+/* 主徽章中的罗马数字 */
+
+@keyframes romanGlow {
+    0% {
+        opacity: 0.6;
+        text-shadow: 0 0 2px currentColor;
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 12px currentColor, 0 0 6px currentColor;
+    }
+    100% {
+        opacity: 0.6;
+        text-shadow: 0 0 2px currentColor;
+    }
+}
+
+/* 不同等级不同闪烁颜色 */
+[data-rank="bronze"] text,
+[data-rank="rookie"] text {
+    animation: bronzeGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="silver"] text,
+[data-rank="apprentice"] text {
+    animation: silverGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="gold"] text,
+[data-rank="trader"] text {
+    animation: goldGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="platinum"] text,
+[data-rank="sniper"] text {
+    animation: platinumGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="diamond"] text,
+[data-rank="elite"] text {
+    animation: diamondGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="master"] text {
+    animation: masterGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="grandmaster"] text,
+[data-rank="wizard"] text {
+    animation: grandmasterGlow 1.2s ease-in-out infinite;
+}
+
+[data-rank="legend"] text {
+    animation: legendGlow 1.2s ease-in-out infinite;
+}
+
+/* 各等级闪烁颜色 */
+@keyframes bronzeGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #CD7F32; }
+    50% { opacity: 1; text-shadow: 0 0 15px #F0C674, 0 0 8px #CD7F32; }
+}
+
+@keyframes silverGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #C0C0C0; }
+    50% { opacity: 1; text-shadow: 0 0 15px #FFFFFF, 0 0 8px #C0C0C0; }
+}
+
+@keyframes goldGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #DAA520; }
+    50% { opacity: 1; text-shadow: 0 0 15px #FFD700, 0 0 8px #DAA520; }
+}
+
+@keyframes platinumGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #B8B8B8; }
+    50% { opacity: 1; text-shadow: 0 0 15px #E5E4E2, 0 0 8px #B8B8B8; }
+}
+
+@keyframes diamondGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #2E4AB5; }
+    50% { opacity: 1; text-shadow: 0 0 15px #87CEEB, 0 0 8px #4169E1; }
+}
+
+@keyframes masterGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #7D3C98; }
+    50% { opacity: 1; text-shadow: 0 0 15px #D7BDE2, 0 0 8px #9B59B6; }
+}
+
+@keyframes grandmasterGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #CC3333; }
+    50% { opacity: 1; text-shadow: 0 0 15px #FFB3B3, 0 0 8px #FF6666; }
+}
+
+@keyframes legendGlow {
+    0%, 100% { opacity: 0.6; text-shadow: 0 0 2px #FFA500; }
+    50% { opacity: 1; text-shadow: 0 0 20px #FFD700, 0 0 10px #FFA500, 0 0 5px #FF8C00; }
+}
+
+/* ========== 整个徽章闪烁发光效果 ========== */
+
+/* 主徽章整体闪烁 */
+#rankSvg,
+.rank-svg-3d,
+.rank-badge-svg {
+    animation: badgeGlow 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px currentColor);
+}
+
+/* 不同等级的不同发光颜色 */
+[data-rank="bronze"] #rankSvg,
+[data-rank="rookie"] .rank-svg-3d {
+    animation: bronzeBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="silver"] #rankSvg,
+[data-rank="apprentice"] .rank-svg-3d {
+    animation: silverBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="gold"] #rankSvg,
+[data-rank="trader"] .rank-svg-3d {
+    animation: goldBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="platinum"] #rankSvg,
+[data-rank="sniper"] .rank-svg-3d {
+    animation: platinumBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="diamond"] #rankSvg,
+[data-rank="elite"] .rank-svg-3d {
+    animation: diamondBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="master"] #rankSvg {
+    animation: masterBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="grandmaster"] #rankSvg,
+[data-rank="wizard"] .rank-svg-3d {
+    animation: grandmasterBadgeGlow 1.5s ease-in-out infinite;
+}
+
+[data-rank="legend"] #rankSvg {
+    animation: legendBadgeGlow 1.5s ease-in-out infinite;
+}
+
+/* 各等级徽章发光动画 */
+@keyframes bronzeBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 3px #CD7F32) drop-shadow(0 0 1px #F0C674);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 12px #F0C674) drop-shadow(0 0 6px #CD7F32);
+        opacity: 1;
+    }
+}
+
+@keyframes silverBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 3px #C0C0C0) drop-shadow(0 0 1px #FFFFFF);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 12px #FFFFFF) drop-shadow(0 0 6px #C0C0C0);
+        opacity: 1;
+    }
+}
+
+@keyframes goldBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px #DAA520) drop-shadow(0 0 2px #FFD700);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 16px #FFD700) drop-shadow(0 0 8px #DAA520);
+        opacity: 1;
+    }
+}
+
+@keyframes platinumBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 3px #B8B8B8) drop-shadow(0 0 1px #E5E4E2);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 12px #E5E4E2) drop-shadow(0 0 6px #B8B8B8);
+        opacity: 1;
+    }
+}
+
+@keyframes diamondBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px #2E4AB5) drop-shadow(0 0 2px #87CEEB);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 16px #87CEEB) drop-shadow(0 0 8px #4169E1);
+        opacity: 1;
+    }
+}
+
+@keyframes masterBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px #7D3C98) drop-shadow(0 0 2px #D7BDE2);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 16px #D7BDE2) drop-shadow(0 0 8px #9B59B6);
+        opacity: 1;
+    }
+}
+
+@keyframes grandmasterBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 5px #CC3333) drop-shadow(0 0 2px #FFB3B3);
+        opacity: 0.85;
+    }
+    50% {
+        filter: drop-shadow(0 0 20px #FFB3B3) drop-shadow(0 0 10px #FF6666);
+        opacity: 1;
+    }
+}
+
+@keyframes legendBadgeGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 6px #FFA500) drop-shadow(0 0 3px #FFD700);
+        opacity: 0.9;
+    }
+    50% {
+        filter: drop-shadow(0 0 25px #FFD700) drop-shadow(0 0 15px #FFA500) drop-shadow(0 0 8px #FF8C00);
+        opacity: 1;
+    }
+}
+
+/* 罗马数字闪烁（更亮） */
+#rankSvg text,
+.rank-svg-3d text {
+    animation: romanTextGlow 1s ease-in-out infinite;
+}
+
+@keyframes romanTextGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 2px currentColor);
+    }
+    50% {
+        filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 5px currentColor);
+    }
+}
+
+/* ========== 降低徽章外层边框光晕能见度 ========== */
+
+/* 徽章最外层的发光边框 - 降低透明度 */
+#rankSvg path:first-child,
+.rank-svg-3d path:first-child,
+.rank-badge-svg path:first-child {
+    stroke-opacity: 0.3 !important;  /* 降低描边透明度 */
+}
+
+/* 或者直接设置更淡的颜色 */
+.rank-level-card svg path:first-child {
+    stroke: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 内层边框更淡 */
+#rankSvg path:nth-child(2),
+.rank-svg-3d path:nth-child(2) {
+    stroke-opacity: 0.15 !important;
+}
+
+.rank-badge-svg {
+    filter: drop-shadow(0 0 8px currentColor) brightness(1.1);
+}
+
+.rank-level-card svg {
+    filter: drop-shadow(0 0 10px rgba(155, 89, 182, 0.5)) brightness(1.15);
+}
+
+.shield-glow {
+    animation: shieldFlash 2s ease-in-out infinite;
+}
+
+@keyframes shieldFlash {
+    0% {
+        opacity: 0.4;
+        stroke-width: 8px;
+    }
+    50% {
+        opacity: 0;
+        stroke-width: 0px;
+    }
+    100% {
+        opacity: 0.4;
+        stroke-width: 8px;
+    }
+}
+
+.rank-badge-svg {
+    overflow: visible !important;
+}
+
+.badge-wrapper {
+    overflow: visible !important;
+}
+
+/* 缩小徽章，去掉光晕 */
+.level-icon .rank-badge-svg,
+.rank-level-card .rank-badge-svg {
+    width: 70px !important;
+    height: 70px !important;
+    filter: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+}
+
+.level-icon {
+    margin-bottom: 10px;
+}
+
+/* 去掉徽章周围所有光晕 */
+.rank-badge-svg {
+    filter: drop-shadow(0 0 0px transparent) !important;
+    filter: none !important;
+}
+
+/* 去掉闪烁动画 */
+.rank-badge-svg {
+    animation: none !important;
+}
+
+/* 徽章卡片 - 确保徽章在最上层 */
+.rank-level-card {
+    position: relative;
+    isolation: isolate;
+}
+
+/* 徽章容器 - 最高层级 */
+.level-icon {
+    position: relative;
+    z-index: 20;
+}
+
+/* 徽章 SVG - 最上层 */
+.rank-badge-svg,
+#rankSvg {
+    position: relative;
+    z-index: 25;
+}
+
+/* 粒子容器 - 下层 */
+.star-dust {
+    z-index: 5 !important;
+}
+
+/* 确保所有背景效果都在下层 */
+.rank-level-card::before,
+.rank-level-card::after {
+    z-index: 1;
+}
+
+/* 让右侧面板向左移动，使 Ranking 卡片右侧和 Session Performance 对齐 */
+.dashboard-right {
+    margin-left: -40px;  /* 向左移动，卡片变宽 */
+    padding-left: 20px;
+    width: calc(100% + 40px);
+}
+
+/* 或者用 flex 让右侧面板占满剩余空间 */
+.dashboard-two-columns {
+    display: flex;
+    gap: 20px;
+}
+
+.dashboard-left {
+    flex-shrink: 0;
+    width: 360px;
+}
+
+.dashboard-right {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ========== 左右面板布局 - 10px缝隙，不重叠 ========== */
+
+.dashboard-two-columns {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;  /* 左右之间10px缝隙 */
+    align-items: flex-start;
+}
+
+.dashboard-left {
+    flex: 0 0 360px;
+    max-width: 360px;
+}
+
+.dashboard-right {
+    flex: 1;
+    min-width: 480px;
+    margin-left: 0;  /* 移除负边距 */
+    padding-left: 0;
+    width: auto;
+}
+
+/* Ranking 卡片内部内容正常显示 */
+.rank-score-card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ========== 所有卡片统一左右缝隙 ========== */
+
+/* 右侧面板内边距统一 */
+.dashboard-right {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* 右侧所有卡片占满宽度 */
+.dashboard-right > div {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* 左侧面板也统一内边距 */
+.dashboard-left {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* 左侧卡片占满宽度 */
+.dashboard-left > div {
+    width: 100%;
+}
+
+/* 右侧面板内，除了等级卡片，其他卡片都窄一点 */
+.dashboard-right .rank-score-card,
+.dashboard-right .rank-discipline-card,
+.dashboard-right .rank-emotion-card {
+    width: 98%;
+    margin-left: 1%;
+    margin-right: 1%;
+}
+
+/* 等级卡片保持全宽 */
+.dashboard-right .rank-level-card {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.dashboard-two-columns {
+    display: flex;
+    gap: 1px;  /* 左右面板之间10px */
+}
+
+.dashboard-left {
+    flex: 0 0 360px;
+    max-width: 360px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.dashboard-right {
+    flex: 1;
+    min-width: 0;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+/* ========== 强制宇宙弦进度条动画 ========== */
+
+/* 进度条填充 */
+#scoreProgress,
+.score-progress-fill,
+.progress-bar-fill {
+    background: linear-gradient(90deg, #00f2fe, #4facfe, #00f2fe) !important;
+    background-size: 300% 100% !important;
+    animation: cosmicWaveForce 1.8s ease infinite !important;
+    box-shadow: 0 0 8px #00f2fe !important;
+}
+
+@keyframes cosmicWaveForce {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 300% 0%; }
+}
+
+/* 外层容器 - 固定高度210px，外部滚动条 */
+.score-history {
+  height: 225px !important;
+  max-height: 225px !important;
+  overflow-y: auto !important;
+}
+
+/* 内层列表 - 高度自适应，无滚动条 */
+.score-history-list,
+#scoreHistoryList {
+  height: auto !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* 滚动条样式 */
+.score-history-list::-webkit-scrollbar,
+#scoreHistoryList::-webkit-scrollbar {
+  width: 5px;
+}
+
+.score-history-list::-webkit-scrollbar-track,
+#scoreHistoryList::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 10px;
+}
+
+.score-history-list::-webkit-scrollbar-thumb,
+#scoreHistoryList::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  border-radius: 10px;
+}
+
+/* Firefox 滚动条 */
+.score-history-list,
+#scoreHistoryList {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 rgba(30, 41, 59, 0.5);
+}
+
+/* 让分数显示和标题在同一行 */
+.rank-score-card {
+  position: relative;
+}
+
+/* 标题和分数放在同一行 */
+.score-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.score-history-header .score-history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-display {
+  margin: 0;
+}
+
+/* Score History 标题字体优化 - 简洁版 */
+.score-history-header > span {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  letter-spacing: 0.3px !important;
+}
+
+/* DQ 快捷设置 - 独立区域 */
+.dq-quick-section {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.dq-quick-header {
+    margin-bottom: 10px;
+}
+
+.dq-quick-header span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.dq-quick-fields {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.dq-quick-input {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e2e8f0;
+    font-size: 0.85rem;
+    flex: 1;
+    min-width: 120px;
+}
+
+.dq-quick-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.dq-quick-input::placeholder {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.dq-quick-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    color: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.dq-quick-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* 在 CSS 文件中添加 */
+#plChart {
+  animation: borderPulse 2s ease-in-out infinite;
+}
+
+@keyframes borderPulse {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(62, 180, 137, 0.3)); }
+  50% { filter: drop-shadow(0 0 12px rgba(62, 180, 137, 0.7)); }
+}
+
+/* 让所有 P&L 行的金额显示颜色 - 通过 JS 添加 class 比较麻烦，用属性选择器 */
+.chartjs-tooltip-body-item:last-child span:last-child {
+  color: #22d3ee !important;
+}
+
+/* DQ Setting Panel */
+.dq-setting-panel {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border-radius: 16px;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.dq-setting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.dq-setting-header h4 {
+  color: #3b82f6;
+  font-size: 0.85rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.dq-setting-toggle {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.dq-setting-toggle.collapsed {
+  transform: rotate(-90deg);
+}
+
+.dq-setting-content {
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.dq-setting-content.collapsed {
+  display: none;
+}
+
+.dq-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dq-setting-row label {
+  width: 100px;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.dq-input {
+  flex: 1;
+  min-width: 120px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.dq-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.dq-hint {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.dq-apply-btn, .dq-reset-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.dq-apply-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.dq-apply-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.dq-reset-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dq-reset-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+}
+
+.dq-preview {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.dq-preview strong {
+  color: #3b82f6;
+  font-size: 0.9rem;
 }
